@@ -1,0 +1,4 @@
+displayName = Heavenly Arsenal
+author = Bread
+version = 0.1
+modReferences = NoxusBoss

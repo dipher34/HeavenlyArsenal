@@ -1,0 +1,71 @@
+﻿using CalamityMod;
+using Luminance.Core.Hooking;
+using Microsoft.Xna.Framework.Graphics;
+using Mono.Cecil.Cil;
+using MonoMod.Cil;
+using NoxusBoss.Core.GlobalInstances;
+using NoxusBoss.Core.Utilities;
+using Terraria;
+using Terraria.DataStructures;
+using Terraria.Localization;
+using Terraria.ModLoader;
+
+namespace HeavenlyArsenal.Content.Buffs;
+
+public class AntimatterAnnihilationAll_Buff : ModBuff
+{
+    public const string DPSVariableName = "AntimatterAnnihilationDPS";
+
+    public override string Texture => base.Texture;
+        
+    public override void SetStaticDefaults()
+    {
+        Main.debuff[Type] = true;
+        Main.buffNoSave[Type] = true;
+        Main.buffNoTimeDisplay[Type] = true;
+        //PlayerDataManager.UpdateBadLifeRegenEvent += ApplyDPS;
+
+        new ManagedILEdit("Use custom death text for Antimatter Annihilation", Mod, edit =>
+        {
+            IL_Player.KillMe += edit.SubscriptionWrapper;
+        }, edit =>
+        {
+            IL_Player.KillMe -= edit.SubscriptionWrapper;
+        }, UseCustomDeathMessage).Apply();
+    }
+
+    private static void UseCustomDeathMessage(ILContext context, ManagedILEdit edit)
+    {
+        ILCursor cursor = new ILCursor(context);
+        if (!cursor.TryGotoNext(MoveType.After, i => i.MatchStfld<Player>("crystalLeaf")))
+        {
+            edit.LogFailure("Could not find the crystalLeaf storage");
+            return;
+        }
+
+        if (!cursor.TryGotoNext(MoveType.After, i => i.MatchCallOrCallvirt<PlayerDeathReason>("GetDeathText")))
+        {
+            edit.LogFailure("Could not find the GetDeathText call");
+            return;
+        }
+
+        cursor.Emit(OpCodes.Ldarg_0);
+        cursor.EmitDelegate((NetworkText text, Player player) =>
+        {
+            if (player.HasBuff<AntimatterAnnihilationAll_Buff>())
+            {
+                LocalizedText deathText = Language.GetText($"Mods.NoxusBoss.Death.AntimatterAnnihilation{Main.rand.Next(5) + 1}");
+                return PlayerDeathReason.ByCustomReason(deathText.Format(player.name)).GetDeathText(player.name);
+            }
+
+            return text;
+        });
+    }
+
+    public override void Update(NPC npc, ref int buffIndex)
+    {
+        
+    }
+   
+    
+}

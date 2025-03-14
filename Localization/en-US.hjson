@@ -1,0 +1,143 @@
+Mods: {
+	HeavenlyArsenal: {
+		Buffs: {
+			TheBlackBell_Buff: {
+				DisplayName: The Black Bell_ Buff
+				Description: Mods.HeavenlyArsenal.Buffs.TheBlackBell_Buff.Description
+			}
+
+			AntimatterAnnihilationAll_Buff: {
+				DisplayName: Antimatter Annihilation All_ Buff
+				Description: Mods.HeavenlyArsenal.Buffs.AntimatterAnnihilationAll_Buff.Description
+			}
+
+			AntishadowAssassinBuff: {
+				DisplayName: Forgotten Warrior of Madder Crimson
+				Description: As He rises from the shadows around you, you hear a faint whisper... 'Shuuren...'
+			}
+		}
+
+		Items: {
+			ExampleWings: {
+				DisplayName: Example Wings
+				Tooltip: ""
+			}
+
+			avatar_FishingRod: {
+				DisplayName: avatar_ Fishing Rod
+				Tooltip: ""
+			}
+
+			AvatarRifle: {
+				DisplayName: Funeral Dirge of a Dead World
+				Tooltip: ""
+			}
+
+			Auric_Catalyst: {
+				DisplayName: Auric Catalyst
+				Tooltip: ""
+			}
+
+			shadowspec_GunParts: {
+				DisplayName: Shadowspec Gun Parts
+				Tooltip: Probably still illegal.
+			}
+
+			Incomplete_gun: {
+				DisplayName: Incomplete_gun
+				Tooltip:
+					'''
+					something tells you it's missing parts...
+					Perhaps there's something you can do with this later?
+					'''
+				TooltipPostNamelessDeity: ascend.
+			}
+
+			nadir2: {
+				DisplayName: Ossified Needle
+				Tooltip: ""
+			}
+
+			testsword: {
+				DisplayName: testsword
+				Tooltip: ""
+			}
+
+			devMask: {
+				DisplayName: Mask of a Forgetful God
+				Tooltip:
+					'''
+					Feel. What is feel? 
+					A mask. What is a mask?
+					A mask is a way of hiding from the world. 
+					A mask is the face you show to the world.
+					A mask is how you forget who you are.
+					Forget. How to feel.
+					'''
+			}
+
+			TheBlackBell: {
+				DisplayName: Kuraokami's Weeping Eye
+				Tooltip: ""
+			}
+
+			FusionRifle: {
+				DisplayName: Evanescent Keepsake
+				Tooltip:
+					'''
+					Teeth, sharper than your own.
+
+					"This is my destiny too!"
+					'''
+			}
+
+			UncannyDye: {
+				DisplayName: Uncanny Dye
+				Tooltip: ""
+			}
+
+			PlaceholderSuccBook: {
+				DisplayName: Placeholder Succ Book
+				Tooltip: ""
+			}
+
+			AntishadowBead: {
+				DisplayName: Antishadow Bead
+				Tooltip: ""
+			}
+
+			CircularSaw: {
+				DisplayName: Circular Saw
+				Tooltip: ""
+			}
+
+			StupidFuckYouSword: {
+				DisplayName: Stupid Fuck You Sword
+				Tooltip: ""
+			}
+		}
+
+		Projectiles: {
+			fusionrifleHoldout.DisplayName: fusionrifle Holdout
+			incomplete_gunHoldout.DisplayName: incomplete_gun Holdout
+			nadir2_Holdout.DisplayName: nadir2_ Holdout
+			nadir2Lantern.DisplayName: nadir2 Lantern
+			ParasiteParadiseProjectile.DisplayName: Parasite Paradise Projectile
+			TheBlackBell_Projectile.DisplayName: The Black Bell_ Projectile
+			FusionRifleHoldout.DisplayName: Fusion Rifle Holdout
+			AvatarRifle_Holdout.DisplayName: Avatar Rifle_ Holdout
+
+			Ranged: {
+				FusionRifle_Exhaust.DisplayName: Fusion Rifle_ Exhaust
+				SignusFlamethrower_proj.DisplayName: Signus Flamethrower_proj
+			}
+
+			Succ.DisplayName: Succ
+			AntishadowAssassin.DisplayName: Antishadow Assassin
+			AntishadowAssassinSlash.DisplayName: Antishadow Assassin Slash
+			BloodBlob.DisplayName: Blood Blob
+			Succ_Blood.DisplayName: Succ_ Blood
+			CircularSawProjectile.DisplayName: Circular Saw Projectile
+		}
+	}
+}
