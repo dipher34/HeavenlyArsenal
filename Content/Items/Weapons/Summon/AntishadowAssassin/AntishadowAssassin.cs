@@ -460,6 +460,9 @@ public class AntishadowAssassin : ModProjectile
                 break;
         }
 
+        if (Owner.MinionAttackTargetNPC != -1 && Main.npc[Owner.MinionAttackTargetNPC].active)
+            TargetIndex = Owner.MinionAttackTargetNPC;
+
         ResetVisuals();
         MoveBeadRops();
         CreateFootSmoke();
