@@ -748,7 +748,7 @@ public class AntishadowAssassin : ModProjectile
             potentialTargets.Add(target);
         }
 
-        // MathHelper.Pick the closest valid target to the owner, so that the assassin doesn't go flying off hunting enemies offscreen since they're within its
+        // Pick the closest valid target to the owner, so that the assassin doesn't go flying off hunting enemies offscreen since they're within its
         // detection zone.
         if (potentialTargets.Count >= 1)
             return potentialTargets.OrderBy(p => p.DistanceSQ(Owner.Center)).First().whoAmI;
