@@ -31,12 +31,12 @@ Mods: {
 
 			AvatarRifle: {
 				DisplayName: Funeral Dirge of a Dead World
-				Tooltip: 
-				'''
-				The last remnant of a civilization once favored by the Idol.
-				You get the sense that it might be older than the universe.
+				Tooltip:
+					'''
+					The last remnant of a civilization once favored by the Idol.
+					You get the sense that it might be older than the universe.
 
-				'''
+					'''
 			}
 
 			Auric_Catalyst: {
@@ -105,10 +105,10 @@ Mods: {
 			AntishadowBead: {
 				DisplayName: Scroll of Brightest Shadow
 				Tooltip:
-				'''
-				Bound by blood and seal, it shall always be by your side.
-				There may be only one.
-				'''
+					'''
+					Bound by blood and seal, it shall always be by your side.
+					There may be only one.
+					'''
 			}
 
 			CircularSaw: {

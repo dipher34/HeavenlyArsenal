@@ -222,7 +222,7 @@ public class AntishadowAssassin : ModProjectile
     /// <summary>
     /// The amount of mask variants that exist for this assassin.
     /// </summary>
-    public static int TotalMasks => 5;
+    public static int TotalMasks => 6;
 
     /// <summary>
     /// The maximum search range this assassin can examine.
