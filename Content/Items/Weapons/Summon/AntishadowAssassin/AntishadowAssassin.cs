@@ -688,6 +688,7 @@ public class AntishadowAssassin : ModProjectile
 
     private void DoBehavior_Leave()
     {
+        int bowDelay = 14;
         int bowTime = 56;
         int disappearDelay = 60;
         int disappearTime = 15;
@@ -695,15 +696,15 @@ public class AntishadowAssassin : ModProjectile
         if (Time == 1f)
             SoundEngine.PlaySound(LeaveSound, Projectile.Center).WithVolumeBoost(0.45f);
 
-        float bowInterpolant = LumUtils.InverseLerp(0f, bowTime, Time);
+        float bowInterpolant = LumUtils.InverseLerp(0f, bowTime, Time - bowDelay);
         float angleReorientInterpolant = LumUtils.InverseLerp(0f, 0.2f, bowInterpolant) * 0.8f;
         BowRotation = MathHelper.SmoothStep(0f, MathHelper.PiOver4, EasingCurves.Quadratic.Evaluate(EasingType.InOut, bowInterpolant));
 
-        LeftArmRotation = LeftArmRotation.AngleLerp(BowRotation * 0.6f, angleReorientInterpolant);
-        RightArmRotation = LeftArmRotation.AngleLerp(BowRotation * 1.1f, angleReorientInterpolant);
+        LeftArmRotation = 0.15f.AngleLerp(BowRotation * 0.6f, angleReorientInterpolant);
+        RightArmRotation = (-0.15f).AngleLerp(BowRotation * 1.1f, angleReorientInterpolant);
         KatanaRotation = bowInterpolant;
-        KatanaUnsheathInterpolant = LumUtils.InverseLerp(0.3f, 0f, bowInterpolant);
-        DisappearanceInterpolant = LumUtils.InverseLerp(0f, disappearTime, Time - bowTime - disappearDelay);
+        KatanaUnsheathInterpolant = LumUtils.InverseLerp(bowDelay, 0f, Time);
+        DisappearanceInterpolant = LumUtils.InverseLerp(0f, disappearTime, Time - bowDelay - bowTime - disappearDelay);
         ArmOutlineOpacity = LumUtils.InverseLerp(0f, 0.25f, bowInterpolant);
 
         Projectile.scale = 1f;
@@ -1009,7 +1010,7 @@ public class AntishadowAssassin : ModProjectile
         AmbientLoop.Update(Projectile.Center, sound =>
         {
             float idealPitch = LumUtils.InverseLerp(6f, 30f, Projectile.position.Distance(Projectile.oldPosition)) * 0.8f;
-            sound.Volume = 2f;
+            sound.Volume = 1.45f;
             sound.Pitch = MathHelper.Lerp(sound.Pitch, idealPitch, 0.6f);
         });
         AttackLoop.Update(Projectile.Center, sound =>
