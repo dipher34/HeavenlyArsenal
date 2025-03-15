@@ -49,6 +49,7 @@ public class AntishadowUnidirectionalAssassinSlash : ModProjectile
         Projectile.usesIDStaticNPCImmunity = true;
         Projectile.idStaticNPCHitCooldown = 1;
         Projectile.tileCollide = false;
+        Projectile.hide = true;
         Projectile.minion = true;
         Projectile.DamageType = DamageClass.Summon;
 
@@ -82,7 +83,7 @@ public class AntishadowUnidirectionalAssassinSlash : ModProjectile
 
         UnifiedRandom rng = new UnifiedRandom(Projectile.identity);
 
-        PrimitiveRenderer.RenderTrail(Projectile.oldPos, new PrimitiveSettings(default, default, _ => Projectile.Size * 0.5f, Shader: trailShader)
+        PrimitiveRenderer.RenderTrail(Projectile.oldPos, new PrimitiveSettings(default, default, _ => Projectile.Size * 0.5f, Shader: trailShader, UseUnscaledMatrix: true)
         {
             WidthFunction = TrailWidthFunction,
             ColorFunction = TrailColorFunction

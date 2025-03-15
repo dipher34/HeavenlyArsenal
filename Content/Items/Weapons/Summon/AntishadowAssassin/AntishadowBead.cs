@@ -1,26 +1,18 @@
-﻿using HeavenlyArsenal.Content.Items.Weapons.Summon;
-using HeavenlyArsenal.Content.Items.Weapons.Summon.AntishadowAssassin;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using NoxusBoss.Content.Rarities;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace HeavenlyArsenal.Content.Items.Weapons;
+namespace HeavenlyArsenal.Content.Items.Weapons.Summon.AntishadowAssassin;
 
 public class AntishadowBead : ModItem
 {
     /// <summary>
     /// The amount of minion slots needed to summon the assassin.
     /// </summary>
-    public static int MinionSlotRequirement => 5;
-    /// <summary>
-    /// Return a shorthand path for a given texture content prefix and name.
-    /// </summary>
-    public static string GetAssetPath(string prefix, string name) =>
-        $"HeavenlyArsenal/{prefix}/{name}";
-    public override string Texture => GetAssetPath("Content/Items/Weapons/Summon", Name);
+    public static int MinionSlotRequirement => 1;
 
     public override void SetDefaults()
     {

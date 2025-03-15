@@ -402,6 +402,7 @@ public class AntishadowAssassin : ModProjectile
         Projectile.penetrate = -1;
         Projectile.tileCollide = false;
         Projectile.minion = true;
+        Projectile.hide = true; // Refer to AntishadowAssassinDyeRenderer.cs.
         Projectile.DamageType = DamageClass.Summon;
     }
 
@@ -720,7 +721,7 @@ public class AntishadowAssassin : ModProjectile
                     fireColor = new Color(174, 0, Main.rand.Next(16), 0);
 
                 Vector2 position = Projectile.Center + Main.rand.NextVector2Circular(60f, 60f);
-                AntishadowFireParticleSystemManager.ParticleSystem.CreateNew(position, Main.rand.NextVector2Circular(17f, 17f), Vector2.One * Main.rand.NextFloat(30f, 125f), fireColor);
+                AntishadowFireParticleSystemManager.CreateNew(Projectile.owner, false, position, Main.rand.NextVector2Circular(17f, 17f), Vector2.One * Main.rand.NextFloat(30f, 125f), fireColor);
             }
         }
 
@@ -922,7 +923,7 @@ public class AntishadowAssassin : ModProjectile
         }
 
         // Create fire.
-        AntishadowFireParticleSystemManager.ParticleSystem.CreateNew(current, Main.rand.NextVector2Circular(7f, 7f) + directionalForce, Vector2.One * Main.rand.NextFloat(100f, 175f) * scaleFactor, bigColorColor);
+        AntishadowFireParticleSystemManager.CreateNew(Projectile.owner, false, current, Main.rand.NextVector2Circular(7f, 7f) + directionalForce, Vector2.One * Main.rand.NextFloat(100f, 175f) * scaleFactor, bigColorColor);
         if (!current.WithinRange(previous, 40f))
         {
             int steps = (int)(current.Distance(previous) / 21f);
@@ -933,9 +934,9 @@ public class AntishadowAssassin : ModProjectile
                     loopFireColor = new Color(174, 0, Main.rand.Next(16), 0);
 
                 Vector2 position = Vector2.Lerp(previous, current, i / steps);
-                AntishadowFireParticleSystemManager.ParticleSystem.CreateNew(position, Main.rand.NextVector2Circular(27f, 27f) + directionalForce * 0.45f, Vector2.One * Main.rand.NextFloat(30f, 175f) * scaleFactor, loopFireColor);
+                AntishadowFireParticleSystemManager.CreateNew(Projectile.owner, false, position, Main.rand.NextVector2Circular(27f, 27f) + directionalForce * 0.45f, Vector2.One * Main.rand.NextFloat(30f, 175f) * scaleFactor, loopFireColor);
 
-                if (Main.rand.NextBool(4))
+                if (Main.rand.NextBool(4) && Main.GetProjectileDesiredShader(Projectile) == 0)
                 {
                     Dust fire = Dust.NewDustPerfect(position, 261);
                     fire.velocity = Main.rand.NextVector2Circular(30f, 30f) - directionalForce * 0.4f;
@@ -975,7 +976,7 @@ public class AntishadowAssassin : ModProjectile
 
         Vector2 fireSpawnPosition = Projectile.Bottom + new Vector2(Main.rand.NextFloatDirection() * 36f, Main.rand.NextFloatDirection() * 24f - 16f).RotatedBy(Projectile.rotation) * Projectile.scale;
         Vector2 fireVelocity = fireSpawnPosition.SafeDirectionTo(Projectile.Bottom) * fireSpeed - Vector2.UnitY * 3f;
-        AntishadowFireParticleSystemManager.BackParticleSystem.CreateNew(fireSpawnPosition, fireVelocity, new Vector2(0.81f, 1f) * Main.rand.NextFloat(20f, 65f), fireColor * Projectile.Opacity);
+        AntishadowFireParticleSystemManager.CreateNew(Projectile.owner, true, fireSpawnPosition, fireVelocity, new Vector2(0.81f, 1f) * Main.rand.NextFloat(20f, 65f), fireColor * Projectile.Opacity);
 
         if (Main.rand.NextBool(24))
         {
@@ -1238,12 +1239,12 @@ public class AntishadowAssassin : ModProjectile
             DrawKatana(rightHandEnd, true, rightKatanaAngle + katanaRotationOffset);
             DrawKatana(leftHandEnd, true, leftKatanaAngle + katanaRotationOffset);
 
-            Vector3[] palette = new Vector3[]
-            {
+            Vector3[] palette =
+            [
                 new Vector3(1.5f),
                 new Vector3(0f, 1f, 1.2f),
                 new Vector3(1f, 0f, 0f),
-            };
+            ];
 
             Main.spriteBatch.End();
             Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend);
@@ -1275,8 +1276,6 @@ public class AntishadowAssassin : ModProjectile
 
     public override bool PreDraw(ref Color lightColor)
     {
-        Main.spriteBatch.PrepareForShaders();
-
         ResultsTarget.Request(600, 600, Projectile.identity, RenderIntoResultsTarget);
         if (ResultsTarget.TryGetTarget(Projectile.identity, out RenderTarget2D target) && target is not null)
         {
@@ -1290,8 +1289,6 @@ public class AntishadowAssassin : ModProjectile
 
             Main.spriteBatch.Draw(target, Projectile.Center - Main.screenPosition, null, Color.White, 0f, target.Size() * 0.5f, 1f, 0, 0);
         }
-
-        Main.spriteBatch.ResetToDefault();
 
         return false;
     }
