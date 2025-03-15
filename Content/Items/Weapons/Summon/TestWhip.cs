@@ -18,8 +18,9 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon
         {
             // This method quickly sets the whip's properties.
             // Mouse over to see its parameters.
-            Item.DefaultToWhip(ModContent.ProjectileType<TestWhipProjectile>(), 20, 2, 4);
-
+            Item.DefaultToWhip(ModContent.ProjectileType<TestWhipProjectile>(), 2040, 2, 4);
+            Item.damage = 40000;
+            Item.autoReuse = true;
             Item.shootSpeed = 4;
             Item.rare = ItemRarityID.Green;
 
