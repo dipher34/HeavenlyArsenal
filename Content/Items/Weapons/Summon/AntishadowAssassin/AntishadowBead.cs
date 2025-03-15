@@ -18,7 +18,7 @@ public class AntishadowBead : ModItem
     /// </summary>
     public static string GetAssetPath(string prefix, string name) =>
         $"HeavenlyArsenal/{prefix}/{name}";
-    public override string Texture => GetAssetPath("Content/Items/Weapons/Summon", Name);
+    public override string Texture => GetAssetPath("Content/Items/Weapons/Summon/AntishadowAssassin", Name);
 
     public override void SetDefaults()
     {
