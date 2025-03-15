@@ -353,7 +353,7 @@ public class Succ : ModProjectile
         Color fireColor = new Color(fireBrightness, fireBrightness, fireBrightness);
         Color bigColorColor = fireColor;
         //AntishadowSmokeParticleSystemManager.ParticleSystem.CreateNew(new Vector2(Projectile.Center.X, Projectile.Center.Y + Projectile.height / 2), Main.rand.NextVector2Circular(60f, 60f), Vector2.One * Main.rand.NextFloat(20f, 90f) * 3f, bigColorColor);
-        AntishadowFireParticleSystemManager.ParticleSystem.CreateNew(pos, Velocity, Scale, bigColorColor);
+        AntishadowFireParticleSystemManager.CreateNew(Projectile.owner, false, pos, Velocity, Scale, bigColorColor);
     }
 
 

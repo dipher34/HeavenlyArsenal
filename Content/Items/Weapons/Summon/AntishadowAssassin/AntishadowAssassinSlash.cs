@@ -3,7 +3,6 @@ using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
-using NoxusBoss.Content.Particles;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.ID;
@@ -65,6 +64,7 @@ public class AntishadowAssassinSlash : ModProjectile
         Projectile.usesLocalNPCImmunity = true;
         Projectile.localNPCHitCooldown = 3;
         Projectile.tileCollide = false;
+        Projectile.hide = true;
         Projectile.minion = true;
         Projectile.DamageType = DamageClass.Summon;
         Projectile.MaxUpdates = 2;
@@ -86,17 +86,8 @@ public class AntishadowAssassinSlash : ModProjectile
         if (Main.rand.NextBool(6))
             fireColor = new Color(174, 0, Main.rand.Next(23), 0);
 
-        if (Main.rand.NextBool(4))
-        {
-            float fireScale = Main.rand.NextFloat(1f, 3.5f);
-            Vector2 fireSpawnPosition = Projectile.Center + Main.rand.NextVector2Circular(Coverage, Coverage) * 0.5f;
-            Vector2 fireVelocity = Projectile.SafeDirectionTo(fireSpawnPosition).RotatedBy(-MathHelper.PiOver2) * 20f;
-
-            EmberParticle ember = new EmberParticle(fireSpawnPosition, fireVelocity, Color.Red * Projectile.Opacity, fireScale, 16);
-            ember.Spawn();
-        }
         if (Time % 4f == 0f)
-            AntishadowFireParticleSystemManager.ParticleSystem.CreateNew(Projectile.Center, Main.rand.NextVector2Circular(77f, 77f), Vector2.One * Main.rand.NextFloat(30f, 105f) * SizeMultiplier, fireColor);
+            AntishadowFireParticleSystemManager.CreateNew(Projectile.owner, false, Projectile.Center, Main.rand.NextVector2Circular(77f, 77f), Vector2.One * Main.rand.NextFloat(30f, 105f) * SizeMultiplier, fireColor);
     }
 
     private float TrailWidthFunction(float completionRatio) => Projectile.scale * 67f;
@@ -131,7 +122,7 @@ public class AntishadowAssassinSlash : ModProjectile
             points[i] = Projectile.Center + Vector2.Transform(offset, transformation) * Coverage * 0.5f;
         }
 
-        PrimitiveRenderer.RenderTrail(points, new PrimitiveSettings(default, default, Shader: trailShader)
+        PrimitiveRenderer.RenderTrail(points, new PrimitiveSettings(default, default, Shader: trailShader, UseUnscaledMatrix: true)
         {
             WidthFunction = TrailWidthFunction,
             ColorFunction = TrailColorFunction

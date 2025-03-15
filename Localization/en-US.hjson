@@ -147,7 +147,7 @@ Mods: {
 			BloodBlob.DisplayName: Blood Blob
 			Succ_Blood.DisplayName: Succ_ Blood
 			CircularSawProjectile.DisplayName: Circular Saw Projectile
-			AntishadowUnidirectionalAssassinSlash.DisplayName: Un-Dimensional Slash
+			AntishadowUnidirectionalAssassinSlash.DisplayName: Antishadow Slash
 			TestWhipProjectile.DisplayName: Test Whip Projectile
 		}
 	}

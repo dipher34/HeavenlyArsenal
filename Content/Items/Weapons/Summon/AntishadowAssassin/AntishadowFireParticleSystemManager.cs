@@ -4,6 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
 using NoxusBoss.Content.NPCs.Bosses.NamelessDeity.SpecificEffectManagers;
 using NoxusBoss.Core.Graphics.FastParticleSystems;
+using System.Collections.Generic;
 using Terraria;
 using Terraria.ModLoader;
 
@@ -12,31 +13,25 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.AntishadowAssassin;
 [Autoload(Side = ModSide.Client)]
 public class AntishadowFireParticleSystemManager : ModSystem
 {
+    private static int particleLifetime => 34;
+
     /// <summary>
     /// The particle system used to render the antishadow fire behind projectiles.
     /// </summary>
-    public static FireParticleSystem BackParticleSystem
+    public static Dictionary<int, FireParticleSystem> BackParticleSystem
     {
         get;
         private set;
-    }
+    } = new Dictionary<int, FireParticleSystem>(Main.maxPlayers);
 
     /// <summary>
     /// The particle system used to render the antishadow fire.
     /// </summary>
-    public static FireParticleSystem ParticleSystem
+    public static Dictionary<int, FireParticleSystem> ParticleSystem
     {
         get;
         private set;
-    }
-
-    public override void OnModLoad()
-    {
-        BackParticleSystem = new FireParticleSystem(GennedAssets.Textures.Particles.FireParticleA, 34, 1024, PrepareShader, UpdateParticle);
-        ParticleSystem = new FireParticleSystem(GennedAssets.Textures.Particles.FireParticleA, 34, 1024, PrepareShader, UpdateParticle);
-        On_Main.DrawProjectiles += RenderParticlesBehindProjectiles;
-        On_Main.DrawDust += RenderParticles;
-    }
+    } = new Dictionary<int, FireParticleSystem>(Main.maxPlayers);
 
     private static void PrepareShader()
     {
@@ -49,7 +44,7 @@ public class AntishadowFireParticleSystemManager : ModSystem
         overlayShader.TrySetParameter("pixelationLevel", 3000f);
         overlayShader.TrySetParameter("turbulence", 0.023f);
         overlayShader.TrySetParameter("screenPosition", Main.screenPosition);
-        overlayShader.TrySetParameter("uWorldViewProjection", world * Main.GameViewMatrix.TransformationMatrix * projection);
+        overlayShader.TrySetParameter("uWorldViewProjection", world * projection);
         overlayShader.TrySetParameter("imageSize", GennedAssets.Textures.Particles.FireParticleA.Value.Size());
         overlayShader.TrySetParameter("initialGlowIntensity", 0.42f);
         overlayShader.TrySetParameter("initialGlowDuration", 0.285f);
@@ -68,29 +63,40 @@ public class AntishadowFireParticleSystemManager : ModSystem
         particle.Velocity *= 0.7f;
         particle.Rotation = particle.Velocity.ToRotation() + MathHelper.PiOver2;
 
-        if (particle.Time >= ParticleSystem.ParticleLifetime + 15)
+        if (particle.Time >= particleLifetime + 15)
             particle.Active = false;
     }
 
     public override void PreUpdateEntities()
     {
-        BackParticleSystem.UpdateAll();
-        ParticleSystem.UpdateAll();
+        foreach (FireParticleSystem system in BackParticleSystem.Values)
+            system.UpdateAll();
+        foreach (FireParticleSystem system in ParticleSystem.Values)
+            system.UpdateAll();
     }
 
-    private void RenderParticlesBehindProjectiles(On_Main.orig_DrawProjectiles orig, Main self)
+    /// <summary>
+    /// Creates a new fire. particle
+    /// </summary>
+    public static void CreateNew(int playerIndex, bool behindProjectiles, Vector2 spawnPosition, Vector2 velocity, Vector2 size, Color color)
     {
-        Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive, Main.DefaultSamplerState, DepthStencilState.None, RasterizerState.CullNone, null, Main.GameViewMatrix.TransformationMatrix);
-        BackParticleSystem.RenderAll();
-        Main.spriteBatch.End();
-        orig(self);
-    }
+        int maxParticles = 1024;
+        FireParticleSystem system;
+        if (behindProjectiles)
+        {
+            if (BackParticleSystem.TryGetValue(playerIndex, out FireParticleSystem s))
+                system = s;
+            else
+                system = BackParticleSystem[playerIndex] = new FireParticleSystem(GennedAssets.Textures.Particles.FireParticleA, particleLifetime, maxParticles, PrepareShader, UpdateParticle);
+        }
+        else
+        {
+            if (ParticleSystem.TryGetValue(playerIndex, out FireParticleSystem s))
+                system = s;
+            else
+                system = ParticleSystem[playerIndex] = new FireParticleSystem(GennedAssets.Textures.Particles.FireParticleA, particleLifetime, maxParticles, PrepareShader, UpdateParticle);
+        }
 
-    private static void RenderParticles(On_Main.orig_DrawDust orig, Main self)
-    {
-        orig(self);
-        Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive, Main.DefaultSamplerState, DepthStencilState.None, RasterizerState.CullNone, null, Main.GameViewMatrix.TransformationMatrix);
-        ParticleSystem.RenderAll();
-        Main.spriteBatch.End();
+        system.CreateNew(spawnPosition, velocity, size, color);
     }
 }
