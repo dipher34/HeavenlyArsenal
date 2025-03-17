@@ -62,6 +62,7 @@ namespace HeavenlyArsenal.Projectiles.Misc
             GeneralParticleHandler.SpawnParticle(pulse);
             Particle pulse2 = new DirectionalPulseRing(Projectile.Center, Vector2.Zero, Color.Blue, new Vector2(2f, 2f), Main.rand.NextFloat(12f, 25f), 0f, Main.rand.NextFloat(0.6f, 0.9f), 20);
             GeneralParticleHandler.SpawnParticle(pulse2);
+            
         }
 
         public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox) => CalamityUtils.CircularHitboxCollision(Projectile.Center, ExplosionRadius, targetHitbox);

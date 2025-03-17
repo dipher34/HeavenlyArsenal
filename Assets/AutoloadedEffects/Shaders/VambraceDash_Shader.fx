@@ -52,15 +52,19 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
     
     // Calculate the general-purpose scroll value.
     // This simultaneously flows backwards perpetually and has an in-built wavy horizontal motion to it, to make the effect a bit more dynamic.
-    float2 scroll = float2(-localTime * 0.81, sin(coords.x * -12 + localTime * -3) * (1 - coords.x) * 0.19);
+    //float2 scroll = float2(-localTime * 0.81, sin(coords.x * -12 + localTime * -3) * (1 - coords.x) * 0.19);
     
     // Determine how much the color should be dissolved by noise.
     // The threshold for this becomes more lenient at the back of the blob, making it naturally fade away at the tail.
-    float dissolveValue = tex2D(accentNoise, (coords + scroll) * 0.5) - pow(coords.x, 2) * 1.8 - (1 - horizontalBump) * 0.2;
+    float dissolveValue = tex2D(accentNoise, (coords
+    //+ scroll
+    ) * 0.5) - pow(coords.x, 2) * 1.8 - (1 - horizontalBump) * 0.2;
     float dissolveOpacity = smoothstep(-0.1, 0, dissolveValue - dissolveThreshold);
     
     // Accent the colors a bit based on noise.
-    color = saturate(color + accentColor * tex2D(bloodBlobTexture, coords + scroll).r);
+    color = saturate(color + accentColor * tex2D(bloodBlobTexture, coords 
+    //+ scroll
+    ).r);
     
     // Darken near the dissolve thresholds.
     float darkening = smoothstep(0, 0.2, dissolveValue - dissolveThreshold);

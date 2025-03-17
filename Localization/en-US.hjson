@@ -136,8 +136,16 @@ Mods: {
 
 			Accessories: {
 				ElectricVambrace: {
-					DisplayName: Electric Vambrace
-					Tooltip: ""
+					DisplayName: Vambrace of Otonilou
+					Tooltip:
+						'''
+						You gain 15% damage reduction while dashing
+						20% increased dash velocity
+						Delay after dashing is reduced by 33%
+						Enemies you dash through are afflicted with Armor Crunch
+						Your dashes are empowered by the storm, Electrifying and chaining to nearby enemies
+
+						'''
 				}
 			}
 		}
@@ -172,7 +180,6 @@ Mods: {
 				VambraceDischarge.DisplayName: Vambrace Discharge
 			}
 
-			ClothProjectile.DisplayName: Cloth Projectile
 			avatar_FishingRodProjectile.DisplayName: avatar_ Fishing Rod Projectile
 		}
 	}

@@ -9,7 +9,6 @@ using Terraria.Graphics.Shaders;
 using Terraria.ID;
 using Terraria.ModLoader;
 using CalamityMod;
-using HeavenlyArsenal.Content.Projectiles.Holdout;
 using HeavenlyArsenal.Content.Items.Weapons.Ranged;
 
 namespace HeavenlyArsenal.Content.Projectiles.Ranged;

@@ -91,5 +91,11 @@ namespace HeavenlyArsenal.ArsenalPlayer
                 }
             }   
         }
+
+
+        public override void ResetEffects()
+        {
+            ElectricVambrace = false;
+        }
     }
 }

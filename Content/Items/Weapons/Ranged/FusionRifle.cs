@@ -18,7 +18,6 @@ using static NoxusBoss.Assets.GennedAssets.Sounds;
 using System.Runtime.CompilerServices;
 using Terraria.Audio;
 using HeavenlyArsenal.Content.Items.Misc;
-using HeavenlyArsenal.Content.Projectiles.Holdout;
 using System;
 using Terraria.DataStructures;
 using ReLogic.Content;
@@ -31,6 +30,7 @@ using NoxusBoss.Core.Graphics;
 using NoxusBoss.Core.World.WorldSaving;
 using System.Linq;
 using Terraria.Localization;
+using HeavenlyArsenal.Content.Projectiles.Ranged;
 
 namespace HeavenlyArsenal.Content.Items.Weapons.Ranged
 {

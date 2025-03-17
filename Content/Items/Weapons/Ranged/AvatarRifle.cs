@@ -18,7 +18,7 @@ using CalamityMod;
 using static NoxusBoss.Assets.GennedAssets.Sounds;
 using System.Runtime.CompilerServices;
 using Terraria.Audio;
-using HeavenlyArsenal.Content.Projectiles.Holdout;
+using HeavenlyArsenal.Content.Projectiles.Ranged;
 
 
 namespace HeavenlyArsenal.Content.Items.Weapons.Ranged
@@ -29,11 +29,11 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged
 
         public const int BulletsPerShot = 1;
 
-        public const int RPM = 4;
+        public const int RPM = 40;
 
-
+        public const int CycleTimeDelay = 40;
         public const int CycleTime = 120;
-        public const int ReloadTime = 500;
+        public const int ReloadTime = 360;
 
         public static readonly SoundStyle FireSound = new("CalamityMod/Sounds/Item/HeavenlyGaleFire");
 
@@ -44,7 +44,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged
         {
             Item.rare = ModContent.RarityType<NamelessDeityRarity>();
 
-            Item.damage = 4445;
+            Item.damage = 44445;
             Item.DamageType = DamageClass.Ranged;
             Item.shootSpeed = 40f;
             Item.width = 40;
@@ -75,7 +75,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged
             Item.autoReuse = true;
             //Item.shoot = ModContent.ProjectileType<ParasiteParadiseProjectile>();
             //Item.shoot = ProjectileID<t>
-            Item.shoot = ProjectileID.Bullet;
+            Item.shoot = AmmoID.Bullet;
             Item.ChangePlayerDirectionOnShoot = true;
             //Item.crit = 666;
             Item.noMelee = true;

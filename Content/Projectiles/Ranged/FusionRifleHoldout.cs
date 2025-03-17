@@ -7,7 +7,6 @@ using CalamityMod.Projectiles.BaseProjectiles;
 using CalamityMod.Projectiles.Ranged;
 using CalamityMod.Sounds;
 using HeavenlyArsenal.Content.Items.Weapons.Ranged;
-using HeavenlyArsenal.Content.Projectiles;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
@@ -22,12 +21,11 @@ using HeavenlyArsenal.Common.utils;
 using Luminance.Core.Graphics;
 using Particle = Luminance.Core.Graphics.Particle;
 using HeavenlyArsenal.Content.Projectiles.Misc;
-using HeavenlyArsenal.Content.Projectiles.Ranged;
 using System.Linq;
 
 
 
-namespace HeavenlyArsenal.Content.Projectiles.Holdout
+namespace HeavenlyArsenal.Content.Projectiles.Ranged
 {
     public class FusionRifleHoldout : BaseIdleHoldoutProjectile
     {
@@ -52,8 +50,8 @@ namespace HeavenlyArsenal.Content.Projectiles.Holdout
 
         public override void SetDefaults()
         {
-            chargingSoundEffect = ModContent.Request<SoundEffect>("HeavenlyArsenal/Assets/Sounds/Items/fusionrifle_charge3").Value;
-            firingSoundEffect = ModContent.Request<SoundEffect>("HeavenlyArsenal/Assets/Sounds/Items/fusionrifle_fire2").Value;
+            chargingSoundEffect = ModContent.Request<SoundEffect>("HeavenlyArsenal/Assets/Sounds/Items/Ranged/FusionRifle/fusionrifle_charge3").Value;
+            firingSoundEffect = ModContent.Request<SoundEffect>("HeavenlyArsenal/Assets/Sounds/Items/Ranged/FusionRifle/fusionrifle_fire2").Value;
 
             Projectile.width = Projectile.height = 60;
             Projectile.friendly = true;
@@ -158,7 +156,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Holdout
                 // Add inward swirling dust effect with consistent 3D Y-axis tilt, no Z-axis distortion
                 float initialDustRadius = 50f; // Starting radius (adjust as needed)
                 float finalDustRadius = 10f;   // Ending radius near the target (adjust as needed)
-                float dustRadius = MathHelper.Lerp(initialDustRadius, finalDustRadius, ChargeTimer / (float)CurrentChargeTime);
+                float dustRadius = MathHelper.Lerp(initialDustRadius, finalDustRadius, ChargeTimer / CurrentChargeTime);
 
                 // Adjustable offset for the barrel (change these values to position the swirl effect)
                 Vector2 barrelOffset = new Vector2(45f, Projectile.direction*-7f); // Customize the base position of the dust effect
@@ -180,7 +178,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Holdout
                     // Apply only the desired Y-axis tilt
                     float tiltedX = unrotatedX * (float)Math.Cos(yAxisTilt); // Apply X-axis scaling for the tilt
                     float tiltedY = unrotatedY; // Retain Y without Z influence
-                    float adjustedY = tiltedY + (unrotatedX * (float)Math.Sin(yAxisTilt) * 0.5f); // Minimal Z-axis impact on Y
+                    float adjustedY = tiltedY + unrotatedX * (float)Math.Sin(yAxisTilt) * 0.5f; // Minimal Z-axis impact on Y
 
                     // Finalize the swirl position by rotating it with the projectile's orientation
                     Vector2 finalSwirlOffset = new Vector2(tiltedX, adjustedY).RotatedBy(Projectile.rotation);
