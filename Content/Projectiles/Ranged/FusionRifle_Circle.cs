@@ -14,7 +14,7 @@ using HeavenlyArsenal.Content.Items.Weapons.Ranged;
 
 namespace HeavenlyArsenal.Content.Projectiles.Ranged;
 
-public class RancorMagicCircle : ModProjectile, ILocalizedModType
+public class FusionRifle_Circle : ModProjectile, ILocalizedModType
 {
     public new string LocalizationCategory => "Projectiles.Magic";
     public Player Owner => Main.player[Projectile.owner];
@@ -144,11 +144,12 @@ public class RancorMagicCircle : ModProjectile, ILocalizedModType
     //I want to draw the ring so that it looks like part of it is infront of the fusion rifle while part of it is behind.
     public override bool PreDraw(ref Color lightColor)
     {
-        Texture2D outerCircleTexture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
-        Texture2D outerCircleGlowmask = ModContent.Request<Texture2D>(Texture + "Glowmask").Value;
-        //Texture2D innerCircleTexture = ModContent.Request<Texture2D>(Texture + "Inner").Value;
+        //Texture2D outerCircleTexture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
+        Texture2D outerCircleTexture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Projectiles/Ranged/FusionRifle_Circle").Value;
+        Texture2D outerCircleGlowmask = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Projectiles/Ranged/FusionRifle_CircleGlowmask").Value;
+        Texture2D innerCircleTexture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Projectiles/Ranged/FusionRifle_CircleGlow").Value;
         //Texture2D innerCircleGlowmask = ModContent.Request<Texture2D>(Texture + "InnerGlowmask").Value;
-        Vector2 drawPosition = Projectile.Center - Main.screenPosition;
+        Vector2 drawPosition = Projectile.Center - Main.screenPosition-FusionRifleHoldout.RecoilOffset;
 
         float directionRotation = Projectile.velocity.ToRotation();
         Color startingColor = Color.Red;
@@ -156,31 +157,31 @@ public class RancorMagicCircle : ModProjectile, ILocalizedModType
 
         void restartShader(Texture2D texture, float opacity, float circularRotation, BlendState blendMode)
         {
-            Main.spriteBatch.End();
-            Main.spriteBatch.Begin(SpriteSortMode.Immediate, blendMode, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.GameViewMatrix.TransformationMatrix);
+           Main.spriteBatch.End();
+           Main.spriteBatch.Begin(SpriteSortMode.Immediate, blendMode, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.GameViewMatrix.TransformationMatrix);
 
-            CalamityUtils.CalculatePerspectiveMatricies(out Matrix viewMatrix, out Matrix projectionMatrix);
+           CalamityUtils.CalculatePerspectiveMatricies(out Matrix viewMatrix, out Matrix projectionMatrix);
 
-            GameShaders.Misc["CalamityMod:RancorMagicCircle"].UseColor(startingColor);
-            GameShaders.Misc["CalamityMod:RancorMagicCircle"].UseSecondaryColor(endingColor);
-            GameShaders.Misc["CalamityMod:RancorMagicCircle"].UseSaturation(directionRotation);
-            GameShaders.Misc["CalamityMod:RancorMagicCircle"].UseOpacity(opacity);
-            GameShaders.Misc["CalamityMod:RancorMagicCircle"].Shader.Parameters["uDirection"].SetValue((float)Projectile.direction);
-            GameShaders.Misc["CalamityMod:RancorMagicCircle"].Shader.Parameters["uCircularRotation"].SetValue(circularRotation);
-            GameShaders.Misc["CalamityMod:RancorMagicCircle"].Shader.Parameters["uImageSize0"].SetValue(texture.Size());
-            GameShaders.Misc["CalamityMod:RancorMagicCircle"].Shader.Parameters["overallImageSize"].SetValue(outerCircleTexture.Size());
-            GameShaders.Misc["CalamityMod:RancorMagicCircle"].Shader.Parameters["uWorldViewProjection"].SetValue(viewMatrix * projectionMatrix);
-            GameShaders.Misc["CalamityMod:RancorMagicCircle"].Apply();
+           GameShaders.Misc["CalamityMod:RancorMagicCircle"].UseColor(startingColor);
+           GameShaders.Misc["CalamityMod:RancorMagicCircle"].UseSecondaryColor(endingColor);
+          GameShaders.Misc["CalamityMod:RancorMagicCircle"].UseSaturation(directionRotation);
+          GameShaders.Misc["CalamityMod:RancorMagicCircle"].UseOpacity(opacity);
+           GameShaders.Misc["CalamityMod:RancorMagicCircle"].Shader.Parameters["uDirection"].SetValue((float)Projectile.direction);
+           GameShaders.Misc["CalamityMod:RancorMagicCircle"].Shader.Parameters["uCircularRotation"].SetValue(circularRotation);
+           GameShaders.Misc["CalamityMod:RancorMagicCircle"].Shader.Parameters["uImageSize0"].SetValue(texture.Size());
+           GameShaders.Misc["CalamityMod:RancorMagicCircle"].Shader.Parameters["overallImageSize"].SetValue(outerCircleTexture.Size());
+           GameShaders.Misc["CalamityMod:RancorMagicCircle"].Shader.Parameters["uWorldViewProjection"].SetValue(viewMatrix * projectionMatrix);
+           GameShaders.Misc["CalamityMod:RancorMagicCircle"].Apply();
         }
 
         restartShader(outerCircleGlowmask, Projectile.Opacity, Projectile.rotation, BlendState.Additive);
         Main.EntitySpriteDraw(outerCircleGlowmask, drawPosition, null, Color.White, 0f, outerCircleGlowmask.Size() * 0.5f, Projectile.scale * 1.075f, SpriteEffects.None, 0);
 
-        //restartShader(outerCircleTexture, Projectile.Opacity * 0.7f, Projectile.rotation, BlendState.AlphaBlend);
-        //Main.EntitySpriteDraw(outerCircleTexture, drawPosition, null, Color.White, 0f, outerCircleTexture.Size() * 0.5f, Projectile.scale, SpriteEffects.None, 0);
+        restartShader(outerCircleTexture, Projectile.Opacity * 0.7f, Projectile.rotation, BlendState.AlphaBlend);
+        Main.EntitySpriteDraw(outerCircleTexture, drawPosition, null, Color.White, 0f, outerCircleTexture.Size() * 0.5f, Projectile.scale, SpriteEffects.None, 0);
 
-        //restartShader(innerCircleGlowmask, Projectile.Opacity * 0.5f, 0f, BlendState.Additive);
-        //Main.EntitySpriteDraw(innerCircleGlowmask, drawPosition, null, Color.White, 0f, innerCircleGlowmask.Size() * 0.5f, Projectile.scale * 1.075f, SpriteEffects.None, 0);
+        restartShader(innerCircleTexture, Projectile.Opacity * 0.5f, 0f, BlendState.Additive);
+        Main.EntitySpriteDraw(innerCircleTexture, drawPosition, null, Color.White, 0f, innerCircleTexture.Size() * 0.5f, Projectile.scale * 1.075f, SpriteEffects.None, 0);
 
         //restartShader(innerCircleTexture, Projectile.Opacity * 0.7f, 0f, BlendState.AlphaBlend);
         //Main.EntitySpriteDraw(innerCircleTexture, drawPosition, null, Color.White, 0f, innerCircleTexture.Size() * 0.5f, Projectile.scale, SpriteEffects.None, 0);

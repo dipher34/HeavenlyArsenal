@@ -112,7 +112,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Holdout
 
             bool rancorCircleExists = Main.projectile.Any(p =>
             p.active &&
-            p.type == ModContent.ProjectileType<RancorMagicCircle>() &&
+            p.type == ModContent.ProjectileType<FusionRifle_Circle>() &&
             p.owner == Projectile.owner);
 
             if (Main.mouseLeft && Owner.channel)
@@ -125,7 +125,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Holdout
                         Projectile.GetSource_FromThis(),
                         Projectile.Center,
                         Vector2.Zero,
-                        ModContent.ProjectileType<RancorMagicCircle>(),
+                        ModContent.ProjectileType<FusionRifle_Circle>(),
                         -1,
                         Projectile.knockBack,
                         Projectile.owner
@@ -408,8 +408,8 @@ namespace HeavenlyArsenal.Content.Projectiles.Holdout
             float knockback = Projectile.knockBack;
             Vector2 spawnPosition = armPosition + Projectile.velocity.SafeNormalize(Vector2.Zero) * 50f;
 
-            // Add variance to the projectile's velocity
-            float angleVariance = MathHelper.ToRadians(2f); // Adjust the angle variance in degrees
+            
+            float angleVariance = MathHelper.ToRadians(2f); 
             float randomAngle = Main.rand.NextFloat(-angleVariance, angleVariance); // Randomize the angle within the variance
             Vector2 adjustedVelocity = Projectile.velocity.RotatedBy(randomAngle); // Apply the random angle to the velocity
 
@@ -422,7 +422,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Holdout
             );
 
 
-            Vector2 MuzzleFlashPosition = armPosition + Projectile.velocity.SafeNormalize(Vector2.Zero) * 70f;
+            Vector2 MuzzleFlashPosition = spawnPosition + Projectile.velocity.SafeNormalize(Vector2.Zero) * 70f;
 
             CreateMuzzleFlash(MuzzleFlashPosition, Projectile.velocity);
 
@@ -445,11 +445,11 @@ namespace HeavenlyArsenal.Content.Projectiles.Holdout
         }
 
 
-        private float recoilIntensity = 0f; // Tracks the current recoil intensity
+        private static float recoilIntensity = 0f; // Tracks the current recoil intensity
         private const float maxRecoil = 10f; // Maximum recoil amount
         private const float recoilRecoverySpeed = 0.1f; // Speed at which recoil eases out
 
-
+        public static Vector2 RecoilOffset =new Vector2(-recoilIntensity,0);
 
 
         public void UpdateProjectileHeldVariables(Vector2 armPosition)

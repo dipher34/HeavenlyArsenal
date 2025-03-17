@@ -1045,7 +1045,7 @@ public class AntishadowAssassin : ModProjectile
         AmbientLoop.Update(Projectile.Center, sound =>
         {
             float idealPitch = LumUtils.InverseLerp(6f, 30f, Projectile.position.Distance(Projectile.oldPosition)) * 0.8f;
-            sound.Volume = 1.45f;
+            sound.Volume = 3f;
             sound.Pitch = MathHelper.Lerp(sound.Pitch, idealPitch, 0.6f);
         });
         AttackLoop.Update(Projectile.Center, sound =>

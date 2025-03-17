@@ -128,6 +128,11 @@ Mods: {
 				DisplayName: Wings of a Forgetful God
 				Tooltip: ""
 			}
+
+			ClothSpawner: {
+				DisplayName: Cloth Spawner
+				Tooltip: ""
+			}
 		}
 
 		Projectiles: {
@@ -152,7 +157,13 @@ Mods: {
 			CircularSawProjectile.DisplayName: Circular Saw Projectile
 			AntishadowUnidirectionalAssassinSlash.DisplayName: Antishadow Slash
 			TestWhipProjectile.DisplayName: Test Whip Projectile
-			Magic.RancorMagicCircle.DisplayName: Rancor Magic Circle
+
+			Magic: {
+				RancorMagicCircle.DisplayName: Rancor Magic Circle
+				FusionRifle_Circle.DisplayName: Fusion Rifle_ Circle
+			}
+
+			ClothProjectile.DisplayName: Cloth Projectile
 		}
 	}
 }
