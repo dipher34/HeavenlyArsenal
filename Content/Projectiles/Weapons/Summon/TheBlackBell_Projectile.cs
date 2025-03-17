@@ -22,7 +22,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Summon
         private const int segmentCount = 20; // Number of rope segments
         private const float segmentLength = 7f; // Length of each rope segment
         private readonly Vector2 gravity = new Vector2(0, 0.2f); // Simulate rope sag due to gravity
-        private int counter = 0;
+        //private int counter = 0;
         private int cooldownTimer = 0; // Timer for cooldown management
         private const int cooldownDuration = 30; // Cooldown duration in ticks (30 ticks = 0.5 seconds at 60 FPS)
         public override void SetDefaults()

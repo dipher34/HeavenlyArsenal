@@ -198,7 +198,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Holdout
         private const float recoilRecoverySpeed = 0.1f; // Speed at which recoil eases out
         private void FireProjectile()
         {
-            Player player;
+            
             //Player::CheckAmmo
                 //player::CheckAmmo
                 Vector2 armPosition = Owner.RotatedRelativePoint(Owner.MountedCenter, true);

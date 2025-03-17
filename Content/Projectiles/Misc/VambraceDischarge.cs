@@ -44,7 +44,7 @@ namespace HeavenlyArsenal.Projectiles.Misc
             Projectile.ignoreWater = true;
             Projectile.tileCollide = false;
             Projectile.penetrate = -1;
-            Projectile.timeLeft = 50;
+            Projectile.timeLeft = 4;
             Projectile.usesLocalNPCImmunity = true;
             Projectile.localNPCHitCooldown = -1;
 
