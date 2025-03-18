@@ -384,7 +384,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Ranged
             //Dust.NewDust(armPosition, 3, 3, DustID.Adamantite, 0, 0, 150, default, 1);
             
 
-
+            //COmment so that i can push again
             Projectile.position = armPosition + 
                       Projectile.velocity.SafeNormalize(Vector2.UnitX) * -3f +
                       recoilOffset;
