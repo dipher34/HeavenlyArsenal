@@ -19,7 +19,7 @@ using static NoxusBoss.Assets.GennedAssets;
 //using Luminance.Assets.GennedAssets.Textures.Noise
 
 
-namespace HeavenlyArsenal.Content.Projectiles.Magic;
+namespace HeavenlyArsenal.Content.Projectiles.Weapons.Magic;
 
 public class Succ_Blood : ModProjectile, IPixelatedPrimitiveRenderer
 {
@@ -112,7 +112,7 @@ public class Succ_Blood : ModProjectile, IPixelatedPrimitiveRenderer
         Vector2 perpendicular = new Vector2(-direction.Y, direction.X);
 
         // Determine if this projectile moves in the normal or inverted wave
-        int waveDirection = (Projectile.ai[0] % 2 == 0) ? 1 : -1;
+        int waveDirection = Projectile.ai[0] % 2 == 0 ? 1 : -1;
 
         // Calculate the sine wave offset using ai[1] as a time tracker
         float sineOffset = waveDirection * baseAmplitude * MathF.Sin(Projectile.ai[1] * frequency);

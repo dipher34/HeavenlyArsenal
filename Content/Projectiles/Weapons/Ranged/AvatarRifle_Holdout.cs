@@ -26,7 +26,7 @@ using HeavenlyArsenal.Common.utils;
 using Luminance.Core.Graphics;
 
 
-namespace HeavenlyArsenal.Content.Projectiles.Ranged
+namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
 {
     public class AvatarRifle_Holdout : BaseIdleHoldoutProjectile
     {
@@ -161,7 +161,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Ranged
             
 
             //actually implement wind into the cloth
-            Vector3 wind = Vector3.UnitX * (LumUtils.AperiodicSin(ExistenceTimer * 0.029f) * 0.67f + windSpeed) * 1.74f;
+            Vector3 wind = Vector3.UnitX * (AperiodicSin(ExistenceTimer * 0.029f) * 0.67f + windSpeed) * 1.74f;
             for (int i = 0; i < steps; i++)
             {
                 for (int x = 0; x < Shroud.Width; x += 2)
@@ -181,7 +181,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Ranged
         }
 
         
-        private void ConstrainParticle(Vector2 anchor, ClothPoint? point, float angleOffset)
+        private void ConstrainParticle(Vector2 anchor, ClothPoint point, float angleOffset)
         {
             if (point is null)
                 return;

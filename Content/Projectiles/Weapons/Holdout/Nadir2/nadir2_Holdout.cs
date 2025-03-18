@@ -6,7 +6,7 @@ using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace HeavenlyArsenal.Content.Projectiles.Holdout.Nadir2;
+namespace HeavenlyArsenal.Content.Projectiles.Weapons.Holdout.Nadir2;
 public class nadir2_Holdout : ModProjectile
 {
     private int attackState = 0; // Tracks the current attack state
@@ -240,7 +240,7 @@ public class nadir2_Holdout : ModProjectile
             rotation += MathHelper.PiOver4;
         }
 
-        Vector2 drawPosition = (Projectile.Center - new Vector2(0,-10)) - Main.screenPosition;
+        Vector2 drawPosition = Projectile.Center - new Vector2(0,-10) - Main.screenPosition;
        
         // Draw the projectile
         Main.spriteBatch.Draw(

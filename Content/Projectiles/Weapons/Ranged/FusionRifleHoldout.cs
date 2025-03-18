@@ -25,7 +25,7 @@ using System.Linq;
 
 
 
-namespace HeavenlyArsenal.Content.Projectiles.Ranged
+namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
 {
     public class FusionRifleHoldout : BaseIdleHoldoutProjectile
     {

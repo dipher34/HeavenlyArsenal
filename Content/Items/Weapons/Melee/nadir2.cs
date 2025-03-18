@@ -1,5 +1,5 @@
 ﻿using CalamityMod.Rarities;
-using HeavenlyArsenal.Content.Projectiles.Holdout.Nadir2;
+using HeavenlyArsenal.Content.Projectiles.Weapons.Holdout.Nadir2;
 using System;
 using System.Collections.Generic;
 using System.Linq;

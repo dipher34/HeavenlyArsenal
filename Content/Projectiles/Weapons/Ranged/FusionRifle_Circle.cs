@@ -11,7 +11,7 @@ using Terraria.ModLoader;
 using CalamityMod;
 using HeavenlyArsenal.Content.Items.Weapons.Ranged;
 
-namespace HeavenlyArsenal.Content.Projectiles.Ranged;
+namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged;
 
 public class FusionRifle_Circle : ModProjectile, ILocalizedModType
 {

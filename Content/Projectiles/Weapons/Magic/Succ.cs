@@ -11,7 +11,7 @@ using Terraria.GameContent;
 using Terraria.Graphics;
 using Terraria.ModLoader;
 
-namespace HeavenlyArsenal.Content.Projectiles.Magic;
+namespace HeavenlyArsenal.Content.Projectiles.Weapons.Magic;
 
 public class Succ : ModProjectile
 {
@@ -40,7 +40,7 @@ public class Succ : ModProjectile
     public ref Player Owner => ref Main.player[Projectile.owner];
 
 
-    public int numberOfProjectiles = 1 + ((int)Charge / 200);
+    public int numberOfProjectiles = 1 + (int)Charge / 200;
 
     public override void AI()
     {
@@ -63,7 +63,7 @@ public class Succ : ModProjectile
         
 
 
-        if (Time % (5 + (int)(Owner.itemAnimationMax)) == 1)
+        if (Time % (5 + Owner.itemAnimationMax) == 1)
         {
 
 
@@ -87,8 +87,8 @@ public class Succ : ModProjectile
                         sparklePos,
                         Projectile.velocity * 1,
                         ModContent.ProjectileType<Succ_Blood>(),
-                        (int)(Projectile.damage), /// 1.75f + Charge / 50f), // Increase damage based on charge
-                        Projectile.knockBack + (Charge / 500f),          // Adjust knockback based on charge
+                        Projectile.damage, /// 1.75f + Charge / 50f), // Increase damage based on charge
+                        Projectile.knockBack + Charge / 500f,          // Adjust knockback based on charge
                          Main.myPlayer = Projectile.owner,
                          0);
                     }
@@ -99,8 +99,8 @@ public class Succ : ModProjectile
                         sparklePos,
                         Projectile.velocity * 1,
                         ModContent.ProjectileType<Succ_Blood>(),
-                        (int)(Projectile.damage), /// 1.75f + Charge / 50f), // Increase damage based on charge
-                        Projectile.knockBack + (Charge / 500f),          // Adjust knockback based on charge
+                        Projectile.damage, /// 1.75f + Charge / 50f), // Increase damage based on charge
+                        Projectile.knockBack + Charge / 500f,          // Adjust knockback based on charge
                          Main.myPlayer = Projectile.owner,
                          1);
                     }
@@ -124,7 +124,7 @@ public class Succ : ModProjectile
 
         if (Owner.channel == true) // Player is using the item
         {
-            if ((Charge < 1000) && (Charge != 0)) // Prevent Charge from exceeding the max value
+            if (Charge < 1000 && Charge != 0) // Prevent Charge from exceeding the max value
             {
                 Charge += 1 + Charge / 1000;
             }
@@ -143,7 +143,7 @@ public class Succ : ModProjectile
         }
 
 
-        if ((!Owner.channel || !Owner.CheckMana(15)))
+        if (!Owner.channel || !Owner.CheckMana(15))
         {
             canKill = true;
         }
@@ -174,7 +174,7 @@ public class Succ : ModProjectile
             newRot = Projectile.rotation;
         }
 
-        newRot = Utils.AngleLerp(newRot, Projectile.rotation, 0.90f);
+        newRot = newRot.AngleLerp(Projectile.rotation, 0.90f);
 
 
         //HandleSound();
@@ -201,7 +201,7 @@ public class Succ : ModProjectile
         foreach (Gore gore in Main.gore.Where(n => n.active))
         {
             Rectangle goreRec = new Rectangle((int)(gore.position.X - gore.scale * 10), (int)(gore.position.Y - gore.scale * 10), (int)(gore.scale * 20), (int)(gore.scale * 20));
-            if (Utils.IntersectsConeFastInaccurate(goreRec, Projectile.Center, Size, Projectile.rotation, MathHelper.Pi / 8f))
+            if (goreRec.IntersectsConeFastInaccurate(Projectile.Center, Size, Projectile.rotation, MathHelper.Pi / 8f))
             {
                 gore.velocity = Vector2.Lerp(gore.velocity, gore.position.DirectionTo(Projectile.Center).SafeNormalize(Vector2.Zero) * 15, 0.2f);
             }
@@ -221,7 +221,7 @@ public class Succ : ModProjectile
         foreach (Dust dust in Main.dust.Where(n => n.active && !n.noGravity))
         {
             Rectangle dustRec = new Rectangle((int)(dust.position.X - dust.scale * 3), (int)(dust.position.Y - dust.scale * 3), (int)(dust.scale * 6), (int)(dust.scale * 6));
-            if (Utils.IntersectsConeFastInaccurate(dustRec, Projectile.Center, Size, Projectile.rotation, MathHelper.Pi / 8f))
+            if (dustRec.IntersectsConeFastInaccurate(Projectile.Center, Size, Projectile.rotation, MathHelper.Pi / 8f))
             {
                 dust.velocity = Vector2.Lerp(dust.velocity, dust.position.DirectionTo(Projectile.Center).SafeNormalize(Vector2.Zero) * 15, 0.2f);
             }
@@ -239,7 +239,7 @@ public class Succ : ModProjectile
 
         foreach (Item item in Main.item.Where(n => n.active))
         {
-            if (Utils.IntersectsConeFastInaccurate(item.Hitbox, Projectile.Center, Size, Projectile.rotation, MathHelper.Pi / 8f))
+            if (item.Hitbox.IntersectsConeFastInaccurate(Projectile.Center, Size, Projectile.rotation, MathHelper.Pi / 8f))
             {
                 //controls how fast the book tracks the cursor
                 item.velocity = Vector2.Lerp(item.velocity, item.DirectionTo(Projectile.Center).SafeNormalize(Vector2.Zero) * 15, 02f);
@@ -286,7 +286,7 @@ public class Succ : ModProjectile
 
         //Dust.NewDustPerfect(Projectile.Center+new Vector2(targetHitbox.Width + Projectile.ai[2]*(Size*(Charge/10000)),0), DustID.Adamantite, Vector2.Zero, 100,Color.AntiqueWhite,1);
 
-        return Utils.IntersectsConeFastInaccurate(targetHitbox, Projectile.Center, (Size * (Charge / 1000)) * Projectile.ai[2], Projectile.rotation, MathHelper.Pi / 7f);
+        return targetHitbox.IntersectsConeFastInaccurate(Projectile.Center, Size * (Charge / 1000) * Projectile.ai[2], Projectile.rotation, MathHelper.Pi / 7f);
 
     }
 
@@ -390,8 +390,8 @@ public class Succ : ModProjectile
         float[] rotations = new float[500];
         for (int i = 0; i < 500; i++)
         {
-            rotations[i] = Utils.AngleLerp(newRot, Projectile.rotation, MathF.Sqrt(i / 500f)) + MathF.Sin(Time * 0.2f - i / 50f) * 0.1f * (1f - i / 500f) * Projectile.ai[2];
-            positions[i] = sparklePos + new Vector2((Size * Charge / 500) * (i / 500f) * Projectile.ai[2], 0).RotatedBy(rotations[i]);
+            rotations[i] = newRot.AngleLerp(Projectile.rotation, MathF.Sqrt(i / 500f)) + MathF.Sin(Time * 0.2f - i / 50f) * 0.1f * (1f - i / 500f) * Projectile.ai[2];
+            positions[i] = sparklePos + new Vector2(Size * Charge / 500 * (i / 500f) * Projectile.ai[2], 0).RotatedBy(rotations[i]);
 
 
         }

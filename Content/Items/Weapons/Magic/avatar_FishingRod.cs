@@ -8,9 +8,9 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 using CalamityMod.Items.Weapons.Summon;
-using HeavenlyArsenal.Content.Projectiles.Weapons;
+using HeavenlyArsenal.Content.Projectiles.Weapons.Magic;
 
-namespace HeavenlyArsenal.Content.Items
+namespace HeavenlyArsenal.Content.Items.Weapons.Magic
 {
     public class avatar_FishingRod : ModItem
     {
@@ -35,7 +35,7 @@ namespace HeavenlyArsenal.Content.Items
 
             Item.shoot = ModContent.ProjectileType<avatar_FishingRodProjectile>();
             Item.shootSpeed = 10f;
-            Item.rare = ModContent.RarityType<NamelessDeityRarity>();
+            Item.rare = ModContent.RarityType<AvatarRarity>();
             Item.value = Item.buyPrice(gold: 2);
         }
 

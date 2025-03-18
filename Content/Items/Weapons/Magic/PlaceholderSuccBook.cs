@@ -6,7 +6,7 @@ using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
-using HeavenlyArsenal.Content.Projectiles.Magic;
+using HeavenlyArsenal.Content.Projectiles.Weapons.Magic;
 
 namespace HeavenlyArsenal.Content.Items.Weapons.Magic
 {

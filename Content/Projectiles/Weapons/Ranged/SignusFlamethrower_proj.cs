@@ -9,7 +9,7 @@ using Terraria.ModLoader;
 
 using Luminance.Core;
 
-namespace HeavenlyArsenal.Content.Projectiles.Ranged;
+namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged;
 
 public class SignusFlamethrower_proj : ModProjectile, ILocalizedModType
 {
