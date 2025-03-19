@@ -33,6 +33,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged
 
         public const int CycleTimeDelay = 40;
         public const int CycleTime = 120;
+
         public const int ReloadTime = 360;
         
 

@@ -58,10 +58,10 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Summon
             Projectile.spriteDirection = Projectile.velocity.X >= 0f ? 1 : -1;
 
             // remove these 3 lines if you don't want the charging mechanic
-            if (!Charge(owner))
-            {
-                return; // timer doesn't update while charging, freezing the animation at the start.
-            }
+            //if (!Charge(owner))
+            //{
+            //    return; // timer doesn't update while charging, freezing the animation at the start.
+           // }
 
             Timer++;
 
@@ -116,7 +116,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Summon
             Texture2D texture = TextureAssets.FishingLine.Value;
             Rectangle frame = texture.Frame();
             Vector2 origin = new Vector2(frame.Width / 2, 2);
-
+            
             Vector2 pos = list[0];
             for (int i = 0; i < list.Count - 1; i++)
             {

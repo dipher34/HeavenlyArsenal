@@ -18,6 +18,7 @@ public class AvatarRifleSuperBullet : GlobalProjectile
     public bool hasEmpowerment;
     public int empowerment;
 
+
     public override bool PreAI(Projectile projectile)
     {
         int t = Main.projectile[0].type;

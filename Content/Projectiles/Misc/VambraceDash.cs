@@ -65,7 +65,7 @@ namespace HeavenlyArsenal.Projectiles.Misc
             if ((Main.myPlayer == Projectile.owner) && modPlayer.isVambraceDashing)
             {
                 //Console.WriteLine("VambraceDash!!!");
-                //Projectile.oldPos = 
+                //Projectile.oldPos = new Vector2(3,3);
                 Projectile.timeLeft += 4;
                 Projectile.position = new Vector2(Owner.MountedCenter.X+player.velocity.X
                     -Projectile.width/2
@@ -136,7 +136,7 @@ namespace HeavenlyArsenal.Projectiles.Misc
         public override bool PreDraw(ref Color lightColor)
         {
             Texture2D BloomCircleSmall = ModContent.Request<Texture2D>("NoxusBoss/Assets/Textures/Extra/TrailStreaks/StreakMagma").Value;
-
+            
 
             float scaleFactor = Projectile.width / 50f;
             Vector2 drawPosition = Projectile.Center - Main.screenPosition + Projectile.velocity;

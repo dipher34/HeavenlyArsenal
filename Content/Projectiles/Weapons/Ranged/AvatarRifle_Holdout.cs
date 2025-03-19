@@ -28,6 +28,8 @@ using CalamityMod.Items.Weapons.Ranged;
 using Terraria.Localization;
 using Terraria.DataStructures;
 using Microsoft.Build.ObjectModelRemoting;
+using ReLogic.Utilities;
+using NoxusBoss.Core.Utilities;
 
 
 namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
@@ -44,15 +46,17 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
         private SoundEffectInstance firingSoundInstance;
         private SoundEffect firingSoundEffect;
 
-        private SoundEffectInstance reloadSoundInstance;
-        private SoundEffect reloadSoundEffect;
+        public static readonly SoundStyle FireSound = new SoundStyle("HeavenlyArsenal/Assets/Sounds/Items/Ranged/AvatarRifle/AvatarRifle_FireWIP2");
+        public static readonly SoundStyle ReloadSound = new SoundStyle("HeavenlyArsenal/Assets/Sounds/Items/Ranged/AvatarRifle/AvatarRifle_Cycle");
 
-        private SoundEffectInstance MagEmptySoundInstance;
-        private SoundEffect MagEmptySoundEffect;
+        public static readonly SoundStyle CycleSound = new SoundStyle("HeavenlyArsenal/Assets/Sounds/Items/Ranged/AvatarRifle/AvatarRifle_Cycle_Dronnor1");
+        public static readonly SoundStyle CycleEmptySound = new SoundStyle("HeavenlyArsenal/Assets/Sounds/Items/Ranged/AvatarRifle/AvatarRifle_Cycle");
+        public static readonly SoundStyle MagEmptySound = new SoundStyle("HeavenlyArsenal/Assets/Sounds/Items/Ranged/AvatarRifle/AvatarRifle_ClipEject");
 
-        private SoundEffectInstance CycleSoundInstance;
-        private SoundEffect CycleSoundEffect;
+        public static readonly SoundStyle StrongFireSound = new SoundStyle("HeavenlyArsenal/Assets/Sounds/Items/Ranged/AvatarRifle/AvatarRifle_ClipEject");
+        public static readonly SoundStyle RealityFireSound = new SoundStyle("HeavenlyArsenal/Assets/Sounds/Items/Ranged/AvatarRifle/AvatarRifle_ClipEject");
 
+        
         public ClothSimulation Shroud
         {
             get;
@@ -76,7 +80,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
             set;
         }
 
-
+        //private readonly List<SlotId> attachedSounds = [];
 
         public ref Player Player => ref Main.player[Projectile.owner];
 
@@ -100,17 +104,14 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
 
         public override void SetStaticDefaults()
         {
-            Main.projFrames[Projectile.type] = 10;
+            Main.projFrames[Projectile.type] = 18; 
         }
 
         public override void SetDefaults()
         {
-            firingSoundEffect = ModContent.Request<SoundEffect>("HeavenlyArsenal/Assets/Sounds/Items/Ranged/AvatarRifle/AvatarRifle_FireWIP2").Value;
-            reloadSoundEffect = ModContent.Request<SoundEffect>("HeavenlyArsenal/Assets/Sounds/Items/Ranged/AvatarRifle/AvatarRifle_Cycle").Value; // Add your reload sound here
-            CycleSoundEffect = ModContent.Request<SoundEffect>("HeavenlyArsenal/Assets/Sounds/Items/Ranged/AvatarRifle/AvatarRifle_Cycle_Dronnor1").Value;
-            MagEmptySoundEffect = ModContent.Request<SoundEffect>("HeavenlyArsenal/Assets/Sounds/Items/Ranged/AvatarRifle/AvatarRifle_ClipEject").Value;
-            firingSoundEffect = ModContent.Request<SoundEffect>("HeavenlyArsenal/Assets/Sounds/Items/Ranged/AvatarRifle/AvatarRifle_FireWIP2").Value;
+           
             
+
             Projectile.width = Projectile.height = 60;
             Projectile.friendly = true;
             Projectile.penetrate = -1;
@@ -162,7 +163,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
 
 
 
-            CreateDustAtOrigin();
+            //CreateDustAtOrigin();
             Vector2 armPosition = Owner.RotatedRelativePoint(
                 Owner.MountedCenter);
 
@@ -261,10 +262,11 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
             {
                 Main.NewText($"Firing! AmmoCount: {AmmoCount}", Color.Red);
 
-
+                //attachedSounds.Add(SoundEngine.PlaySound(FireSound, Projectile.Center).WithVolumeBoost(1.2f));
                 // Play firing sound
-                firingSoundInstance = firingSoundEffect.CreateInstance();
-                firingSoundInstance.Play();
+                SoundEngine.PlaySound(FireSound,Projectile.Center).WithVolumeBoost(1.2f);
+                //firingSoundInstance = firingSoundEffect.CreateInstance();
+                //firingSoundInstance.Play();
 
                 // Decrement ammo count
                 AmmoCount--;
@@ -312,8 +314,11 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
                 }
                 else
                 {
-                    MagEmptySoundInstance = MagEmptySoundEffect.CreateInstance();
-                    MagEmptySoundInstance.Play();
+                    //MagEmptySoundInstance = MagEmptySoundEffect.CreateInstance();
+                    //MagEmptySoundInstance.Play();
+                    SoundEngine.PlaySound(MagEmptySound, Projectile.Center).WithVolumeBoost(1.2f);
+
+
                     Main.NewText($"Mag Empty, Begin Reload", Color.Chocolate);
                     CurrentState = AvatarRifleState.Reload;
                     StateTimer = ReloadDuration;
@@ -340,9 +345,10 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
             if (!Cycled)
             {
                 // Initiate cycling
-               // Initial "dip" angle
-                CycleSoundInstance = CycleSoundEffect.CreateInstance();
-                CycleSoundEffect.Play();
+                // Initial "dip" angle
+                SoundEngine.PlaySound(CycleSound, Projectile.Center).WithVolumeBoost(1.2f);
+                //CycleSoundInstance = CycleSoundEffect.CreateInstance();
+                //CycleSoundEffect.Play();
                 Cycled = true;
                 Main.NewText($"Cycling!", Color.Coral);
 
@@ -417,39 +423,65 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
 
         private void HandleReload()
         {
+            int totalFrames = 7; // Total frames for the projectile
+            int frameDuration = totalFrames;
             if (StateTimer == ReloadDuration)
             {
                 Projectile.frame = 10;
-                // Play reload sound once at the start of reload
-                
-                //new Vector2 GoreDirection = (-1f, 1f);
-                //Gore.NewGore(Projectile.GetSource_FromThis,Projectile.Left, new Vector2(1*Projectile.direction,-1f), ModContent.GoreType<MagEjectGore>,1);
-                Gore.NewGore(Projectile.GetSource_FromThis(), Projectile.Center-new Vector2(30*Projectile.direction,0), new Vector2(Projectile.direction * -4f, 0f), ModContent.GoreType<MagEjectGore>(), 1);
                 Main.NewText($"Reloading", Color.AntiqueWhite);
+                Gore.NewGore(Projectile.GetSource_FromThis(),
+                               Projectile.Center - new Vector2(30 * Projectile.direction, 0),
+                               new Vector2(Projectile.direction * -4f, 0f),
+                               ModContent.GoreType<MagEjectGore>(), 1);
             }
 
-            if (StateTimer == ReloadDuration/2)
+            // Play reload sound halfway through the reload
+            if (StateTimer == ReloadDuration / 2)
             {
-                reloadSoundInstance = reloadSoundEffect.CreateInstance();
-                reloadSoundInstance.Play();
+                SoundEngine.PlaySound(ReloadSound, Projectile.Center).WithVolumeBoost(1.2f);
+                //reloadSoundInstance = reloadSoundEffect.CreateInstance();
+                //reloadSoundInstance.Play();
+
+              
             }
+
             if (StateTimer > 0)
             {
-                StateTimer--; // Count down the reload
-                CycleOffset = Projectile.spriteDirection * MathHelper.ToRadians(15f); // Keep the offset fixed during hold phase
+                StateTimer--; // Count down the reload timer
+                CycleOffset = Projectile.spriteDirection * MathHelper.ToRadians(15f);
 
+                // Animation logic: Start playing only after half the reload time has passed
+                if (StateTimer <= ReloadDuration / 3)
+                {
+                    if (++Projectile.frameCounter > frameDuration)
+                    {
+                        Projectile.frameCounter = 0;
+
+                        if (Projectile.frame < 17)
+                            Projectile.frame++; // Move to next frame in reload animation
+
+                        // Eject the magazine when reaching frame 14
+                        if (Projectile.frame == 14)
+                        {
+                           
+                        }
+                    }
+                }
             }
             else
             {
-                Projectile.frame = 0;
+                Projectile.frame = 0; // Reset animation after reloading
                 CycleOffset = 0f;
                 SoundEngine.PlaySound(SoundID.DD2_BallistaTowerShot.WithVolumeScale(0.5f).WithPitchOffset(0.8f), Projectile.position);
+                
                 // Reset ammo and transition back to Firing state
                 AmmoCount = 7;
                 CurrentState = AvatarRifleState.Firing;
                 Main.NewText($"Reloaded!", Color.AntiqueWhite);
             }
         }
+
+
 
 
 
@@ -622,7 +654,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
             Texture2D texture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
             Vector2 drawPosition = Projectile.Center - Main.screenPosition;
 
-            Rectangle frame = texture.Frame(1, 11, 0, Projectile.frame);
+            Rectangle frame = texture.Frame(1, 18, 0, Projectile.frame);
 
 
             float rotation = Projectile.rotation;
