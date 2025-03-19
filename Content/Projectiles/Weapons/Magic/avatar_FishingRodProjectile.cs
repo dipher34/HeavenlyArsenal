@@ -58,6 +58,8 @@ public class avatar_FishingRodProjectile : ModProjectile
 
     public override void AI()
     {
+        bool retracting = Projectile.timeLeft < RetractTime;
+
         if (Player.channel && CurrentRiftState != (int)RiftState.Disabled)
             Projectile.timeLeft = RetractTime + 15;
         else
@@ -98,16 +100,16 @@ public class avatar_FishingRodProjectile : ModProjectile
         UpdateFishingString();
         UpdateBellString();
 
-        if (Time > SwingTime * 4 && CurrentRiftState != (int)RiftState.Disabled)
+        if (Time > SwingTime * 4 && CurrentRiftState != (int)RiftState.Disabled && !retracting)
             UpdateBellRinging();
 
-        if (CurrentRiftState != (int)RiftState.Closed && Projectile.timeLeft > RetractTime)
+        if (CurrentRiftState != (int)RiftState.Closed && !retracting)
         {
             UpdateRift();
-            riftApparitionInterpolant = Math.Min(riftApparitionInterpolant + 0.2f, 1f);
+            riftApparitionInterpolant = Math.Min(riftApparitionInterpolant + 0.1f, 1f);
         }
         else
-            riftApparitionInterpolant = Math.Max(riftApparitionInterpolant - 0.1f, 0);
+            riftApparitionInterpolant = Math.Max(riftApparitionInterpolant - 0.05f, 0);
 
         Time++;
 
@@ -168,7 +170,7 @@ public class avatar_FishingRodProjectile : ModProjectile
 
     public void UpdateBellString()
     {
-        const int segmentCount = 24;
+        const int segmentCount = 16;
         float segmentLength = 8f;
 
         // Initialize the segments
@@ -252,6 +254,11 @@ public class avatar_FishingRodProjectile : ModProjectile
             BellRingCooldown = 50;
             Projectile.timeLeft = 50;
 
+            if (CurrentRiftState != (int)RiftState.Dunking)
+            {
+                SoundEngine.PlaySound(SoundID.Shimmer2, bell.position);
+            }
+
             CurrentRiftState = (int)RiftState.Dunking;
 
             canUse = Player.CheckMana(Player.HeldItem.mana, true);
@@ -303,7 +310,7 @@ public class avatar_FishingRodProjectile : ModProjectile
 
     public override bool PreDraw(ref Color lightColor)
     {
-        riftApparitionInterpolant = 1f;
+        Texture2D glow = AssetDirectory.Textures.BigGlowball.Value;
 
         riftLakeTargets.Request(900, 1000, Projectile.whoAmI, () =>
         {
@@ -314,35 +321,41 @@ public class avatar_FishingRodProjectile : ModProjectile
             Texture2D innerRiftTexture = GennedAssets.Textures.FirstPhaseForm.RiftInnerTexture.Value;
 
             ManagedShader dripShader = ShaderManager.GetShader("HeavenlyArsenal.AvatarRodVoidEffect");
-            dripShader.TrySetParameter("time", Main.GlobalTimeWrappedHourly * 0.1f);
+            dripShader.TrySetParameter("time", Main.GlobalTimeWrappedHourly * 0.25f);
+            dripShader.TrySetParameter("noiseScale", new Vector2(1.5f, 0.5f));
+            dripShader.TrySetParameter("noiseStrength", 1.33f * riftApparitionInterpolant);
+            dripShader.TrySetParameter("outlineThickness", 0.05f);
+            dripShader.TrySetParameter("edgeColor", edgeColor.ToVector4());
             dripShader.SetTexture(GennedAssets.Textures.Noise.WavyBlotchNoise, 0, SamplerState.AnisotropicWrap);
             dripShader.SetTexture(GennedAssets.Textures.Noise.WavyBlotchNoise, 1, SamplerState.AnisotropicWrap);
-            //dripShader.Apply();
+            dripShader.Apply();
 
-            Main.spriteBatch.Draw(innerRiftTexture, new Vector2(450, RiftHeight), null, Color.White, 0, new Vector2(innerRiftTexture.Width / 2, 0), new Vector2(1.33f, 0.5f), 0, 0);
+            Main.spriteBatch.Draw(GennedAssets.Textures.Noise.WavyBlotchNoise, new Vector2(450, RiftHeight - 10), null, Color.Black, MathHelper.Pi, new Vector2(innerRiftTexture.Width / 2, innerRiftTexture.Height), new Vector2(1.33f * riftApparitionInterpolant, 0.75f * MathF.Pow(riftApparitionInterpolant, 2)), 0, 0);
 
             ManagedShader riftShader = ShaderManager.GetShader("NoxusBoss.DarkPortalShader");
             riftShader.TrySetParameter("time", Main.GlobalTimeWrappedHourly * 0.1f);
-            riftShader.TrySetParameter("baseCutoffRadius", 0.11f);
-            riftShader.TrySetParameter("swirlOutwardnessExponent", 0.11f);
+            riftShader.TrySetParameter("baseCutoffRadius", 0.1f);
+            riftShader.TrySetParameter("swirlOutwardnessExponent", 0.2f);
             riftShader.TrySetParameter("swirlOutwardnessFactor", 5f);
             riftShader.TrySetParameter("vanishInterpolant", 1f - riftApparitionInterpolant);
             riftShader.TrySetParameter("edgeColor", edgeColor.ToVector4());
-            riftShader.TrySetParameter("edgeColorBias", 0.1f);
+            riftShader.TrySetParameter("edgeColorBias", 0.15f);
             riftShader.SetTexture(GennedAssets.Textures.Noise.WavyBlotchNoise, 1, SamplerState.AnisotropicWrap);
             riftShader.SetTexture(GennedAssets.Textures.Noise.WavyBlotchNoise, 2, SamplerState.AnisotropicWrap);
             riftShader.Apply();
 
-            //Main.spriteBatch.Draw(innerRiftTexture, new Vector2(450, RiftHeight), null, Color.White, 0, innerRiftTexture.Size() * 0.5f, new Vector2(2.5f, 0.4f), 0, 0);
+            // Rotating it seems to align the stretchy bit of the rift real nice
+            Main.spriteBatch.Draw(innerRiftTexture, new Vector2(450, RiftHeight), null, Color.White, -MathHelper.PiOver2, innerRiftTexture.Size() * 0.5f, new Vector2(0.4f, 2.5f), 0, 0);
            
             Main.spriteBatch.End();
         });
 
         if (riftLakeTargets.TryGetTarget(Projectile.whoAmI, out RenderTarget2D riftTarget) && riftApparitionInterpolant > 0)
         {
-            Texture2D glow = AssetDirectory.Textures.BigGlowball.Value;
+            Main.EntitySpriteDraw(glow, Player.MountedCenter + new Vector2(0, RiftHeight - 30) - Main.screenPosition, glow.Frame(), Color.DarkRed with { A = 200 } * riftApparitionInterpolant, 0, glow.Size() * 0.5f, new Vector2(1.2f, 0.3f), 0, 0);
             Main.EntitySpriteDraw(riftTarget, Player.MountedCenter - Main.screenPosition, riftTarget.Frame(), Color.White, 0, new Vector2(riftTarget.Width / 2, 0), 1f, 0, 0);
-            Main.EntitySpriteDraw(glow, Player.MountedCenter + new Vector2(0, RiftHeight - 20) - Main.screenPosition, glow.Frame(), Color.DarkRed with { A = 150 } * riftApparitionInterpolant * 0.7f, 0, glow.Size() * 0.5f, new Vector2(2f, 0.4f), 0, 0);
+            Main.EntitySpriteDraw(glow, Player.MountedCenter + new Vector2(0, RiftHeight + 20) - Main.screenPosition, glow.Frame(), Color.DarkRed with { A = 150 } * riftApparitionInterpolant * 0.4f, 0, glow.Size() * 0.5f, new Vector2(1.5f, 0.7f) * riftApparitionInterpolant, 0, 0);
+            Main.EntitySpriteDraw(glow, Player.MountedCenter + new Vector2(0, RiftHeight + 14) - Main.screenPosition, glow.Frame(), Color.Black * riftApparitionInterpolant, 0, glow.Size() * 0.5f, new Vector2(0.6f, 0.1f) * riftApparitionInterpolant, 0, 0);
         }
 
         DrawStrings();
