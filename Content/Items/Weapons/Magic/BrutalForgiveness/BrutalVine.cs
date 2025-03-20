@@ -119,9 +119,9 @@ public class BrutalVine : ModProjectile
 
         // Swirl the end of the vine around.
         float swirlTime = MathHelper.TwoPi * Time / 35f + Projectile.identity * 1.1f;
-        float swirlAngle = LumUtils.AperiodicSin(swirlTime) * 0.6f + MathF.Cos(swirlTime) * 0.74f;
+        float swirlAngle = LumUtils.AperiodicSin(swirlTime) * 0.8f + MathF.Cos(swirlTime) * 0.9f;
         Vector2 swirl = Projectile.velocity.SafeNormalize(Vector2.Zero).RotatedBy(swirlAngle);
-        Projectile.Center += swirl * Projectile.scale * 12f;
+        Projectile.Center += swirl * Projectile.scale * 15f;
 
         Z = (1f - LumUtils.Cos01(MathHelper.TwoPi * Time / 60f)) * 100f + 600f;
 
@@ -190,14 +190,6 @@ public class BrutalVine : ModProjectile
         return false;
     }
 
-    // https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
-    private static Vector3 RodriguesRotation(Vector3 v, Vector3 axis, float angle)
-    {
-        float cosine = MathF.Cos(angle);
-        float sine = MathF.Sin(angle);
-        return v * cosine + Vector3.Cross(v, axis) * sine + axis * Vector3.Dot(axis, v) * (1 - cosine);
-    }
-
     private void RenderAppendages()
     {
         float unwrapInterpolant = oldPositions.Count / (float)Lifetime;
@@ -251,6 +243,14 @@ public class BrutalVine : ModProjectile
     private float CalculateScaleAtVineInterpolant(float vineInterpolant)
     {
         return MathHelper.SmoothStep(0f, 1f, LumUtils.InverseLerp(-0.5f, 0f, vineInterpolant - (1f - Projectile.scale)));
+    }
+
+    // https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
+    private static Vector3 RodriguesRotation(Vector3 v, Vector3 axis, float angle)
+    {
+        float cosine = MathF.Cos(angle);
+        float sine = MathF.Sin(angle);
+        return v * cosine + Vector3.Cross(v, axis) * sine + axis * Vector3.Dot(axis, v) * (1 - cosine);
     }
 
     private void RenderVine()
