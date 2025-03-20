@@ -156,7 +156,9 @@ Mods: {
 
 			BrutalForgiveness: {
 				DisplayName: Brutal Forgiveness
+				Tooltip: ""
 			}
+
 			Nadir2: {
 				DisplayName: Nadir2
 				Tooltip: ""
