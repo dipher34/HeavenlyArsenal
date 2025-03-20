@@ -250,7 +250,7 @@ public class BrutalVine : ModProjectile
 
     private float CalculateScaleAtVineInterpolant(float vineInterpolant)
     {
-        return LumUtils.InverseLerp(-0.08f, 0f, vineInterpolant - (1f - Projectile.scale));
+        return MathHelper.SmoothStep(0f, 1f, LumUtils.InverseLerp(-0.5f, 0f, vineInterpolant - (1f - Projectile.scale)));
     }
 
     private void RenderVine()
