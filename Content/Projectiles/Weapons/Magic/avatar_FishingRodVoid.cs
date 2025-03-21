@@ -1,11 +1,14 @@
 ﻿using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using NoxusBoss;
 using NoxusBoss.Assets;
 using System;
 using System.Collections.Generic;
 using Terraria;
+using Terraria.Audio;
 using Terraria.Graphics.CameraModifiers;
+using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Projectiles.Weapons.Magic;
@@ -19,10 +22,9 @@ public class avatar_FishingRodVoid : ModProjectile
         Projectile.friendly = true;
         Projectile.ignoreWater = true;
         Projectile.usesLocalNPCImmunity = true;
-        Projectile.localNPCHitCooldown = 7;
+        Projectile.localNPCHitCooldown = 11;
         Projectile.timeLeft = 100;
-        Projectile.penetrate = 4;
-        Projectile.stopsDealingDamageAfterPenetrateHits = true;
+        Projectile.penetrate = -1;
         Projectile.tileCollide = false;
         Projectile.hide = true;
         Projectile.manualDirectionChange = true;
@@ -35,6 +37,7 @@ public class avatar_FishingRodVoid : ModProjectile
     public ref float VisualScale => ref Projectile.localAI[0];
 
     private VoidLakeShadowHandData[] shadowHands;
+    private int handCount;
 
     public struct VoidLakeShadowHandData
     {
@@ -87,7 +90,7 @@ public class avatar_FishingRodVoid : ModProjectile
             }
             Projectile.rotation = Projectile.AngleTo(attached.Center);
             Projectile.Center = attached.Center;
-            Projectile.velocity = Vector2.Lerp(Projectile.velocity, attached.velocity.SafeNormalize(Vector2.Zero) + Vector2.UnitY * 3f, 0.003f);
+            Projectile.velocity = Vector2.Lerp(Projectile.velocity, attached.velocity.SafeNormalize(Vector2.Zero) + Vector2.UnitY, 0.002f);
 
             VisualScale = Math.Clamp(MathF.Sqrt(MathHelper.Max(attached.width, attached.height) / 50f), 0.25f, 2f) * Projectile.scale;
         }
@@ -100,10 +103,16 @@ public class avatar_FishingRodVoid : ModProjectile
         if (Time == 0)
         {
             Projectile.direction = Main.rand.NextBool().ToDirectionInt();
+            handCount = Main.rand.Next(2, 4);
             shadowHands = new VoidLakeShadowHandData[3];
             shadowHands[0] = new VoidLakeShadowHandData(0.7f * VisualScale * DistanceFromTarget);
             shadowHands[1] = new VoidLakeShadowHandData(1.1f * VisualScale * DistanceFromTarget);
             shadowHands[2] = new VoidLakeShadowHandData(0.7f * VisualScale * DistanceFromTarget);
+        }
+
+        if (Time % Projectile.localNPCHitCooldown == 0 && Time < Projectile.localNPCHitCooldown * 3)
+        {
+            SoundEngine.PlaySound(GennedAssets.Sounds.NamelessDeity.IntroScreenSlice with { Volume = 0.5f, MaxInstances = 0 }, Projectile.Center);
         }
 
         Time++;
@@ -128,8 +137,7 @@ public class avatar_FishingRodVoid : ModProjectile
         float vanishTime = Utils.GetLerpValue(0, 20, Time, true) * Utils.GetLerpValue(0, 20, Projectile.timeLeft, true);
         Vector2 offset = Projectile.velocity.SafeNormalize(Vector2.Zero) * DistanceFromTarget * VisualScale;
 
-        Main.EntitySpriteDraw(glow, Projectile.Center + offset - Main.screenPosition, glow.Frame(), Color.DarkRed with { A = 200 } * vanishTime * 0.2f, Projectile.rotation, glow.Size() * 0.5f, new Vector2(0.5f, 0.7f) * VisualScale, 0, 0);
-        Main.EntitySpriteDraw(glow, Projectile.Center + offset - Main.screenPosition, glow.Frame(), Color.Red with { A = 200 } * vanishTime, Projectile.rotation, glow.Size() * 0.5f, new Vector2(0.15f, 0.2f) * VisualScale * vanishTime, 0, 0);
+        Main.EntitySpriteDraw(glow, Projectile.Center + offset - Main.screenPosition, glow.Frame(), Color.Red with { A = 200 } * vanishTime, Projectile.rotation, glow.Size() * 0.5f, new Vector2(0.12f, 0.25f) * VisualScale * vanishTime, 0, 0);
 
         Main.spriteBatch.End();
         Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.AnisotropicWrap, DepthStencilState.None, Main.Rasterizer, null, Main.Transform);
@@ -150,14 +158,18 @@ public class avatar_FishingRodVoid : ModProjectile
         riftShader.SetTexture(GennedAssets.Textures.Noise.BurnNoise, 2, SamplerState.AnisotropicWrap);
         riftShader.Apply();
 
-        Main.spriteBatch.Draw(innerRiftTexture, Projectile.Center + offset - Main.screenPosition, null, Color.White, Projectile.rotation + MathHelper.Pi, innerRiftTexture.Size() * 0.5f, new Vector2(0.25f, 0.6f) * VisualScale, 0, 0);
+        Main.spriteBatch.Draw(innerRiftTexture, Projectile.Center + offset - Main.screenPosition, null, Color.White, Projectile.rotation + MathHelper.Pi, innerRiftTexture.Size() * 0.5f, new Vector2(0.2f, 0.4f) * VisualScale, 0, 0);
 
         Main.spriteBatch.End();
         Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.Transform);
 
         float handRot = Projectile.rotation;
-        DrawShadowHand(Projectile.Center + offset, -0.2f + Projectile.rotation, 0.7f, 0, -1);
-        DrawShadowHand(Projectile.Center + offset, 0.2f + Projectile.rotation, 0.8f, 2, 1);
+
+        if (handCount > 1)
+            DrawShadowHand(Projectile.Center + offset, -0.3f * Projectile.direction + Projectile.rotation, 0.7f, Projectile.direction > 0 ? 0 : 2, -1);
+        if (handCount > 2)
+            DrawShadowHand(Projectile.Center + offset, 0.3f * Projectile.direction + Projectile.rotation, 0.7f, Projectile.direction > 0 ? 2 : 0, 1);
+
         DrawShadowHand(Projectile.Center + offset, Projectile.rotation, 1f, 1, Projectile.direction);
 
         Main.EntitySpriteDraw(glow, Projectile.Center + offset - Main.screenPosition, glow.Frame(), Color.Black, Projectile.rotation, glow.Size() * 0.5f, new Vector2(0.07f, 0.2f) * VisualScale * Projectile.scale * vanishTime, 0, 0);
@@ -168,7 +180,7 @@ public class avatar_FishingRodVoid : ModProjectile
     private void DrawShadowHand(Vector2 center, float rotation, float scale, int index, int direction)
     {
         float extensionTime = MathF.Sqrt(Utils.GetLerpValue(15, 25, Time - Projectile.localNPCHitCooldown * index, true) * Utils.GetLerpValue(35, 60, Projectile.timeLeft + Projectile.localNPCHitCooldown * index, true));
-        Vector2 offsetForHands = new Vector2(0, 20 * (index - 1)).RotatedBy(Projectile.rotation);
+        Vector2 offsetForHands = new Vector2(0, 10 * (index - 1)).RotatedBy(Projectile.rotation);
         float wobble = MathF.Sin(((Main.GlobalTimeWrappedHourly * 1.67f + index * 0.2f) % 1f) * MathHelper.TwoPi) * 0.03f;
         shadowHands[index].Draw(center + offsetForHands - Main.screenPosition, extensionTime, scale, rotation + wobble, direction);
     }

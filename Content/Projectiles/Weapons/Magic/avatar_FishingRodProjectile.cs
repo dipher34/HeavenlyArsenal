@@ -8,6 +8,8 @@ using NoxusBoss.Assets;
 using NoxusBoss.Core.Graphics.RenderTargets;
 using ReLogic.Content;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Terraria;
 using Terraria.Audio;
 using Terraria.GameContent;
@@ -270,6 +272,7 @@ public class avatar_FishingRodProjectile : ModProjectile
             if (CurrentRiftState != (int)RiftState.Dunking)
             {
                 SoundEngine.PlaySound(SoundID.Shimmer2, bell.position);
+                SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.BloodCry, bell.position);
 
                 Vector2 bellSplashVelocity = new Vector2(bell.velocity.X, Math.Abs(bell.velocity.Y));
                 for (int i = 0; i < 12; i++)
@@ -283,21 +286,22 @@ public class avatar_FishingRodProjectile : ModProjectile
             Time++;
             CurrentRiftState = (int)RiftState.Dunking;
 
-            const int waitTimeBetweenGrabs = 24;
             if (Main.myPlayer == Projectile.owner)
             {
+                const int waitTimeBetweenGrabs = 17;
+                const float maxDistance = 1000;
+
                 if (Time % waitTimeBetweenGrabs == 0)
                 {
                     canUse = Player.CheckMana(Player.HeldItem.mana, true);
 
-                    foreach (NPC npc in Main.ActiveNPCs)
+                    NPC[] target = Main.npc.Where(t => t.active && t.CanBeChasedBy(Player) && t.Distance(Player.MountedCenter) < maxDistance).ToArray();
+
+                    for (int i = 0; i < target.Length; i += Main.rand.Next(1, 4))
                     {
-                        if (npc.active && npc.CanBeChasedBy(Player) && npc.Distance(Player.MountedCenter) < 800)
-                        {
-                            Vector2 randomDirection = Main.rand.NextVector2CircularEdge(1, 1) + Vector2.UnitY;
-                            Projectile shadowHand = Projectile.NewProjectileDirect(Projectile.GetSource_FromThis(), npc.Center, randomDirection, ModContent.ProjectileType<avatar_FishingRodVoid>(), Projectile.damage, 0, Player.whoAmI, ai1: npc.whoAmI);
-                            shadowHand.scale *= Main.rand.NextFloat(0.8f, 1.2f);
-                        }
+                        Vector2 randomDirection = Main.rand.NextVector2CircularEdge(1, 1);
+                        Projectile shadowHand = Projectile.NewProjectileDirect(Projectile.GetSource_FromThis(), target[i].Center, randomDirection, ModContent.ProjectileType<avatar_FishingRodVoid>(), Projectile.damage, 0, Player.whoAmI, ai1: target[i].whoAmI);
+                        shadowHand.scale *= Main.rand.NextFloat(0.5f, 1.5f);
                     }
                 }
             }
