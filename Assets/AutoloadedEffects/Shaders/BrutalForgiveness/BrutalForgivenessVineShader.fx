@@ -42,7 +42,7 @@ VertexShaderOutput VertexShaderFunction(in VertexShaderInput input)
 float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 {
     float2 coords = input.TextureCoordinates * textureLookupZoom;
-    float3 color = input.Color.rgb * pow(tex2D(baseTexture, coords).rgb, 0.75);
+    float3 color = input.Color.rgb * tex2D(baseTexture, coords).rgb;
     float3 normal = tex2D(normalMapTexture, coords).xyz;
     
     // Calculate light based on the normal map.
