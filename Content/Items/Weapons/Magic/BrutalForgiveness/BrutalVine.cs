@@ -201,35 +201,6 @@ public class BrutalVine : ModProjectile
         return false;
     }
 
-    private void RenderAppendages()
-    {
-        float unwrapInterpolant = oldPositions.Count / (float)Lifetime;
-        for (int i = 0; i < appendages.Count; i++)
-        {
-            Texture2D texture = appendages[i].Texture.Value;
-            Vector2 origin = appendages[i].Origin;
-            float vinePositionInterpolant = appendages[i].VinePositionInterpolant;
-
-            int index = (int)(vinePositionInterpolant * (Lifetime - 2f));
-            if (index >= oldPositions.Count - 1)
-                continue;
-
-            // Perform a bunch of math to calculate the scale of the appendage at the given position, making it appear and disappear based on how .
-            float positionInterpolant = vinePositionInterpolant * (Lifetime - 1f) % 1f;
-            float growthInterpolant = LumUtils.InverseLerp(-0.15f, 0.05f, positionInterpolant - (1f - unwrapInterpolant));
-            float easedGrowthInterpolant = EasingCurves.Quadratic.Evaluate(EasingType.In, growthInterpolant);
-            float scale = easedGrowthInterpolant * appendages[i].MaxScale * CalculateScaleAtVineInterpolant(vinePositionInterpolant);
-
-            Vector3 position3D = Vector3.Lerp(oldPositions[index], oldPositions[index + 1], positionInterpolant);
-            Vector2 drawPosition = new Vector2(position3D.X, position3D.Y) - Main.screenPosition;
-
-            float wind = LumUtils.AperiodicSin(Main.GlobalTimeWrappedHourly * 0.7f + position3D.X * 0.03f) * 0.5f + Main.WindForVisuals;
-            float rotation = appendages[i].Angle + wind * 0.18f;
-
-            Main.spriteBatch.Draw(texture, drawPosition, null, Color.White, rotation, origin, scale, 0, 0f);
-        }
-    }
-
     public override void DrawBehind(int index, List<int> behindNPCsAndTiles, List<int> behindNPCs, List<int> behindProjectiles, List<int> overPlayers, List<int> overWiresUI)
     {
         overPlayers.Add(index);
@@ -345,6 +316,35 @@ public class BrutalVine : ModProjectile
         vineShader.Apply();
 
         Main.instance.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, vertices, 0, vertices.Length, indices, 0, indices.Length / 3);
+    }
+
+    private void RenderAppendages()
+    {
+        float unwrapInterpolant = oldPositions.Count / (float)Lifetime;
+        for (int i = 0; i < appendages.Count; i++)
+        {
+            Texture2D texture = appendages[i].Texture.Value;
+            Vector2 origin = appendages[i].Origin;
+            float vinePositionInterpolant = appendages[i].VinePositionInterpolant;
+
+            int index = (int)(vinePositionInterpolant * (Lifetime - 2f));
+            if (index >= oldPositions.Count - 1)
+                continue;
+
+            // Perform a bunch of math to calculate the scale of the appendage at the given position, making it appear and disappear based on how .
+            float positionInterpolant = vinePositionInterpolant * (Lifetime - 1f) % 1f;
+            float growthInterpolant = LumUtils.InverseLerp(-0.15f, 0.05f, positionInterpolant - (1f - unwrapInterpolant));
+            float easedGrowthInterpolant = EasingCurves.Quadratic.Evaluate(EasingType.In, growthInterpolant);
+            float scale = easedGrowthInterpolant * appendages[i].MaxScale * CalculateScaleAtVineInterpolant(vinePositionInterpolant);
+
+            Vector3 position3D = Vector3.Lerp(oldPositions[index], oldPositions[index + 1], positionInterpolant);
+            Vector2 drawPosition = new Vector2(position3D.X, position3D.Y) - Main.screenPosition;
+
+            float wind = LumUtils.AperiodicSin(Main.GlobalTimeWrappedHourly * 0.7f + position3D.X * 0.03f) * 0.5f + Main.WindForVisuals;
+            float rotation = appendages[i].Angle + wind * 0.18f;
+
+            Main.spriteBatch.Draw(texture, drawPosition, null, Color.White, rotation, origin, scale, 0, 0f);
+        }
     }
 
     private void DrawVinesSeparately(On_Main.orig_DrawProjectiles orig, Main self)
