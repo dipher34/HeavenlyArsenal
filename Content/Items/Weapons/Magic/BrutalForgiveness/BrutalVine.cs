@@ -5,6 +5,7 @@ using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
+using NoxusBoss.Core.Graphics;
 using NoxusBoss.Core.Graphics.LightingMask;
 using NoxusBoss.Core.Graphics.Meshes;
 using NoxusBoss.Core.Graphics.RenderTargets;
@@ -64,18 +65,22 @@ public class BrutalVine : ModProjectile
         normalMapTexture = ModContent.Request<Texture2D>($"{Texture}NormalMap");
         appendageTextures =
         [
-            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage1"), new Vector2(0f, 203f)),
-            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage2"), new Vector2(12f, 520f)),
-            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage3"), new Vector2(18f, 1f)),
-            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage4"), new Vector2(42f, 174f)),
-            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage5"), new Vector2(84f, 118f)),
-            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage6"), new Vector2(72f, 216f)),
-            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage7"), new Vector2(4f, 354f)),
-            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage8"), new Vector2(30f, 36f)),
-            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage9"), new Vector2(90f, 419f)),
-            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage10"), new Vector2(78f, 334f)),
-            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage11"), new Vector2(62f, 326f)),
-            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage12"), new Vector2(12f, 85f)),
+            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage1"), new Vector2(0f, 203f)), // Oak tree.
+            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage2"), new Vector2(12f, 520f)), // Sakura branch.
+            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage3"), new Vector2(18f, 1f)), // Biblical fruit branch.
+            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage4"), new Vector2(42f, 174f)), // Plumeria flower.
+            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage5"), new Vector2(84f, 118f)), // Sunflower.
+            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage6"), new Vector2(72f, 216f)), // Lotus.
+            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage7"), new Vector2(4f, 354f)), // Ivy vine.
+            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage8"), new Vector2(30f, 36f)), // Pine tree branch.
+            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage9"), new Vector2(90f, 419f)), // White rose bush.
+            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage10"), new Vector2(78f, 334f)), // Lavender vine.
+            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage11"), new Vector2(62f, 326f)), // Hibiscus flowers.
+            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage12"), new Vector2(12f, 85f)), // Camellia flower.
+            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage13"), new Vector2(2f, 100f)), // Peacock feather.
+            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage14"), new Vector2(3f, 300f)), // Oyster mushroom.
+            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage15"), new Vector2(3f, 93f)), // Pomegranate branch.
+            new AppendangeData(ModContent.Request<Texture2D>($"{Texture}Appendage16"), new Vector2(8f, 416f)), // Willow tree.
         ];
 
         ProjectileID.Sets.TrailingMode[Type] = 2;
@@ -84,12 +89,13 @@ public class BrutalVine : ModProjectile
 
         target = new();
         Main.ContentThatNeedsRenderTargets.Add(target);
-        On_Main.DrawProjectiles += DrawVinesSeparately;
+        On_Main.DrawPlayers_AfterProjectiles += DrawVinesSeparately;
     }
 
     public override void SetDefaults()
     {
-        Projectile.width = Main.rand?.Next(17, 32) ?? 20;
+        float vineSize = Main.rand?.NextFloat().Cubed() ?? 0f;
+        Projectile.width = (int)MathHelper.Lerp(16f, 54f, vineSize);
         Projectile.height = Projectile.width;
         Projectile.friendly = true;
         Projectile.ignoreWater = true;
@@ -106,7 +112,7 @@ public class BrutalVine : ModProjectile
 
     public override void AI()
     {
-        if (appendages.Count < 30 && Main.rand.NextBool() && Time >= 5f)
+        if (appendages.Count < 30 && Main.rand.NextBool(3) && Time >= 4f)
             GenerateAppendage();
 
         // Grow!
@@ -115,12 +121,7 @@ public class BrutalVine : ModProjectile
         NPC? target = Projectile.FindTargetWithinRange(800f);
         if (target is not null)
             AttackTarget(target);
-
-        // Swirl the end of the vine around.
-        float swirlTime = MathHelper.TwoPi * Time / 35f + Projectile.identity * 1.1f;
-        float swirlAngle = LumUtils.AperiodicSin(swirlTime) * 0.6f + MathF.Cos(swirlTime) * 0.74f;
-        Vector2 swirl = Projectile.velocity.SafeNormalize(Vector2.Zero).RotatedBy(swirlAngle);
-        Projectile.Center += swirl * Projectile.scale * 12f;
+        SwirlAround();
 
         Z = (1f - LumUtils.Cos01(MathHelper.TwoPi * Time / 60f)) * 100f + 600f;
 
@@ -131,11 +132,26 @@ public class BrutalVine : ModProjectile
         Time++;
     }
 
+    /// <summary>
+    /// Makes this vine twist around at its front, giving winding shapes as it travels.
+    /// </summary>
+    private void SwirlAround()
+    {
+        float swirlTime = MathHelper.TwoPi * Time / 35f + Projectile.identity * 1.1f;
+        float swirlAngle = LumUtils.AperiodicSin(swirlTime) * 0.8f + MathF.Cos(swirlTime) * 0.9f;
+        Vector2 swirl = Projectile.velocity.SafeNormalize(Vector2.Zero).RotatedBy(swirlAngle);
+        Projectile.Center += swirl * Projectile.scale * 15f;
+    }
+
+    /// <summary>
+    /// Makes this vine impale a given NPC target.
+    /// </summary>
     private void AttackTarget(NPC target)
     {
+        float speedFactor = LumUtils.InverseLerp(0f, 30f, Time);
         Vector2 directionToTarget = Projectile.SafeDirectionTo(target.Center);
-        Projectile.velocity = Vector2.Lerp(Projectile.velocity, directionToTarget * 20f, 0.033f / Projectile.MaxUpdates);
-        Projectile.velocity += directionToTarget * 2f;
+        Projectile.velocity = Vector2.Lerp(Projectile.velocity, directionToTarget * speedFactor * 20f, 0.033f / Projectile.MaxUpdates);
+        Projectile.velocity += directionToTarget * speedFactor * 2f;
 
         if (Vector2.Dot(Projectile.velocity, directionToTarget) < 0f)
             Projectile.velocity *= 0.98f;
@@ -189,46 +205,9 @@ public class BrutalVine : ModProjectile
         return false;
     }
 
-    // https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
-    private static Vector3 RodriguesRotation(Vector3 v, Vector3 axis, float angle)
-    {
-        float cosine = MathF.Cos(angle);
-        float sine = MathF.Sin(angle);
-        return v * cosine + Vector3.Cross(v, axis) * sine + axis * Vector3.Dot(axis, v) * (1 - cosine);
-    }
-
-    private void RenderAppendages()
-    {
-        float unwrapInterpolant = oldPositions.Count / (float)Lifetime;
-        for (int i = 0; i < appendages.Count; i++)
-        {
-            Texture2D texture = appendages[i].Texture.Value;
-            Vector2 origin = appendages[i].Origin;
-            float vinePositionInterpolant = appendages[i].VinePositionInterpolant;
-
-            int index = (int)(vinePositionInterpolant * (Lifetime - 2f));
-            if (index >= oldPositions.Count - 1)
-                continue;
-
-            // Perform a bunch of math to calculate the scale of the appendage at the given position, making it appear and disappear based on how .
-            float positionInterpolant = vinePositionInterpolant * (Lifetime - 1f) % 1f;
-            float growthInterpolant = LumUtils.InverseLerp(-0.15f, 0.05f, positionInterpolant - (1f - unwrapInterpolant));
-            float easedGrowthInterpolant = EasingCurves.Quadratic.Evaluate(EasingType.In, growthInterpolant);
-            float scale = easedGrowthInterpolant * appendages[i].MaxScale * CalculateScaleAtVineInterpolant(vinePositionInterpolant);
-
-            Vector3 position3D = Vector3.Lerp(oldPositions[index], oldPositions[index + 1], positionInterpolant);
-            Vector2 drawPosition = new Vector2(position3D.X, position3D.Y) - Main.screenPosition;
-
-            float wind = LumUtils.AperiodicSin(Main.GlobalTimeWrappedHourly * 0.7f + position3D.X * 0.03f) * 0.5f + Main.WindForVisuals;
-            float rotation = appendages[i].Angle + wind * 0.18f;
-
-            Main.spriteBatch.Draw(texture, drawPosition, null, Color.White, rotation, origin, scale, 0, 0f);
-        }
-    }
-
     public override void DrawBehind(int index, List<int> behindNPCsAndTiles, List<int> behindNPCs, List<int> behindProjectiles, List<int> overPlayers, List<int> overWiresUI)
     {
-        behindNPCs.Add(index);
+        overPlayers.Add(index);
     }
 
     public override bool PreDraw(ref Color lightColor)
@@ -249,7 +228,15 @@ public class BrutalVine : ModProjectile
 
     private float CalculateScaleAtVineInterpolant(float vineInterpolant)
     {
-        return LumUtils.InverseLerp(-0.08f, 0f, vineInterpolant - (1f - Projectile.scale));
+        return MathHelper.SmoothStep(0f, 1f, LumUtils.InverseLerp(-0.5f, 0f, vineInterpolant - (1f - Projectile.scale)));
+    }
+
+    // https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
+    private static Vector3 RodriguesRotation(Vector3 v, Vector3 axis, float angle)
+    {
+        float cosine = MathF.Cos(angle);
+        float sine = MathF.Sin(angle);
+        return v * cosine + Vector3.Cross(v, axis) * sine + axis * Vector3.Dot(axis, v) * (1 - cosine);
     }
 
     private void RenderVine()
@@ -306,24 +293,20 @@ public class BrutalVine : ModProjectile
             }
         }
 
-        bool orthographic = true;
         Vector3 cameraPosition = new Vector3(Main.screenPosition + WotGUtils.ViewportSize * 0.5f, 0f);
-        Matrix view = Matrix.CreateLookAt(cameraPosition, cameraPosition + Vector3.UnitZ, Vector3.UnitY * -Main.LocalPlayer.gravDir);
-        Matrix projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver2 / Main.GameViewMatrix.Zoom.X, Main.instance.GraphicsDevice.Viewport.AspectRatio, 0.01f, 6400f);
-        if (orthographic)
-        {
-            view = Matrix.CreateTranslation(-Main.screenPosition.X, -Main.screenPosition.Y, 0f) * Main.GameViewMatrix.TransformationMatrix;
-            projection = Matrix.CreateOrthographicOffCenter(0f, WotGUtils.ViewportSize.X, WotGUtils.ViewportSize.Y, 0f, -2000f, 2000f);
-        }
-
+        Matrix view = Matrix.CreateTranslation(-Main.screenPosition.X, -Main.screenPosition.Y, 0f) * Main.GameViewMatrix.TransformationMatrix;
+        Matrix projection = Matrix.CreateOrthographicOffCenter(0f, WotGUtils.ViewportSize.X, WotGUtils.ViewportSize.Y, 0f, -2000f, 2000f);
         Matrix matrix = view * projection;
+        Vector3 lightPosition = new Vector3(SunMoonPositionRecorder.SunPosition / Main.ScreenSize.ToVector2(), -0.51f);
 
         ManagedShader vineShader = ShaderManager.GetShader("HeavenlyArsenal.BrutalForgivenessVineShader");
         vineShader.TrySetParameter("uWorldViewProjection", matrix);
         vineShader.TrySetParameter("screenSize", WotGUtils.ViewportSize);
         vineShader.TrySetParameter("gameZoom", Main.GameViewMatrix.Zoom);
-        vineShader.TrySetParameter("textureLookupZoom", new Vector2(0.3f, 2f));
-        vineShader.TrySetParameter("diffuseLightExponent", 1.25f);
+        vineShader.TrySetParameter("textureLookupZoom", new Vector2(0.3f, 6f));
+        vineShader.TrySetParameter("diffuseLightExponent", 2.85f);
+        vineShader.TrySetParameter("ambientLight", Vector3.One);
+        vineShader.TrySetParameter("lightPosition", lightPosition);
         vineShader.SetTexture(TextureAssets.Projectile[Type].Value, 1, SamplerState.LinearWrap);
         vineShader.SetTexture(normalMapTexture.Value, 2, SamplerState.LinearWrap);
         vineShader.SetTexture(LightingMaskTargetManager.LightTarget, 3);
@@ -332,22 +315,51 @@ public class BrutalVine : ModProjectile
         Main.instance.GraphicsDevice.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, vertices, 0, vertices.Length, indices, 0, indices.Length / 3);
     }
 
-    private void DrawVinesSeparately(On_Main.orig_DrawProjectiles orig, Main self)
+    private void RenderAppendages()
     {
+        float unwrapInterpolant = oldPositions.Count / (float)Lifetime;
+        for (int i = 0; i < appendages.Count; i++)
+        {
+            Texture2D texture = appendages[i].Texture.Value;
+            Vector2 origin = appendages[i].Origin;
+            float vinePositionInterpolant = appendages[i].VinePositionInterpolant;
+
+            int index = (int)(vinePositionInterpolant * (Lifetime - 2f));
+            if (index >= oldPositions.Count - 1)
+                continue;
+
+            // Perform a bunch of math to calculate the scale of the appendage at the given position, making it appear and disappear based on how .
+            float positionInterpolant = vinePositionInterpolant * (Lifetime - 1f) % 1f;
+            float growthInterpolant = LumUtils.InverseLerp(-0.15f, 0.05f, positionInterpolant - (1f - unwrapInterpolant));
+            float easedGrowthInterpolant = EasingCurves.Quadratic.Evaluate(EasingType.In, growthInterpolant);
+            float scale = easedGrowthInterpolant * appendages[i].MaxScale * CalculateScaleAtVineInterpolant(vinePositionInterpolant);
+
+            Vector3 position3D = Vector3.Lerp(oldPositions[index], oldPositions[index + 1], positionInterpolant);
+            Vector2 drawPosition = new Vector2(position3D.X, position3D.Y) - Main.screenPosition;
+
+            float wind = LumUtils.AperiodicSin(Main.GlobalTimeWrappedHourly * 0.7f + position3D.X * 0.03f) * 0.5f + Main.WindForVisuals;
+            float rotation = appendages[i].Angle + wind * 0.18f;
+
+            Main.spriteBatch.Draw(texture, drawPosition, null, Color.White, rotation, origin, scale, 0, 0f);
+        }
+    }
+
+    private void DrawVinesSeparately(On_Main.orig_DrawPlayers_AfterProjectiles orig, Main self)
+    {
+        orig(self);
+
         // Not doing this results in frustrating layering artifacts on the vines, with back vertices rendering over front vertices.
         if (LumUtils.AnyProjectiles(Type))
         {
             target.Request(Main.screenWidth, Main.screenHeight, 0, () =>
             {
-                Main.spriteBatch.ResetToDefault(false);
+                Main.instance.GraphicsDevice.RasterizerState = RasterizerState.CullCounterClockwise;
 
                 foreach (Projectile vine in Main.ActiveProjectiles)
                 {
                     if (vine.type == Type)
                         vine.As<BrutalVine>().RenderVine();
                 }
-
-                Main.spriteBatch.End();
             });
             if (target.TryGetTarget(0, out RenderTarget2D? rt) && rt is not null)
             {
@@ -356,6 +368,5 @@ public class BrutalVine : ModProjectile
                 Main.spriteBatch.End();
             }
         }
-        orig(self);
     }
 }
