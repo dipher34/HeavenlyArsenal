@@ -191,7 +191,8 @@ public class BrutalVine : ModProjectile
 
     public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
     {
-        ScreenShakeSystem.StartShakeAtPoint(target.Center, 3f, shakeStrengthDissipationIncrement: 0.6f);
+        if (ScreenShakeSystem.OverallShakeIntensity < 5f)
+            ScreenShakeSystem.StartShakeAtPoint(target.Center, 2.5f, shakeStrengthDissipationIncrement: 0.6f);
     }
 
     public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
