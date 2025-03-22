@@ -115,7 +115,7 @@ float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD
     // Apply glow effects around the black hole.
     float glowAttenuation = smoothstep(5, 0, distanceFromBlackHole / blackHoleRadius);
     float4 accretionDiskColorWithAlpha = float4(accretionDiskColor, 1);
-    result += clamp(0.3 / pow(distanceFromBlackHole, 4.6) * accretionDiskColorWithAlpha, 0, 2) * glowAttenuation * lerp(1, accretionDiskColorWithAlpha * 0.12, capturedLightInterpolant);
+    result += clamp(0.3 / pow(distanceFromBlackHole, 5) * accretionDiskColorWithAlpha, 0, 2) * glowAttenuation * lerp(1, accretionDiskColorWithAlpha * 0.12, capturedLightInterpolant);
     
     float glowDistance = (distance(startingSamplePoint, blackHoleCenter) - blackHoleRadius * 1.7);
     result += 0.015 / abs(glowDistance) * smoothstep(0.2, 0.1, glowDistance);
