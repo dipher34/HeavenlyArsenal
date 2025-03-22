@@ -6,7 +6,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
 using NoxusBoss.Core.DataStructures;
-using NoxusBoss.Core.Graphics.Automators;
 using System;
 using System.IO;
 using Terraria;
@@ -14,7 +13,7 @@ using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Items.Weapons.Magic.RocheLimit;
 
-public class RocheLimitBlackHole : ModProjectile, IDrawsWithShader
+public class RocheLimitBlackHole : ModProjectile
 {
     public enum BlackHoleState
     {
@@ -47,6 +46,24 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsWithShader
     /// The current state of this black hole.
     /// </summary>
     public BlackHoleState State
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// The diameter of distortion effects produced by this black hole.
+    /// </summary>
+    public float DistortionDiameter
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// The intensity of glow effects over the sun.
+    /// </summary>
+    public float SunGlowIntensity
     {
         get;
         set;
@@ -90,17 +107,22 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsWithShader
     /// <summary>
     /// How long it takes for this black hole to reach its maximum radius after spawning in.
     /// </summary>
-    public static int GrowthTime => LumUtils.SecondsToFrames(0.67f);
+    public static int GrowthTime => LumUtils.SecondsToFrames(0.85f);
 
     /// <summary>
-    /// The maximum diameter of the star before it transforms into a black hole.
+    /// The maximum diameter of the star before it collapses.
     /// </summary>
-    public static float MaxSunDiameter => 540f;
+    public static float MaxSunDiameter => 610f;
+
+    /// <summary>
+    /// The diameter factor of the star before it transforms into a black hole.
+    /// </summary>
+    public static float CollapsedSunDiameterFactor => 0.65f;
 
     /// <summary>
     /// The maximum diameter of this black hole.
     /// </summary>
-    public static float MaxBlackHoleDiameter => 325f;
+    public static float MaxBlackHoleDiameter => MaxSunDiameter * CollapsedSunDiameterFactor;
 
     // Red -> orange -> yellow -> white -> bright blue.
     /// <summary>
@@ -149,8 +171,8 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsWithShader
                 break;
         }
 
-        float idealRotation = SmoothClamp(Projectile.velocity.X * 0.014f, 0.36f);
-        Projectile.rotation = Projectile.rotation.AngleLerp(idealRotation, 0.1f);
+        float idealRotation = SmoothClamp(Projectile.velocity.X * 0.015f, 0.4f);
+        Projectile.rotation = Projectile.rotation.AngleLerp(idealRotation, 0.19f);
 
         Time++;
         ExistenceTimer++;
@@ -162,18 +184,26 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsWithShader
         StandardMouseHoverMotion();
 
         int sunFormTime = 30;
-        if (Time <= sunFormTime)
-        {
-            float sunGrowInterpolant = Time / sunFormTime;
-            SunDiameter = EasingCurves.Sine.Evaluate(EasingType.Out, sunGrowInterpolant) * MaxSunDiameter * 0.5f;
-        }
+        int collapseWaitDelay = 15;
+        int collapseTime = 120;
+        float sunGrowInterpolant = LumUtils.InverseLerp(0f, sunFormTime, Time);
+        float sunExpandInterpolant = EasingCurves.Sine.Evaluate(EasingType.Out, sunGrowInterpolant);
+
+        float collapseInterpolant = LumUtils.InverseLerp(0f, collapseTime, Time - sunFormTime - collapseWaitDelay);
+        SunTemperature = MathHelper.SmoothStep(1200f, 12000f, collapseInterpolant);
+        SunGlowIntensity = MathF.Pow(collapseInterpolant, 0.6f);
+        sunExpandInterpolant = MathHelper.SmoothStep(sunExpandInterpolant, CollapsedSunDiameterFactor, MathF.Pow(collapseInterpolant, 0.7f));
+
+        SunDiameter = sunExpandInterpolant * MaxSunDiameter;
+        DistortionDiameter = collapseInterpolant * SunDiameter * 0.33f;
 
         float horizontalMovement = Projectile.position.X - Projectile.oldPosition.X;
         float sunSpinSpeedFactor = Math.Clamp(MaxSunDiameter / (SunDiameter + 1f), 0.01f, 4f) * LumUtils.InverseLerp(4f, 0f, horizontalMovement);
         float extraSpin = horizontalMovement * -0.001f;
         SunSpinTime += Owner.HorizontalDirectionTo(Projectile.Center) * sunSpinSpeedFactor * -0.009f + extraSpin;
 
-        SunTemperature = MathHelper.Lerp(1200f, 12000f, 1f - LumUtils.Cos01(MathHelper.TwoPi * Time / 300f));
+        if (collapseInterpolant >= 1f)
+            SwitchState(BlackHoleState.StabilizeNearMouse);
     }
 
     private void DoBehavior_StabilizeNearMouse()
@@ -181,8 +211,11 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsWithShader
         SetPlayerItemAnimations();
         StandardMouseHoverMotion();
 
-        float growthInterpolant = LumUtils.InverseLerp(0f, GrowthTime, ExistenceTimer);
-        BlackHoleDiameter = EasingCurves.Cubic.Evaluate(EasingType.InOut, growthInterpolant) * MaxBlackHoleDiameter;
+        float growthInterpolant = LumUtils.InverseLerp(0f, GrowthTime, Time);
+        float easedGrowthInterpolant = EasingCurves.Cubic.Evaluate(EasingType.InOut, growthInterpolant);
+        BlackHoleDiameter = easedGrowthInterpolant * MaxBlackHoleDiameter;
+        SunDiameter = (1f - easedGrowthInterpolant) * MaxSunDiameter * CollapsedSunDiameterFactor;
+        DistortionDiameter = MathF.Max(DistortionDiameter, BlackHoleDiameter * 0.275f);
     }
 
     private void DoBehavior_Vanish()
@@ -190,6 +223,9 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsWithShader
         Projectile.velocity = (Projectile.velocity * 0.92f).ClampLength(0f, 32f);
         BlackHoleDiameter *= 0.9f;
         SunDiameter *= 0.9f;
+        DistortionDiameter *= 0.9f;
+        if (DistortionDiameter < 3f)
+            DistortionDiameter = 0f;
     }
 
     /// <summary>
@@ -262,7 +298,10 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsWithShader
         Projectile.timeLeft = DisappearanceTime;
     }
 
-    public void RenderBlackHole()
+    /// <summary>
+    /// Renders the sun form for this projectile.
+    /// </summary>
+    private void RenderBlackHole()
     {
         float blackRadius = 0.3f;
         Vector2 drawPosition = Projectile.Center - Main.screenPosition;
@@ -271,26 +310,30 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsWithShader
         blackHoleShader.TrySetParameter("blackHoleRadius", 0.3f);
         blackHoleShader.TrySetParameter("blackHoleCenter", Vector3.Zero);
         blackHoleShader.TrySetParameter("aspectRatioCorrectionFactor", 1f);
-        blackHoleShader.TrySetParameter("accretionDiskColor", new Color(90, 126, 210).ToVector3()); // Blue: new Color(90, 126, 210).ToVector3()
+        blackHoleShader.TrySetParameter("accretionDiskColor", new Color(246, 105, 60).ToVector3() * 1.5f);
         blackHoleShader.TrySetParameter("cameraAngle", 0.32f);
         blackHoleShader.TrySetParameter("cameraRotationAxis", new Vector3(1f, 0f, 0f));
-        blackHoleShader.TrySetParameter("accretionDiskScale", new Vector3(1.1f, 0.2f, 1f));
+        blackHoleShader.TrySetParameter("accretionDiskScale", new Vector3(1.15f, 0.2f, 1f));
         blackHoleShader.TrySetParameter("zoom", Vector2.One * blackRadius * 2.7f);
         blackHoleShader.TrySetParameter("accretionDiskRadius", 0.33f);
+        blackHoleShader.TrySetParameter("accretionDiskSpinSpeed", 1.25f);
         blackHoleShader.SetTexture(GennedAssets.Textures.Noise.FireNoiseA, 1, SamplerState.LinearWrap);
         blackHoleShader.Apply();
 
         Main.spriteBatch.Draw(invisiblePixel, drawPosition, null, Color.Transparent, Projectile.rotation, invisiblePixel.Size() * 0.5f, BlackHoleDiameter, 0, 0f);
     }
 
+    /// <summary>
+    /// Renders the sun form for this projectile.
+    /// </summary>
     private void RenderSun()
     {
         Vector2 drawPosition = Projectile.Center - Main.screenPosition;
         Vector2 scale = Vector2.One * SunDiameter / GennedAssets.Textures.Noise.DendriticNoiseZoomedOut.Value.Size();
 
         // Calculate sun colors.
-        float temperatureInterpolant = MathF.Pow(1f - MathF.Exp(-SunTemperature / 4000f), 2.3f);
         float coronaExponent = 1.23f;
+        float temperatureInterpolant = MathF.Pow(1f - MathF.Exp(-SunTemperature / 4000f), 2.3f);
         Vector3 mainColor = TemperatureGradient.SampleColor(temperatureInterpolant).ToVector3();
         Vector3 coronaColor = new Vector3(MathF.Pow(mainColor.X, coronaExponent), MathF.Pow(mainColor.Y, coronaExponent), MathF.Pow(mainColor.Z, coronaExponent));
 
@@ -303,6 +346,7 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsWithShader
             coronaColor.Y = 0f;
         if (coronaColor.Z < minCoronaThreshold)
             coronaColor.Z = 0f;
+        coronaColor = Vector3.Lerp(coronaColor, Vector3.One * 2f, temperatureInterpolant);
 
         RenderShineGlow(drawPosition, new Color(coronaColor));
 
@@ -321,8 +365,18 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsWithShader
         // Draw the sun.
         Texture2D fireNoise = GennedAssets.Textures.Noise.FireNoiseA;
         Main.spriteBatch.Draw(fireNoise, drawPosition, null, new Color(mainColor), Projectile.rotation, fireNoise.Size() * 0.5f, scale, 0, 0f);
+
+        // Draw glow effects.
+        Main.pixelShader.CurrentTechnique.Passes[0].Apply();
+        float glowScale = (0.75f + LumUtils.Cos01(Main.GlobalTimeWrappedHourly * 54f) * 0.2f) * SunGlowIntensity;
+        Texture2D glow = GennedAssets.Textures.GreyscaleTextures.BloomCircle;
+        Color glowColor = new Color(mainColor * 2f) * SunGlowIntensity;
+        Main.spriteBatch.Draw(glow, drawPosition, null, glowColor, 0f, glow.Size() * 0.5f, Vector2.One * SunDiameter * glowScale / glow.Size(), 0, 0f);
     }
 
+    /// <summary>
+    /// Renders the shine glow behind this projectile's sun form
+    /// </summary>
     private void RenderShineGlow(Vector2 drawPosition, Color shineColor)
     {
         Texture2D noise = GennedAssets.Textures.Noise.FireNoiseA;
@@ -333,7 +387,17 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsWithShader
         Main.spriteBatch.Draw(noise, drawPosition, null, shineColor * 0.45f, Projectile.rotation, noise.Size() * 0.5f, shineScale, 0, 0f);
     }
 
-    public void DrawWithShader(SpriteBatch spriteBatch) => RenderSun();
+    /// <summary>
+    /// Renders this projectile.
+    /// </summary>
+    public void RenderSelf()
+    {
+        if (SunDiameter >= 0.5f)
+            RenderSun();
+
+        if (BlackHoleDiameter >= 0.5f)
+            RenderBlackHole();
+    }
 
     public override bool? CanDamage() => State == BlackHoleState.StabilizeNearMouse;
 

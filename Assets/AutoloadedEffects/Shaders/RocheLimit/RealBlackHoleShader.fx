@@ -6,6 +6,7 @@ float blackHoleRadius;
 float accretionDiskRadius;
 float aspectRatioCorrectionFactor;
 float cameraAngle;
+float accretionDiskSpinSpeed;
 float2 zoom;
 float3 cameraRotationAxis;
 float3 blackHoleCenter;
@@ -44,7 +45,7 @@ float4 Sample(float3 position)
     
     // Apply some noise to the glow calculation to make it feel less artifically halo-y.
     float2 radial = float2(atan2(offsetFromBlackHole.x, offsetFromBlackHole.z) / 6.283 + 0.5, length(offsetFromBlackHole));
-    accretionDiskGlow *= tex2D(noiseTexture, radial * float2(3, 3.5) + globalTime * float2(6.3, -2));
+    accretionDiskGlow *= tex2D(noiseTexture, radial * float2(3, 3.5) + globalTime * float2(accretionDiskSpinSpeed * 6.3, -2));
     
     // Combine the results with the base accretion disk color.
     float4 accretionDiskColorWithAlpha = float4(pow(saturate(accretionDiskColor), 1.1), 1) * accretionDiskGlow * 0.75;
@@ -114,7 +115,7 @@ float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD
     // Apply glow effects around the black hole.
     float glowAttenuation = smoothstep(5, 0, distanceFromBlackHole / blackHoleRadius);
     float4 accretionDiskColorWithAlpha = float4(accretionDiskColor, 1);
-    result += clamp(0.3 / pow(distanceFromBlackHole, 3) * accretionDiskColorWithAlpha, 0, 2) * glowAttenuation * lerp(1, accretionDiskColorWithAlpha * 0.12, capturedLightInterpolant);
+    result += clamp(0.3 / pow(distanceFromBlackHole, 4.6) * accretionDiskColorWithAlpha, 0, 2) * glowAttenuation * lerp(1, accretionDiskColorWithAlpha * 0.12, capturedLightInterpolant);
     
     float glowDistance = (distance(startingSamplePoint, blackHoleCenter) - blackHoleRadius * 1.7);
     result += 0.015 / abs(glowDistance) * smoothstep(0.2, 0.1, glowDistance);
