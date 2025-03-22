@@ -176,6 +176,11 @@ Mods: {
 				DisplayName: Cosmic Watergun
 				Tooltip: ""
 			}
+
+			RocheLimit: {
+				DisplayName: The Roche Limit
+				Tooltip: ""
+			}
 		}
 
 		Projectiles: {
@@ -213,6 +218,7 @@ Mods: {
 			BrutalForgivenessProjectile.DisplayName: Brutal Forgiveness
 			BrutalVine.DisplayName: Brutal Vine
 			Mercy.DisplayName: mercy
+			RocheLimitProjectile.DisplayName: The Roche Limit
 		}
 	}
 }
