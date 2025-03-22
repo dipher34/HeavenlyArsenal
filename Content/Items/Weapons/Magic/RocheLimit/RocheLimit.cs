@@ -42,7 +42,7 @@ public class RocheLimit : ModItem
         Item.height = 12;
         Item.DamageType = DamageClass.Magic;
         Item.damage = 12000;
-        Item.knockBack = 3f;
+        Item.knockBack = 0f;
         Item.useTime = 25;
         Item.useAnimation = 25;
         Item.autoReuse = true;
