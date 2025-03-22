@@ -107,7 +107,7 @@ public class RocheLimitBlackHole : ModProjectile
     /// <summary>
     /// How long it takes for this black hole to reach its maximum radius after spawning in.
     /// </summary>
-    public static int GrowthTime => LumUtils.SecondsToFrames(0.85f);
+    public static int GrowthTime => LumUtils.SecondsToFrames(0.45f);
 
     /// <summary>
     /// The maximum diameter of the star before it collapses.
@@ -191,7 +191,7 @@ public class RocheLimitBlackHole : ModProjectile
 
         float collapseInterpolant = LumUtils.InverseLerp(0f, collapseTime, Time - sunFormTime - collapseWaitDelay);
         SunTemperature = MathHelper.SmoothStep(1200f, 12000f, collapseInterpolant);
-        SunGlowIntensity = MathF.Pow(collapseInterpolant, 0.6f);
+        SunGlowIntensity = MathF.Pow(LumUtils.InverseLerp(0.4f, 1f, collapseInterpolant), 0.4f);
         sunExpandInterpolant = MathHelper.SmoothStep(sunExpandInterpolant, CollapsedSunDiameterFactor, MathF.Pow(collapseInterpolant, 0.7f));
 
         SunDiameter = sunExpandInterpolant * MaxSunDiameter;
@@ -201,6 +201,8 @@ public class RocheLimitBlackHole : ModProjectile
         float sunSpinSpeedFactor = Math.Clamp(MaxSunDiameter / (SunDiameter + 1f), 0.01f, 4f) * LumUtils.InverseLerp(4f, 0f, horizontalMovement);
         float extraSpin = horizontalMovement * -0.001f;
         SunSpinTime += Owner.HorizontalDirectionTo(Projectile.Center) * sunSpinSpeedFactor * -0.009f + extraSpin;
+
+        ScreenShakeSystem.StartShakeAtPoint(Projectile.Center, collapseInterpolant.Squared() * 1.5f);
 
         if (collapseInterpolant >= 1f)
             SwitchState(BlackHoleState.StabilizeNearMouse);
@@ -214,16 +216,19 @@ public class RocheLimitBlackHole : ModProjectile
         float growthInterpolant = LumUtils.InverseLerp(0f, GrowthTime, Time);
         float easedGrowthInterpolant = EasingCurves.Cubic.Evaluate(EasingType.InOut, growthInterpolant);
         BlackHoleDiameter = easedGrowthInterpolant * MaxBlackHoleDiameter;
-        SunDiameter = (1f - easedGrowthInterpolant) * MaxSunDiameter * CollapsedSunDiameterFactor;
+        SunDiameter = LumUtils.InverseLerp(0.2f, 0f, easedGrowthInterpolant) * MaxSunDiameter * CollapsedSunDiameterFactor;
         DistortionDiameter = MathF.Max(DistortionDiameter, BlackHoleDiameter * 0.275f);
+
+        ScreenShakeSystem.StartShakeAtPoint(Projectile.Center, LumUtils.Convert01To010(growthInterpolant) * 10f, shakeStrengthDissipationIncrement: 1.2f);
     }
 
     private void DoBehavior_Vanish()
     {
+        float decayFactor = 0.81f;
         Projectile.velocity = (Projectile.velocity * 0.92f).ClampLength(0f, 32f);
-        BlackHoleDiameter *= 0.9f;
-        SunDiameter *= 0.9f;
-        DistortionDiameter *= 0.9f;
+        BlackHoleDiameter *= decayFactor;
+        SunDiameter *= decayFactor;
+        DistortionDiameter *= decayFactor;
         if (DistortionDiameter < 3f)
             DistortionDiameter = 0f;
     }
@@ -233,7 +238,7 @@ public class RocheLimitBlackHole : ModProjectile
     /// </summary>
     private void StandardMouseHoverMotion()
     {
-        float hoverDistance = SmoothClamp(Owner.Distance(Main.MouseWorld), MaxBlackHoleDiameter * 0.5f + 56f);
+        float hoverDistance = SmoothClamp(Owner.Distance(Main.MouseWorld), MaxBlackHoleDiameter * 0.5f + 100f);
         if (hoverDistance < 120f)
             hoverDistance = 120f;
 
@@ -304,16 +309,17 @@ public class RocheLimitBlackHole : ModProjectile
     private void RenderBlackHole()
     {
         float blackRadius = 0.3f;
+        float accretionDiskScale = MathF.Pow(BlackHoleDiameter / MaxBlackHoleDiameter, 0.65f);
         Vector2 drawPosition = Projectile.Center - Main.screenPosition;
         Texture2D invisiblePixel = MiscTexturesRegistry.InvisiblePixel.Value;
         ManagedShader blackHoleShader = ShaderManager.GetShader("HeavenlyArsenal.RealBlackHoleShader");
         blackHoleShader.TrySetParameter("blackHoleRadius", 0.3f);
         blackHoleShader.TrySetParameter("blackHoleCenter", Vector3.Zero);
         blackHoleShader.TrySetParameter("aspectRatioCorrectionFactor", 1f);
-        blackHoleShader.TrySetParameter("accretionDiskColor", new Color(246, 105, 60).ToVector3() * 1.5f);
+        blackHoleShader.TrySetParameter("accretionDiskColor", new Color(72, 112, 246).ToVector3() * accretionDiskScale.Squared() * 1.5f);
         blackHoleShader.TrySetParameter("cameraAngle", 0.32f);
         blackHoleShader.TrySetParameter("cameraRotationAxis", new Vector3(1f, 0f, 0f));
-        blackHoleShader.TrySetParameter("accretionDiskScale", new Vector3(1.15f, 0.2f, 1f));
+        blackHoleShader.TrySetParameter("accretionDiskScale", accretionDiskScale * new Vector3(1.12f, 0.2f, 1f));
         blackHoleShader.TrySetParameter("zoom", Vector2.One * blackRadius * 2.7f);
         blackHoleShader.TrySetParameter("accretionDiskRadius", 0.33f);
         blackHoleShader.TrySetParameter("accretionDiskSpinSpeed", 1.25f);
@@ -368,10 +374,11 @@ public class RocheLimitBlackHole : ModProjectile
 
         // Draw glow effects.
         Main.pixelShader.CurrentTechnique.Passes[0].Apply();
-        float glowScale = (0.75f + LumUtils.Cos01(Main.GlobalTimeWrappedHourly * 54f) * 0.2f) * SunGlowIntensity;
+        float glowScale = (0.75f + LumUtils.Cos01(Main.GlobalTimeWrappedHourly * 75f) * SunGlowIntensity * 0.4f) * SunGlowIntensity;
         Texture2D glow = GennedAssets.Textures.GreyscaleTextures.BloomCircle;
-        Color glowColor = new Color(mainColor * 2f) * SunGlowIntensity;
-        Main.spriteBatch.Draw(glow, drawPosition, null, glowColor, 0f, glow.Size() * 0.5f, Vector2.One * SunDiameter * glowScale / glow.Size(), 0, 0f);
+        Color glowColor = new Color(0.81f, 1f, 1f) * SunGlowIntensity * 0.7f;
+        for (int i = 0; i < 2; i++)
+            Main.spriteBatch.Draw(glow, drawPosition, null, glowColor, 0f, glow.Size() * 0.5f, Vector2.One * SunDiameter * glowScale / glow.Size(), 0, 0f);
     }
 
     /// <summary>
