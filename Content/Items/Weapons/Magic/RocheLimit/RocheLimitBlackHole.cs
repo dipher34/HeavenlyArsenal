@@ -27,21 +27,6 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
 
     public float Layer => 1f;
 
-    /* Weapon concept:
-     * 
-     * A weapon which conjures a localized black hole in front of the player, with incredible mana reserves being casted to keep it stabilized.
-     * Nearby enemies are sucked into the black hole, becoming spaghettified and disintegrated. Once inside the black hole they take unimaginable quantities of damage every single frame.
-     * Upon death, the enemy's loot, along with a powerful burst of radiation from the black hole, are ejected outward at incredible speeds.
-     * This ejection can do damage on its own, causing afflicted enemies to be dissolved by extreme temperatures
-     */
-
-    // TODO list:
-    // 1. Set up usage animations, make the player cast energy that gets sucked into the black hole.
-    // 2. Make item use mana and die if the player doesn't have any more to use.
-    // 3. Add spaghettification/disintegration effects (Dear god I hope RTs work for this).
-    // 4. Add burst ejections.
-    // 5. Make a natural black hole dissipation effect instead of having the projectile get instantly deleted if casting conditions are not met.
-
     /// <summary>
     /// A remapped version of the temperature to fit a 0-1 interpolant range for color sampling.
     /// </summary>
@@ -262,6 +247,16 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
     }
 
     /// <summary>
+    /// Performs a smooth clamp that asymptotically approaches the maximum absolute value via a hyperbolic tangent function, rather than hard-clamping it past a threshold.
+    /// </summary>
+    /// <param name="x">The value to clamp.</param>
+    /// <param name="max">The maximum absolute value.</param>
+    private static float SmoothClamp(float x, float max)
+    {
+        return MathF.Tanh(x / max) * max;
+    }
+
+    /// <summary>
     /// Performs standard mouse hover motion for this black hole, making it stay near the mouse up to a given distance.
     /// </summary>
     private void StandardMouseHoverMotion()
@@ -365,16 +360,6 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
 
             RocheLimitBlackHoleRenderer.ParticleSystem.CreateNew(Projectile.Center, fireVelocity, Vector2.One * fireSize, fireColor);
         }
-    }
-
-    /// <summary>
-    /// Performs a smooth clamp that asymptotically approaches the maximum absolute value via a hyperbolic tangent function, rather than hard-clamping it past a threshold.
-    /// </summary>
-    /// <param name="x">The value to clamp.</param>
-    /// <param name="max">The maximum absolute value.</param>
-    private static float SmoothClamp(float x, float max)
-    {
-        return MathF.Tanh(x / max) * max;
     }
 
     /// <summary>
