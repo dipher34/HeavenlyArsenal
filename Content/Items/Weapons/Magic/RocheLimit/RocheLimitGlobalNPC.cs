@@ -138,9 +138,6 @@ public class RocheLimitGlobalNPC : GlobalNPC
         bool wasShreddedBefore = BeingShredded;
         BeingShredded = false;
         DownscaleFactor = MathHelper.Lerp(DownscaleFactor, 1f, 0.12f);
-        if (npc.realLife >= 0 && Main.npc[npc.realLife].TryGetGlobalNPC(out RocheLimitGlobalNPC ownerGlobalNPC))
-            DownscaleFactor = ownerGlobalNPC.DownscaleFactor;
-
         if (!npc.CanBeChasedBy() && !wasShreddedBefore)
             return;
 

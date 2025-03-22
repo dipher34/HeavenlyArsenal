@@ -223,6 +223,7 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
         SetPlayerItemAnimations();
         StandardMouseHoverMotion();
         CastMinorParticles();
+        AbsorbGores();
 
         float growthInterpolant = LumUtils.InverseLerp(0f, GrowthTime, Time);
         float easedGrowthInterpolant = EasingCurves.Cubic.Evaluate(EasingType.InOut, growthInterpolant);
@@ -322,6 +323,21 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
     }
 
     /// <summary>
+    /// Makes this black hole absorb and delete gores.
+    /// </summary>
+    private void AbsorbGores()
+    {
+        for (int i = 0; i < Main.maxGore; i++)
+        {
+            Gore gore = Main.gore[i];
+            gore.position = Vector2.Lerp(gore.position, Projectile.Center, 0.02f);
+            gore.velocity += gore.position.SafeDirectionTo(Projectile.Center) * 4f;
+            if (gore.position.WithinRange(Projectile.Center, 150f))
+                gore.active = false;
+        }
+    }
+
+    /// <summary>
     /// Switches the current state for this black hole.
     /// </summary>
     private void SwitchState(BlackHoleState state)
@@ -336,7 +352,8 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
     /// </summary>
     public void ReleaseJet(Vector2 jetDirection)
     {
-        ScreenShakeSystem.StartShakeAtPoint(Projectile.Center, 10f);
+        if (ScreenShakeSystem.OverallShakeIntensity < 7f)
+            ScreenShakeSystem.StartShakeAtPoint(Projectile.Center, 7f);
         if (Main.netMode != NetmodeID.MultiplayerClient)
         {
             int jetID = ModContent.ProjectileType<RelativisticJet>();
