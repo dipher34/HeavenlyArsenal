@@ -219,7 +219,7 @@ public class RocheLimitBlackHole : ModProjectile
         SunDiameter = LumUtils.InverseLerp(0.2f, 0f, easedGrowthInterpolant) * MaxSunDiameter * CollapsedSunDiameterFactor;
         DistortionDiameter = MathF.Max(DistortionDiameter, BlackHoleDiameter * 0.275f);
 
-        ScreenShakeSystem.StartShakeAtPoint(Projectile.Center, LumUtils.Convert01To010(growthInterpolant) * 10f, shakeStrengthDissipationIncrement: 1.2f);
+        ScreenShakeSystem.StartShakeAtPoint(Projectile.Center, LumUtils.Convert01To010(growthInterpolant) * 12.5f, shakeStrengthDissipationIncrement: 1.1f);
     }
 
     private void DoBehavior_Vanish()
