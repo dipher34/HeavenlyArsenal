@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Core.Graphics.RenderTargets;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Items.Weapons.Magic.RocheLimit;
@@ -12,6 +13,8 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Magic.RocheLimit;
 public class RocheLimitGlobalNPC : GlobalNPC
 {
     private static int timeSinceLastRTAccess;
+
+    private static Vector2? itemVelocityOverride;
 
     /// <summary>
     /// Whether this NPC is currently being shredded by a black hole.
@@ -47,6 +50,16 @@ public class RocheLimitGlobalNPC : GlobalNPC
         Main.ContentThatNeedsRenderTargets.Add(DisintegrationTarget = new InstancedRequestableTarget());
         On_Main.DrawNPC += DecreaseTargetScale;
         On_Main.DrawNPCs += ApplyDisintegrationEffect;
+        On_Item.NewItem_Inner += UseSpecialVelocity;
+    }
+
+    private static int UseSpecialVelocity(On_Item.orig_NewItem_Inner orig, IEntitySource source, int X, int Y, int Width, int Height, Item itemToClone, int Type, int Stack, bool noBroadcast, int pfix, bool noGrabDelay, bool reverseLookup)
+    {
+        int index = orig(source, X, Y, Width, Height, itemToClone, Type, Stack, noBroadcast, pfix, noBroadcast, reverseLookup);
+        if (index >= 0 && index < Main.maxItems && itemVelocityOverride is not null)
+            Main.item[index].velocity = itemVelocityOverride.Value.RotatedByRandom(0.1f);
+
+        return index;
     }
 
     private static void ApplyDisintegrationEffect(On_Main.orig_DrawNPCs orig, Main self, bool behindTiles)
@@ -150,7 +163,7 @@ public class RocheLimitGlobalNPC : GlobalNPC
 
         if (closestBlackHole is not null && npc.WithinRange(closestBlackHole.Center, 900f))
         {
-            Vector2 suctionOrigin = closestBlackHole.Center - Vector2.UnitY * 2f;
+            Vector2 suctionOrigin = closestBlackHole.Center;
 
             float suctionInterpolant = closestBlackHole.As<RocheLimitBlackHole>().BlackHoleDiameter / RocheLimitBlackHole.MaxBlackHoleDiameter;
             float suctionAcceleration = suctionInterpolant * 0.09f;
@@ -179,7 +192,19 @@ public class RocheLimitGlobalNPC : GlobalNPC
                 if (willDie)
                 {
                     npc.active = false;
-                    npc.NPCLoot();
+
+                    Vector2 jetDirection = Main.rand.NextVector2Unit().RotateTowards(closestBlackHole.AngleTo(Main.player[closestBlackHole.owner].Center), MathHelper.Pi * 0.4f);
+                    try
+                    {
+                        itemVelocityOverride = jetDirection * 65f;
+                        npc.NPCLoot();
+                    }
+                    finally
+                    {
+                        itemVelocityOverride = null;
+                    }
+
+                    closestBlackHole.As<RocheLimitBlackHole>().ReleaseJet(jetDirection);
                 }
                 else
                     npc.SimpleStrikeNPC(damage, 0);

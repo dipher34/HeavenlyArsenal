@@ -6,6 +6,8 @@ using NoxusBoss.Assets;
 using NoxusBoss.Content.NPCs.Bosses.NamelessDeity.SpecificEffectManagers;
 using NoxusBoss.Core.Graphics.FastParticleSystems;
 using NoxusBoss.Core.Graphics.RenderTargets;
+using System.Collections.Generic;
+using System.Linq;
 using Terraria;
 using Terraria.ModLoader;
 
@@ -13,6 +15,8 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Magic.RocheLimit;
 
 public class RocheLimitBlackHoleRenderer : ModSystem
 {
+    private static readonly List<IDrawsOverRocheLimitDistortion> drawCache = new List<IDrawsOverRocheLimitDistortion>(Main.maxProjectiles);
+
     /// <summary>
     /// The render target that holds all black holes.
     /// </summary>
@@ -73,29 +77,39 @@ public class RocheLimitBlackHoleRenderer : ModSystem
     private static void RenderIntoTarget()
     {
         ParticleSystem.RenderAll();
+        drawCache.Clear();
 
-        int blackHoleID = ModContent.ProjectileType<RocheLimitBlackHole>();
         foreach (Projectile blackHole in Main.ActiveProjectiles)
         {
-            Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearWrap, DepthStencilState.None, RasterizerState.CullNone, null, Main.GameViewMatrix.TransformationMatrix);
-
-            if (blackHole.type == blackHoleID)
-                blackHole.As<RocheLimitBlackHole>().RenderSelf();
-
-            Main.spriteBatch.End();
+            if (blackHole.ModProjectile is IDrawsOverRocheLimitDistortion draw)
+                drawCache.Add(draw);
         }
+
+        Main.spriteBatch.Begin();
+
+        float previousLayer = -9999f;
+        foreach (IDrawsOverRocheLimitDistortion draw in drawCache.OrderByDescending(d => d.Layer))
+        {
+            bool layerChanged = draw.Layer != previousLayer;
+
+            if (layerChanged)
+            {
+                Main.spriteBatch.End();
+                Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearWrap, DepthStencilState.None, RasterizerState.CullNone, null, Main.GameViewMatrix.TransformationMatrix);
+                previousLayer = draw.Layer;
+            }
+
+            draw.RenderOverDistortion();
+        }
+        Main.spriteBatch.End();
     }
 
     private static void RenderBlackHolesWrapper(On_Main.orig_DrawProjectiles orig, Main self)
     {
         orig(self);
 
-        int blackHoleID = ModContent.ProjectileType<RocheLimitBlackHole>();
-        if (!LumUtils.AnyProjectiles(blackHoleID))
-            return;
-
         blackHoleTarget.Request(Main.screenWidth, Main.screenHeight, 0, RenderIntoTarget);
-        if (blackHoleTarget.TryGetTarget(0, out RenderTarget2D target) && target is not null)
+        if (blackHoleTarget.TryGetTarget(0, out RenderTarget2D target) && target is not null && drawCache.Count >= 1)
         {
             Vector2 aspectRatioCorrectionFactor = new Vector2(WotGUtils.ViewportSize.X / WotGUtils.ViewportSize.Y, 1f);
             GetBlackHoleData(aspectRatioCorrectionFactor, out float[] blackHoleRadii, out Vector2[] blackHolePositions);

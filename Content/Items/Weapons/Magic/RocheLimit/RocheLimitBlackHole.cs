@@ -11,13 +11,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Terraria;
-using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Items.Weapons.Magic.RocheLimit;
 
-public class RocheLimitBlackHole : ModProjectile
+public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
 {
     public enum BlackHoleState
     {
@@ -25,6 +24,8 @@ public class RocheLimitBlackHole : ModProjectile
         StabilizeNearMouse,
         Vanish
     }
+
+    public float Layer => 1f;
 
     /* Weapon concept:
      * 
@@ -121,12 +122,12 @@ public class RocheLimitBlackHole : ModProjectile
     /// <summary>
     /// The maximum diameter of the star before it collapses.
     /// </summary>
-    public static float MaxSunDiameter => 610f;
+    public static float MaxSunDiameter => 700f;
 
     /// <summary>
     /// The diameter factor of the star before it transforms into a black hole.
     /// </summary>
-    public static float CollapsedSunDiameterFactor => 0.65f;
+    public static float CollapsedSunDiameterFactor => 0.7f;
 
     /// <summary>
     /// The maximum diameter of this black hole.
@@ -336,6 +337,37 @@ public class RocheLimitBlackHole : ModProjectile
     }
 
     /// <summary>
+    /// Makes this black hole fire a relativistic jet.
+    /// </summary>
+    public void ReleaseJet(Vector2 jetDirection)
+    {
+        ScreenShakeSystem.StartShakeAtPoint(Projectile.Center, 10f);
+        if (Main.netMode != NetmodeID.MultiplayerClient)
+        {
+            int jetID = ModContent.ProjectileType<RelativisticJet>();
+            float jetSpeed = 29f;
+            Vector2 jetVelocity = jetDirection * jetSpeed;
+            Projectile.NewProjectile(Projectile.GetSource_FromThis(), Projectile.Center - jetVelocity, jetVelocity, jetID, Projectile.damage * 3, 0f, Projectile.owner);
+        }
+
+        StrongBloom bloom = new StrongBloom(Projectile.Center, Vector2.Zero, Color.DeepSkyBlue, 5f, 20);
+        bloom.Spawn();
+
+        bloom = new StrongBloom(Projectile.Center, Vector2.Zero, Color.White * 0.6f, 3f, 18);
+        bloom.Spawn();
+
+        for (int i = 0; i < 75; i++)
+        {
+            float fireSize = Main.rand.NextFloat(15f, 120f);
+            Vector2 fireVelocity = jetDirection.RotatedByRandom(0.48f) * Main.rand.NextFloat(150f);
+            Color fireColor = Color.Lerp(Color.White, Color.DeepSkyBlue, Main.rand.NextFloat(0.4f));
+            fireColor.A /= 4;
+
+            RocheLimitBlackHoleRenderer.ParticleSystem.CreateNew(Projectile.Center, fireVelocity, Vector2.One * fireSize, fireColor);
+        }
+    }
+
+    /// <summary>
     /// Performs a smooth clamp that asymptotically approaches the maximum absolute value via a hyperbolic tangent function, rather than hard-clamping it past a threshold.
     /// </summary>
     /// <param name="x">The value to clamp.</param>
@@ -391,39 +423,6 @@ public class RocheLimitBlackHole : ModProjectile
         blackHoleShader.Apply();
 
         Main.spriteBatch.Draw(invisiblePixel, drawPosition, null, Color.Transparent, Projectile.rotation, invisiblePixel.Size() * 0.5f, BlackHoleDiameter, 0, 0f);
-    }
-
-    private float RayWidthFunction(float completionRatio)
-    {
-        float generalScale = LumUtils.InverseLerp(0f, MaxSunDiameter * CollapsedSunDiameterFactor, SunDiameter);
-        float frontPinch = MathF.Sqrt(LumUtils.InverseLerp(1f, 0.75f, completionRatio));
-        return generalScale * frontPinch * 50f;
-    }
-
-    private Color RayColorFunction(float completionRatio) => new Color(170, 225, 255);
-
-    /// <summary>
-    /// Renders the beam that charges up this projectile's sun form into a black hole.
-    /// </summary>
-    private void RenderSunChargeUpBeam()
-    {
-        List<Vector2> rayPoints = Projectile.GetLaserControlPoints(10, Projectile.Distance(Owner.Center), Projectile.SafeDirectionTo(Owner.Center));
-
-        ManagedShader rayShader = ShaderManager.GetShader("HeavenlyArsenal.RocheLimitEnergyRayShader");
-        rayShader.SetTexture(TextureAssets.Extra[ExtrasID.FlameLashTrailShape], 1, SamplerState.LinearWrap);
-        PrimitiveRenderer.RenderTrail(rayPoints, new PrimitiveSettings(RayWidthFunction, RayColorFunction, Shader: rayShader), 40);
-
-        Main.spriteBatch.End();
-        Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearWrap, DepthStencilState.None, RasterizerState.CullNone, null, Main.GameViewMatrix.TransformationMatrix);
-
-        Texture2D noise = GennedAssets.Textures.Noise.FireNoiseA;
-        ManagedShader shineShader = ShaderManager.GetShader("NoxusBoss.RadialShineShader");
-        shineShader.Apply();
-
-        Vector2 drawPosition = Owner.Center - Main.screenPosition + Owner.SafeDirectionTo(Projectile.Center) * 20f;
-        Vector2 shineScale = new Vector2(1.5f, 1f) * LumUtils.InverseLerp(0f, 0.5f, SunDiameter / MaxSunDiameter) * 112f / noise.Size();
-        Main.spriteBatch.Draw(noise, drawPosition, null, Color.White * Projectile.Opacity * 0.2f, Owner.AngleTo(Projectile.Center) + MathHelper.PiOver2, noise.Size() * 0.5f, shineScale, 0, 0f);
-        Main.spriteBatch.ResetToDefault();
     }
 
     /// <summary>
@@ -493,7 +492,7 @@ public class RocheLimitBlackHole : ModProjectile
     /// <summary>
     /// Renders this projectile.
     /// </summary>
-    public void RenderSelf()
+    public void RenderOverDistortion()
     {
         if (SunDiameter >= 0.5f)
             RenderSun();

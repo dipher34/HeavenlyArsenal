@@ -39,14 +39,13 @@ float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
     float2 coords = input.TextureCoordinates;
     coords.y = (coords.y - 0.5) / input.TextureCoordinates.z + 0.5;
     
-    float horizontalBump = QuadraticBump(coords.y);
-    float opacity = pow(horizontalBump, 4);
+    float glow = tex2D(noiseTexture, coords * float2(1, 1) + float2(globalTime * -3, 0));
+    glow = tex2D(noiseTexture, coords + float2(globalTime * -3 + glow * 0.2, 0));
     
-    float stupidTextureScrollValue = tex2D(noiseTexture, coords * float2(1.2, 1) + float2(globalTime * 3, sin(coords.x * 10 - globalTime * 5) * 0.05));
-    float4 color = saturate(stupidTextureScrollValue / (1.1 - input.Color));
-    color += smoothstep(0.95, 1, horizontalBump);
+    float horizontalDistanceFromCenter = distance(coords.y, 0.5);
+    float innerGlow = smoothstep(0.4, 0.02, horizontalDistanceFromCenter);
     
-    return color * opacity;
+    return input.Color * saturate(glow) + innerGlow * input.Color.a + smoothstep(0.7, 1, coords.x) / horizontalDistanceFromCenter * 0.07;
 }
 
 technique Technique1

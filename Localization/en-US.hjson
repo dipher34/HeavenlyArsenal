@@ -225,6 +225,7 @@ Mods: {
 			Mercy.DisplayName: mercy
 			RocheLimitBlackHole.DisplayName: The Roche Limit
 			SolynWhip_Projectile.DisplayName: Solyn Whip_ Projectile
+			RelativisticJet.DisplayName: Relativistic Jet
 		}
 	}
 }
