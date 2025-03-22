@@ -7,11 +7,6 @@ float2 sourcePositions[5];
 float2 aspectRatioCorrectionFactor;
 float2 zoom;
 
-float2 ModifyForZoom(float2 coords)
-{
-    return (coords - 0.5) * zoom + 0.5;
-}
-
 float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD0) : COLOR0
 {
     float redshift = 0;
