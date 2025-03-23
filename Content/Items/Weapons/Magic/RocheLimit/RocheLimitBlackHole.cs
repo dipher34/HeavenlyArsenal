@@ -7,10 +7,12 @@ using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
 using NoxusBoss.Content.Particles;
 using NoxusBoss.Core.DataStructures;
+using NoxusBoss.Core.SoundSystems;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using Terraria;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -36,6 +38,15 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
     /// The owner of this black hole.
     /// </summary>
     public ref Player Owner => ref Main.player[Projectile.owner];
+
+    /// <summary>
+    /// The looped sound instance for this black hole.
+    /// </summary>
+    public LoopedSoundInstance Brrrrrrr
+    {
+        get;
+        private set;
+    }
 
     /// <summary>
     /// The current state of this black hole.
@@ -178,6 +189,12 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
                 break;
         }
 
+        Brrrrrrr?.Update(Projectile.Center, sound =>
+        {
+            sound.Volume = Projectile.Opacity;
+            sound.Pitch = SmoothClamp(Projectile.velocity.Length() * 0.009f, 0.15f);
+        });
+
         float idealRotation = SmoothClamp(Projectile.velocity.X * 0.015f, 0.4f);
         Projectile.rotation = Projectile.rotation.AngleLerp(idealRotation, 0.19f);
 
@@ -196,6 +213,7 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
         int sunFormTime = 30;
         int collapseWaitDelay = 15;
         int collapseTime = 120;
+        int duration = sunFormTime + collapseWaitDelay + collapseTime + collapseTime;
         float sunGrowInterpolant = LumUtils.InverseLerp(0f, sunFormTime, Time);
         float sunExpandInterpolant = EasingCurves.Sine.Evaluate(EasingType.Out, sunGrowInterpolant);
 
@@ -214,7 +232,10 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
 
         ScreenShakeSystem.StartShakeAtPoint(Projectile.Center, collapseInterpolant.Squared() * 1.5f);
 
-        if (collapseInterpolant >= 1f)
+        if (Time == duration - 143)
+            SoundEngine.PlaySound(GennedAssets.Sounds.NamelessDeity.StarCrush, Projectile.Center);
+
+        if (Time >= duration)
             SwitchState(BlackHoleState.StabilizeNearMouse);
     }
 
@@ -224,6 +245,8 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
         StandardMouseHoverMotion();
         CastMinorParticles();
         AbsorbGores();
+
+        Brrrrrrr ??= LoopedSoundManager.CreateNew(GennedAssets.Sounds.NamelessDeity.QuasarLoopStart, GennedAssets.Sounds.NamelessDeity.QuasarLoop, () => !Projectile.active);
 
         float growthInterpolant = LumUtils.InverseLerp(0f, GrowthTime, Time);
         float easedGrowthInterpolant = EasingCurves.Cubic.Evaluate(EasingType.InOut, growthInterpolant);
@@ -352,6 +375,8 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
     /// </summary>
     public void ReleaseJet(Vector2 jetDirection)
     {
+        SoundEngine.PlaySound(GennedAssets.Sounds.NamelessDeity.BigSupernova with { MaxInstances = 7 }, Projectile.Center);
+
         if (ScreenShakeSystem.OverallShakeIntensity < 7f)
             ScreenShakeSystem.StartShakeAtPoint(Projectile.Center, 7f);
         if (Main.netMode != NetmodeID.MultiplayerClient)

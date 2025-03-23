@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Core.Graphics.RenderTargets;
 using Terraria;
+using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
 
@@ -173,7 +174,7 @@ public class RocheLimitGlobalNPC : GlobalNPC
             }
 
             // It's time to die.
-            if (npc.WithinRange(suctionOrigin, 175f) && suctionInterpolant >= 0.85f)
+            if (npc.WithinRange(suctionOrigin, 232f) && suctionInterpolant >= 0.85f)
             {
                 BeingShredded = true;
 
@@ -190,7 +191,8 @@ public class RocheLimitGlobalNPC : GlobalNPC
                 {
                     npc.active = false;
 
-                    Vector2 jetDirection = Main.rand.NextVector2Unit().RotateTowards(closestBlackHole.AngleTo(Main.player[closestBlackHole.owner].Center), MathHelper.Pi * 0.4f);
+                    Vector2 fallbackJetDirection = Main.rand.NextVector2Unit().RotateTowards(closestBlackHole.AngleTo(Main.player[closestBlackHole.owner].Center), MathHelper.Pi * 0.4f);
+                    Vector2 jetDirection = npc.velocity.SafeNormalize(fallbackJetDirection);
                     try
                     {
                         itemVelocityOverride = jetDirection * 65f;
@@ -204,7 +206,21 @@ public class RocheLimitGlobalNPC : GlobalNPC
                     closestBlackHole.As<RocheLimitBlackHole>().ReleaseJet(jetDirection);
                 }
                 else
-                    npc.SimpleStrikeNPC(damage, 0);
+                {
+                    SoundStyle? oldHitSound = npc.HitSound;
+                    SoundStyle? oldDeathSound = npc.DeathSound;
+                    try
+                    {
+                        npc.HitSound = null;
+                        npc.DeathSound = null;
+                        npc.SimpleStrikeNPC(damage, 0);
+                    }
+                    finally
+                    {
+                        npc.HitSound = oldHitSound;
+                        npc.DeathSound = oldDeathSound;
+                    }
+                }
             }
         }
     }
