@@ -155,9 +155,17 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
         Projectile.netImportant = true;
     }
 
-    public override void SendExtraAI(BinaryWriter writer) => writer.Write(SunDiameter);
+    public override void SendExtraAI(BinaryWriter writer)
+    {
+        writer.Write((int)State);
+        writer.Write(SunDiameter);
+    }
 
-    public override void ReceiveExtraAI(BinaryReader reader) => SunDiameter = reader.ReadSingle();
+    public override void ReceiveExtraAI(BinaryReader reader)
+    {
+        State = (BlackHoleState)reader.ReadInt32();
+        SunDiameter = reader.ReadSingle();
+    }
 
     public override void AI()
     {
