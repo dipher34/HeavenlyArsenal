@@ -7,14 +7,18 @@ using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace HeavenlyArsenal.Content.Items.Weapons.Magic.BrutalForgiveness;
+namespace HeavenlyArsenal.Content.Items.Weapons.Magic.RocheLimit;
 
-public class BrutalForgiveness : ModItem
+public class RocheLimit : ModItem
 {
-    // TODO -- This doesn't actually consume mana right now. Fix that.
+    /// <summary>
+    /// The rate at which this weapon consumes mana.
+    /// </summary>
+    internal static int ManaConsumptionRate => LumUtils.SecondsToFrames(0.08f);
+
     public override void SetStaticDefaults()
     {
-        GlobalNPCEventHandlers.ModifyNPCLootEvent += (NPC npc, NPCLoot npcLoot) =>
+        GlobalNPCEventHandlers.ModifyNPCLootEvent += (npc, npcLoot) =>
         {
             if (npc.type == ModContent.NPCType<NamelessDeityBoss>())
             {
@@ -25,7 +29,7 @@ public class BrutalForgiveness : ModItem
                 npcLoot.Add(normalOnly);
             }
         };
-        ArsenalGlobalItem.ModifyItemLootEvent += (Item item, ItemLoot loot) =>
+        ArsenalGlobalItem.ModifyItemLootEvent += (item, loot) =>
         {
             if (item.type == NamelessDeityBoss.TreasureBagID)
                 loot.Add(ItemDropRule.Common(Type));
@@ -37,19 +41,19 @@ public class BrutalForgiveness : ModItem
         Item.width = 12;
         Item.height = 12;
         Item.DamageType = DamageClass.Magic;
-        Item.damage = 7777;
+        Item.damage = 12000;
         Item.knockBack = 0f;
         Item.useTime = 25;
         Item.useAnimation = 25;
         Item.autoReuse = true;
-        Item.mana = 15;
+        Item.mana = 32;
         Item.holdStyle = 0;
         Item.useStyle = ItemUseStyleID.Shoot;
         Item.channel = true;
         Item.noUseGraphic = true;
         Item.noMelee = true;
 
-        Item.shoot = ModContent.ProjectileType<BrutalForgivenessProjectile>();
+        Item.shoot = ModContent.ProjectileType<RocheLimitBlackHole>();
         Item.shootSpeed = 10f;
         Item.rare = ModContent.RarityType<NamelessDeityRarity>();
         Item.value = Item.buyPrice(gold: 2);

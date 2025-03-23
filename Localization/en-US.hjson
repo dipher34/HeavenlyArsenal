@@ -181,6 +181,11 @@ Mods: {
 				DisplayName: Cosmic Watergun
 				Tooltip: ""
 			}
+
+			RocheLimit: {
+				DisplayName: The Roche Limit
+				Tooltip: ""
+			}
 		}
 
 		Projectiles: {
@@ -218,7 +223,9 @@ Mods: {
 			BrutalForgivenessProjectile.DisplayName: Brutal Forgiveness
 			BrutalVine.DisplayName: Brutal Vine
 			Mercy.DisplayName: mercy
+			RocheLimitBlackHole.DisplayName: The Roche Limit
 			SolynWhip_Projectile.DisplayName: Solyn Whip_ Projectile
+			RelativisticJet.DisplayName: Relativistic Jet
 		}
 
 		NPCs.AnAffrontToGod.DisplayName: An Affront To God
