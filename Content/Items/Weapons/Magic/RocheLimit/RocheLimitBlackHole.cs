@@ -197,10 +197,11 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
                 break;
         }
 
+        float relativeSpeed = MathF.Max(0f, Projectile.velocity.Length() - Owner.velocity.Length());
         Brrrrrrr?.Update(Projectile.Center, sound =>
         {
             sound.Volume = Projectile.Opacity;
-            sound.Pitch = SmoothClamp(Projectile.velocity.Length() * 0.009f, 0.15f);
+            sound.Pitch = SmoothClamp(relativeSpeed * 0.0072f, 0.19f);
         });
 
         float idealRotation = SmoothClamp(Projectile.velocity.X * 0.015f, 0.4f);
@@ -303,7 +304,7 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
         Owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, Owner.AngleTo(Projectile.Center) - MathHelper.PiOver2);
 
         // Stay near the stabilized destination.
-        // This only runs for the owner, since they're the client whose mouse should be listened.
+        // This only runs for the owner, since they're the client whose mouse should be listened to.
         if (Main.myPlayer == Projectile.owner)
         {
             float flySpeedInterpolant = LumUtils.InverseLerp(0f, 54f, ExistenceTimer);
