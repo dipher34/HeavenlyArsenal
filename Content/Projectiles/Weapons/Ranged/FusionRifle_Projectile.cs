@@ -20,7 +20,7 @@ using System.Linq;
 using Luminance.Assets;
 
 
-namespace HeavenlyArsenal.Content.Projectiles
+namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
 {
     internal class FusionRifle_Projectile : ModProjectile//, IPixelatedPrimitiveRenderer
     {
@@ -158,12 +158,12 @@ namespace HeavenlyArsenal.Content.Projectiles
             Color ColorFunction(float p) => new Color(60, 0, 150, 200);
 
             ManagedShader trailShader = ShaderManager.GetShader("HeavenlyArsenal.FusionRifle_Bullet");
-            trailShader.TrySetParameter("time", Main.GlobalTimeWrappedHourly * Projectile.velocity.Length() / 8f + Projectile.identity); //72.113f);
+            trailShader.TrySetParameter("time", Main.GlobalTimeWrappedHourly * Projectile.velocity.Length() / 8f + Projectile.identity/72.113f);
             trailShader.TrySetParameter("spin", 1f* Math.Sign(Projectile.velocity.X));
             trailShader.TrySetParameter("brightness",  1.5f);
-            trailShader.SetTexture(GennedAssets.Textures.Noise.TurbulentNoise, 0, SamplerState.LinearWrap);
-            trailShader.SetTexture(GennedAssets.Textures.Noise.FireNoiseB, 1, SamplerState.LinearWrap);
-            trailShader.SetTexture(GennedAssets.Textures.Noise.DendriticNoiseZoomedOut, 2, SamplerState.LinearWrap);
+            trailShader.SetTexture(Noise.TurbulentNoise, 0, SamplerState.LinearWrap);
+            trailShader.SetTexture(Noise.FireNoiseB, 1, SamplerState.LinearWrap);
+            trailShader.SetTexture(Noise.DendriticNoiseZoomedOut, 2, SamplerState.LinearWrap);
 
             PrimitiveRenderer.RenderTrail(oldPos, new PrimitiveSettings(WidthFunction, ColorFunction, _ => Vector2.Zero, Shader: trailShader, Smoothen: false), oldPos.Length);
 

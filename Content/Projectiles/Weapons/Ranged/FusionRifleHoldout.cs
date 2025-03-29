@@ -89,9 +89,9 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
 
         private enum FusionRifleState
         {
-            Charging,  // Charging up
-            Firing,    // Firing the burst
-            Delay      // Brief pause after firing
+            Charging,  
+            Firing,    
+            Delay      
         }
 
         private FusionRifleState CurrentState = FusionRifleState.Charging;
@@ -276,6 +276,12 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
             Vector2 barrelEnd = Projectile.Center + Projectile.oldRot[0].ToRotationVector2() * Projectile.scale * 30f;
             Vector3 rotationalForce = new Vector3(barrelEnd - previousBarrelEnd, 0f) * -4f;
 
+            //float recoilIntensity = Projectile.velocity.Length() * someScaleFactor; // Replace 'someScaleFactor' with appropriate scaling.
+            //Vector3 recoilForce = new Vector3(barrelEnd - previousBarrelEnd, 0f) * recoilIntensity * -4f;
+
+            Vector3 recoilForce = new Vector3(-Projectile.velocity.X * recoilIntensity, 0f, 0f); // Adjust for backward recoil.
+            Vector3 combinedForce = rotationalForce + recoilForce;
+
             for (int i = 0; i < steps; i++)
             {
                 for (int x = 0; x < Cloth.Width; x += 2)
@@ -285,7 +291,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
                     for (int y = 0; y < Cloth.Height; y++)
                     {
                         Vector3 localWind = Vector3.UnitX * (LumUtils.AperiodicSin(Time * 0.01f + y * 0.05f) * windSpeed) * 1.2f;
-                        Cloth.particleGrid[x, y].AddForce(localWind + rotationalForce);
+                        Cloth.particleGrid[x, y].AddForce(localWind +combinedForce);
                     }
                 }
 
@@ -295,6 +301,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
 
         private void HandleFiring()
         {
+            int countburst = 0;
             Owner.itemAnimation = Owner.itemAnimationMax;
             if (BurstCount == FusionRifle.BoltsPerBurst)
             {
@@ -306,9 +313,10 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
             {
                 if (StateTimer <= 0)
                 {
+                    countburst++;
                     FireBurstProjectile();
-                    BurstCount--;
-
+                    //BurstCount--;
+                    BurstCount = 0;
                     StateTimer = 5; // Cycle between burst projectiles (adjust as needed)
                 }
                 else
@@ -318,6 +326,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
             }
             else
             {
+                Main.NewText($"Bolts fired: {countburst}", Color.AliceBlue);
                 Owner.PickAmmo(Owner.HeldItem, out _, out _, out _, out _, out _);
                 CurrentState = FusionRifleState.Delay; // Transition to delay state after the burst
                 StateTimer = 60; // Cycle duration after firing
@@ -371,8 +380,9 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
                 // Calculate the vent position relative to the projectile
                 Vector2 ventOffset = new Vector2(i * ventSpacing, 0); // Iterate over X position
                 ventOffset = ventOffset.RotatedBy(Projectile.rotation); // Rotate the offset by the projectile's rotation
-
+                
                 Vector2 ventPosition = Projectile.Center + initialOffset.RotatedBy(Projectile.rotation) + ventOffset;
+                /*
                 if (CreateSmoke == true)
                 {
                     if (TopExhaust)
@@ -392,7 +402,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
                         0, // No knockback
                         Projectile.owner);
                 }
-
+                */
 
                 // Only create dust at intervals determined by the loop
                 if (StateTimer % numberOfVents == i) // Stagger the dust creation
@@ -479,7 +489,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
 
             Vector2 MuzzleFlashPosition = spawnPosition + Projectile.velocity.SafeNormalize(Vector2.Zero) * 70f;
 
-            CreateMuzzleFlash(MuzzleFlashPosition, Projectile.velocity);
+            //CreateMuzzleFlash(MuzzleFlashPosition, Projectile.velocity);
 
 
 
