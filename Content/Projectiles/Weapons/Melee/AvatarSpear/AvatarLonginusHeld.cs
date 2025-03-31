@@ -2,9 +2,11 @@
 using HeavenlyArsenal.Content.Items.Weapons.Melee;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using NoxusBoss.Assets;
 using System;
 using System.Collections.Generic;
 using Terraria;
+using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.ID;
@@ -24,7 +26,7 @@ public class AvatarLonginusHeld : ModProjectile
         Idle,
         RapidStabs,
         LungeStab,
-        // Another
+        ThrowTeleport,
         WhipSlash,
 
         // Empowered attacks
@@ -54,19 +56,20 @@ public class AvatarLonginusHeld : ModProjectile
         Projectile.noEnchantmentVisuals = true;
 
         Projectile.usesLocalNPCImmunity = true;
-        Projectile.localNPCHitCooldown = 8;
-
-        Projectile.extraUpdates = 2;
+        Projectile.localNPCHitCooldown = 20;
     }
 
     public ref float Time => ref Projectile.ai[0];
     public ref float AttackState => ref Projectile.ai[1];
 
-    public bool canCollide;
+    public bool canHit;
+    public bool throwMode;
 
     public override void AI()
     {
+        Projectile.extraUpdates = 3;
         Projectile.timeLeft = 2;
+
         if (Player.HeldItem.type != ModContent.ItemType<AvatarLonginus>() || Player.CCed || Player.dead)
         {
             Projectile.Kill();
@@ -75,9 +78,10 @@ public class AvatarLonginusHeld : ModProjectile
 
         Player.heldProj = Projectile.whoAmI;
 
-        bool enchantments = false;
+        throwMode = false;
+        canHit = false;
         Vector2 offset = Vector2.Zero;
-        canCollide = false;
+        Vector2 handPosition = Player.MountedCenter;
 
         switch (AttackState)
         {
@@ -86,14 +90,16 @@ public class AvatarLonginusHeld : ModProjectile
 
                 Time = 0;
 
-                Projectile.scale = 0.7f;
+                Projectile.scale = 1f;
                 Projectile.velocity = Vector2.Zero;
-                Projectile.rotation = Utils.AngleLerp(Projectile.rotation, -MathHelper.PiOver2 + 1f * Player.direction + Player.velocity.X * 0.015f + Player.velocity.Y * 0.01f * Player.direction, 0.33f);
+
+                float motionBob = Player.velocity.X * 0.02f - Player.velocity.Y * 0.015f * Player.direction;
+                Projectile.rotation = Utils.AngleLerp(Projectile.rotation, -MathHelper.PiOver2 + 1f * Player.direction + motionBob, 0.2f);
                 Projectile.spriteDirection = Player.direction;
 
-                Player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, -MathHelper.PiOver4 * Player.direction);
-                Player.SetCompositeArmBack(true, Player.CompositeArmStretchAmount.Full, -MathHelper.PiOver2 * Player.direction);
-                Projectile.Center = Player.RotatedRelativePoint(Player.GetFrontHandPosition(Player.CompositeArmStretchAmount.Full, -MathHelper.PiOver4 * Player.direction));
+                Player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.ThreeQuarters, -0.3f * Player.direction + motionBob * 0.3f);
+                Player.SetCompositeArmBack(true, Player.CompositeArmStretchAmount.Full, -MathHelper.PiOver2 * Player.direction + motionBob * 1.2f);
+                handPosition = Player.GetFrontHandPosition(Player.CompositeArmStretchAmount.ThreeQuarters, -0.3f * Player.direction);
 
                 if (Player.controlUseItem)
                 {
@@ -105,26 +111,25 @@ public class AvatarLonginusHeld : ModProjectile
             case (int)AttackStates.RapidStabs:
 
                 Player.SetDummyItemTime(5);
-                enchantments = true;
 
-                const int WindUp = 50;
-                const int StabCount = 3;
-                const int WindDown = 50;
+                const int RapidWindUp = 50;
+                const int RapidStabCount = 3;
+                const int RapidWindDown = 50;
 
-                int StabTime = 10 + (int)(50 * Player.GetAttackSpeed(DamageClass.Melee));
+                int RapidStabTime = 10 + (int)(50 * Player.GetAttackSpeed(DamageClass.Melee));
 
                 if (Time < 2)
                 {
                     if (Main.myPlayer == Projectile.owner)
                     {
-                        Projectile.velocity = Projectile.DirectionTo(Main.MouseWorld) * 20f;
+                        Projectile.velocity = Player.DirectionTo(Main.MouseWorld) * 20f;
                         Projectile.netUpdate = true;
                     }
                 }
 
-                if (Time < WindUp)
+                if (Time < RapidWindUp)
                 {
-                    float windProgress = Time / (WindUp - 1f);
+                    float windProgress = Time / (RapidWindUp - 1f);
 
                     float wiggle = MathF.Sin(MathF.Pow(windProgress, 2f) * MathHelper.Pi) * -0.4f * Projectile.direction;
                     Projectile.rotation = Utils.AngleLerp(Projectile.rotation, Projectile.velocity.ToRotation() + wiggle, 0.9f);
@@ -132,20 +137,21 @@ public class AvatarLonginusHeld : ModProjectile
 
                     Projectile.scale = 1f - windProgress * 0.33f;
                 }
-                else if (Time < WindUp + StabTime)
+                else if (Time < RapidWindUp + RapidStabTime - 1) // -1 here because the modulo is a bit quirky
                 {
-                    float windDownProgress = Utils.GetLerpValue(WindDown, 0f, Time - WindUp - StabTime, true);
-                    if (Time < WindUp + StabTime)
-                        canCollide = true;
+                    float windDownProgress = Utils.GetLerpValue(RapidWindDown, 0f, Time - RapidWindUp - RapidStabTime, true);
+                    if (Time < RapidWindUp + RapidStabTime)
+                        canHit = true;
 
-                    float stabProgress = Utils.GetLerpValue(0, StabTime / StabCount, (Time - WindUp) % (StabTime / StabCount));
-                    float stabCurve = MathF.Cbrt(stabProgress);
+                    float stabProgress = Utils.GetLerpValue(0, RapidStabTime / RapidStabCount, (Time - RapidWindUp) % (RapidStabTime / RapidStabCount));
+                    float stabCurve = Utils.GetLerpValue(0, 0.7f, stabProgress, true);
 
-                    if (Time % (StabTime / StabCount) == 0)
+                    if (Time % (RapidStabTime / RapidStabCount) == 0)
                     {
+                        SoundEngine.PlaySound(GennedAssets.Sounds.NamelessDeity.IntroScreenSlice with { Pitch = 1f, MaxInstances = 0 }, Projectile.Center);
                         if (Main.myPlayer == Projectile.owner)
                         {
-                            Projectile.velocity = Projectile.DirectionTo(Main.MouseWorld).RotatedByRandom(0.2f) * 20f;
+                            Projectile.velocity = Player.DirectionTo(Main.MouseWorld).RotatedByRandom(0.3f) * 20f;
                             Projectile.netUpdate = true;
                         }
                     }
@@ -158,37 +164,185 @@ public class AvatarLonginusHeld : ModProjectile
                 }
                 else
                 {
-                    float windDownProgress = Utils.GetLerpValue(WindDown / 4f, WindDown, Time - WindUp - StabTime, true);
-                    offset = new Vector2(150, 0).RotatedBy(Projectile.rotation) * MathF.Sqrt(1f - windDownProgress);
-                    Projectile.scale = 1.5f - windDownProgress;
+                    float windDownProgress = Utils.GetLerpValue(RapidWindDown / 4f, RapidWindDown, Time - RapidWindUp - RapidStabTime, true);
+                    offset = new Vector2(150, 0).RotatedBy(Projectile.rotation) * MathF.Cbrt(1f - windDownProgress);
+                    Projectile.scale = 1.5f - MathF.Pow(windDownProgress, 3);
                 }
 
                 Player.ChangeDir(Projectile.velocity.X > 0 ? 1 : -1);
 
                 Time++;
 
-                if (Time > WindUp + StabTime + WindDown)
+                if (Time > RapidWindUp + RapidStabTime + RapidWindDown / 2)
                 {
-                    Time = 0;
-
                     if (Player.controlUseItem)
-                        AttackState = (int)AttackStates.RapidStabs;
-                    else
+                    {
+                        AttackState = (int)AttackStates.ThrowTeleport;
+                        Time = 0;
+                    }
+                    else if (Time > RapidWindUp + RapidStabTime + RapidWindDown)
+                    {
                         AttackState = (int)AttackStates.Idle;
+                        Time = 0;
+                    }
                 }
 
                 break;
+
+            case (int)AttackStates.ThrowTeleport:
+
+                const int ThrowWindUp = 30;
+                const int ThrowTime = 50;
+                const int TPTime = 30;
+
+                if (Time < 2)
+                {
+                    if (Main.myPlayer == Projectile.owner)
+                    {
+                        Projectile.velocity = Player.DirectionTo(Main.MouseWorld) * 20f;
+                        Projectile.netUpdate = true;
+                    }
+                }
+
+                Player.velocity *= 0.5f;
+                Player.SetImmuneTimeForAllTypes(60);
+
+                if (Time < ThrowWindUp)
+                {
+                    Player.ChangeDir(Projectile.velocity.X > 0 ? 1 : -1);
+
+                    float windProgress = Time / (ThrowWindUp - 1f);
+
+                    float wiggle = (windProgress * -0.5f - 0.5f) * Projectile.direction;
+                    Projectile.rotation = Utils.AngleLerp(Projectile.rotation, Projectile.velocity.ToRotation() + wiggle, windProgress);
+                    offset = new Vector2(MathHelper.SmoothStep(0, -80, windProgress), 0).RotatedBy(Projectile.rotation);
+                    Projectile.scale = 1f;
+                }
+                else if (Time < ThrowWindUp + ThrowTime)
+                {
+                    if (Time == ThrowWindUp)
+                    {
+                        SoundEngine.PlaySound(GennedAssets.Sounds.NamelessDeity.DaggerBurst with { Pitch = 1f, MaxInstances = 0 }, Projectile.Center);
+                        Projectile.Center = Player.MountedCenter;
+                    }
+
+                    Projectile.extraUpdates = 8;
+
+                    canHit = true;
+                    throwMode = true;
+                    Projectile.velocity = Projectile.velocity.SafeNormalize(Vector2.Zero) * 16;
+                    Projectile.rotation = Projectile.velocity.ToRotation();
+
+                    if (Collision.SolidCollision(Projectile.Center - new Vector2(10) + Projectile.velocity, 20, 20) && Time < ThrowWindUp + ThrowTime)
+                    {
+                        SoundEngine.PlaySound(SoundID.Dig, Projectile.Center);
+                        Time = ThrowWindUp + ThrowTime;
+                        Projectile.velocity *= 0.01f;
+                    }
+                }
+                else
+                {
+                    Projectile.velocity *= 0.9f;
+
+                    if (Main.myPlayer == Projectile.owner)
+                        Main.SetCameraLerp(0.1f, 20);
+
+                    canHit = true;
+                    throwMode = true;
+                    Player.Center = Vector2.Lerp(Player.Center, Projectile.Center, 0.15f);
+                }
+
+                Time++;
+
+                if (Time > ThrowWindUp + ThrowTime + TPTime)
+                {
+                    if (Player.controlUseItem)
+                    {
+                        AttackState = (int)AttackStates.LungeStab;
+                        Time = 0;
+                    }
+                    else if (Time > ThrowWindUp + ThrowTime + TPTime)
+                    {
+                        AttackState = (int)AttackStates.Idle;
+                        Time = 0;
+                    }
+                }
+
+                break;
+
+            case (int)AttackStates.LungeStab:
+
+                const int LungeWindUp = 80;
+                int LungeThrustTime = 10 + (int)(30 * Player.GetAttackSpeed(DamageClass.Melee));
+                int LungeWindDown = 10 + (int)(20 * Player.GetAttackSpeed(DamageClass.Melee));
+
+                if (Time < 2)
+                {
+                    if (Main.myPlayer == Projectile.owner)
+                    {
+                        Projectile.velocity = Player.DirectionTo(Main.MouseWorld) * 20f;
+                        Projectile.netUpdate = true;
+                    }
+                }
+
+                if (Time < LungeWindUp)
+                {
+                    float windProgress = Time / (LungeWindUp - 1f);
+
+                    float wiggle = (windProgress * -0.5f - 0.5f) * Projectile.direction;
+                    Projectile.rotation = Utils.AngleLerp(Projectile.rotation, Projectile.velocity.ToRotation() + wiggle, windProgress);
+                    offset = new Vector2(MathHelper.SmoothStep(0, -80, windProgress), 0).RotatedBy(Projectile.rotation);
+                    Projectile.scale = 1f;
+                }
+                else
+                {
+                    if (Time == LungeWindUp + 1)
+                        SoundEngine.PlaySound(GennedAssets.Sounds.NamelessDeity.DaggerGrazeEcho with { MaxInstances = 0 }, Projectile.Center);
+
+                    canHit = true;
+                    float thrustProgress = Utils.GetLerpValue(0, LungeThrustTime, Time - LungeWindUp, true);
+                    float windDown = Utils.GetLerpValue(0, LungeWindDown, Time - LungeWindUp - LungeThrustTime, true);
+
+                    float thrustCurve = Utils.GetLerpValue(0, 0.2f, thrustProgress, true);
+                    float windDownCurve = MathF.Cbrt(windDown);
+
+                    Projectile.rotation = Utils.AngleLerp(Projectile.rotation, Projectile.velocity.ToRotation() - (thrustCurve - 1f) * 0.3f * Projectile.direction, 0.5f - thrustCurve * 0.2f);
+                    offset = new Vector2(MathHelper.SmoothStep(0, 150, thrustCurve) * (1f - windDownCurve), 0).RotatedBy(Projectile.rotation);
+                    Projectile.scale = 1.5f - windDownCurve * 0.5f;
+                }
+
+                Player.ChangeDir(Projectile.velocity.X > 0 ? 1 : -1);
+
+                Time++;
+
+                if (Time > LungeWindUp + LungeThrustTime + LungeWindDown - 2)
+                {
+                    if (Player.controlUseItem)
+                    {
+                        AttackState = (int)AttackStates.Idle;
+                        Time = 0;
+                    }
+                    else if (Time > LungeWindUp + LungeThrustTime - LungeWindDown)
+                    {
+                        AttackState = (int)AttackStates.Idle;
+                        Time = 0;
+                    }
+                }
+                    
+                break;
         }
 
-        Projectile.Center = Player.RotatedRelativePoint(Player.MountedCenter) + offset - Projectile.velocity;
-        SetAnimation(Player);
+        if (!throwMode)
+            Projectile.Center = Player.RotatedRelativePoint(handPosition) + offset - Projectile.velocity;
 
-        if (enchantments)
-            Projectile.EmitEnchantmentVisualsAt(Projectile.Center + new Vector2(150 * Projectile.scale, 0).RotatedBy(Projectile.rotation) - new Vector2(60), 120, 120);
-    }
-
-    public void SetAnimation(Player player)
-    {
+        if (canHit)
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                int size = (int)(110 * MathF.Exp(-i));
+                Projectile.EmitEnchantmentVisualsAt(Projectile.Center + new Vector2((120 + 40 * i) * Projectile.scale, 0).RotatedBy(Projectile.rotation) - new Vector2(size / 2), size, size);
+            }
+        }
     }
 
     public void HandleEmpowerment()
@@ -204,15 +358,16 @@ public class AvatarLonginusHeld : ModProjectile
 
     public override void ModifyDamageHitbox(ref Rectangle hitbox)
     {
-        hitbox.Width = (int)(200 * Projectile.scale);
-        hitbox.Height = (int)(200 * Projectile.scale);
-        hitbox.Location = (Projectile.Center + new Vector2(130 * Projectile.scale, 0).RotatedBy(Projectile.rotation) - hitbox.Size() / 2).ToPoint();
     }
 
     public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
     {
-        if (canCollide)
-            return base.Colliding(projHitbox, targetHitbox);
+        if (canHit)
+        {
+            Vector2 offset = new Vector2(150 * Projectile.scale, 0).RotatedBy(Projectile.rotation);
+            float _ = 0;
+            return Collision.CheckAABBvLineCollision(targetHitbox.Location.ToVector2(), targetHitbox.Size(), Projectile.Center - offset, Projectile.Center + offset, 100f, ref _);
+        }    
 
         return false;
     }
@@ -220,7 +375,10 @@ public class AvatarLonginusHeld : ModProjectile
     public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
     {
         //Add to percentage. probably add a check for if the next hit should restore the spear to normal/empowered state
-        base.OnHitNPC(target, hit, damageDone);
+        if (AttackState == (int)AttackStates.LungeStab)
+        {
+            Player.SetImmuneTimeForAllTypes(40);
+        }
     }
 
     //public string StringTexture = "HeavenlyArsenal/Content/Projectiles/Weapons/Melee/AvatarSpear/AvatarSpear_Lantern_String";
@@ -233,19 +391,11 @@ public class AvatarLonginusHeld : ModProjectile
         Texture2D texture = TextureAssets.Projectile[Type].Value;
         int direction = Projectile.spriteDirection;
         SpriteEffects flipEffect = direction > 0 ? 0 : SpriteEffects.FlipVertically;
-        const int gripDistance = 30;
+        int gripDistance = throwMode ? 30 : 0;
         Vector2 origin = new Vector2(texture.Width / 2 - gripDistance, texture.Height / 2 + (gripDistance + 2) * Player.gravDir * direction);
 
         Main.EntitySpriteDraw(texture, Projectile.Center - Main.screenPosition, texture.Frame(), Color.White, Projectile.rotation + MathHelper.PiOver4 * direction, origin, Projectile.scale, flipEffect, 0);
 
         return false;
-    }
-
-    private void DrawHitbox()
-    {
-        Rectangle hitBox = Projectile.Hitbox;
-        ModifyDamageHitbox(ref hitBox);
-        hitBox.Location -= Main.screenPosition.ToPoint();
-        Main.spriteBatch.Draw(TextureAssets.BlackTile.Value, hitBox, Color.Red * 0.5f);
     }
 }
