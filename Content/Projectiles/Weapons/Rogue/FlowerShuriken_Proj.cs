@@ -42,6 +42,10 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Rogue
             Main.projFrames[Projectile.type] = 4;
         }
 
+        public override void SetStaticDefaults()
+        {
+            ProjectileID.Sets.TrailingMode[Type] = 2;
+        }
         public override void OnSpawn(IEntitySource source)
         {
             Projectile.ai[0] = -1f;
@@ -70,10 +74,20 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Rogue
 
         public override void AI()
         {
-            lockOnRadius = Projectile.scale * 100f; // Update lock-on radius based on current scale
-            visualRotation += 0.3f; // Update visual rotation regardless of attachment status
+            lockOnRadius = Projectile.scale * 100f;
+            visualRotation += 0.3f;
 
-            if (Projectile.ai[0] < 0) // If not attached to an NPC
+            Color randomColor = Color.Lerp(Color.FloralWhite, Color.White, Main.rand.NextFloat()) with { A = 0 };
+            Dust dust = Dust.NewDustPerfect(Projectile.Center - Projectile.velocity * Main.rand.NextFloat(), DustID.SparkForLightDisc, Projectile.velocity.RotatedByRandom(0.1f) * Main.rand.NextFloat(), 0, randomColor, 0.9f);
+            dust.noGravity = true;
+
+
+            Player player = Main.player[Projectile.owner];
+            int baseDamage = player.GetWeaponDamage(player.HeldItem);
+            float damageMultiplier = player.GetDamage(DamageClass.Ranged).ApplyTo(1f);
+            int dynamicDamage = (int)(baseDamage * damageMultiplier);
+
+            if (Projectile.ai[0] < 0) // Not attached to an NPC
             {
                 NPC closestNPC = null;
                 float closestDistance = detectionRadius;
@@ -91,95 +105,92 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Rogue
                     }
                 }
 
-                if (closestNPC != null) // If a valid NPC is found
+                if (closestNPC != null)
                 {
-                    Vector2 direction = Vector2.Normalize(closestNPC.Center - Projectile.Center) * 10f; // Increased speed factor
-                    Projectile.velocity = (Projectile.velocity * 0.8f) + (direction * 0.2f); // Adjusted homing effect
+                    Vector2 direction = Vector2.Normalize(closestNPC.Center - Projectile.Center) * 10f;
+                    Projectile.velocity = (Projectile.velocity * 0.8f) + (direction * 0.2f);
 
-                    if (closestDistance <= lockOnRadius) // Check if within lock-on range
+                    if (closestDistance <= lockOnRadius)
                     {
-                        AttachToNPC(closestNPC); // Attach to the NPC
+                        AttachToNPC(closestNPC);
                     }
                 }
-                else if (gravityTimer <= 0) // After timer, apply gravity if not attached
+                else if (gravityTimer <= 0)
                 {
-                    Projectile.velocity.Y += 0.3f; // Apply gravity
+                    Projectile.velocity.Y += 0.3f;
                 }
                 else
                 {
-                    gravityTimer--; // Decrease gravity timer
+                    gravityTimer--;
+                }
+
+                // **Comet Kunai Style Homing at Low TimeLeft**
+                if (Projectile.timeLeft > 30)
+                {
+                    int t = Projectile.FindTargetWithLineOfSight(1000); // Find target in line of sight
+                    if (t > -1 && Main.myPlayer == Projectile.owner) // If valid target and owned by player
+                    {
+                        if (Main.npc[t].Distance(Main.MouseWorld) < 1500) // Ensure target is near the cursor
+                        {
+                            Projectile.velocity += Projectile.DirectionTo(Main.npc[t].Center).SafeNormalize(Vector2.Zero);
+                            Projectile.netUpdate = true;
+                        }
+                    }
                 }
             }
-            else // If attached to an NPC
+            else // Attached to NPC
             {
-                int targetIndex = (int)Projectile.ai[0]; // Get the target NPC's index
-                if (targetIndex < Main.npc.Length && Main.npc[targetIndex].active) // Check if the NPC is still active
+                int targetIndex = (int)Projectile.ai[0];
+                if (targetIndex < Main.npc.Length && Main.npc[targetIndex].active)
                 {
-                    NPC target = Main.npc[targetIndex]; // Reference to the target NPC
+                    NPC target = Main.npc[targetIndex];
 
-                    if (target.immortal || target.dontTakeDamage) // If the NPC is immune, detach and ignore
+                    if (target.immortal || target.dontTakeDamage)
                     {
-                        Projectile.ai[0] = -1f; // Reset the attachment
-                        return; // Exit the AI method
+                        Projectile.ai[0] = -1f;
+                        return;
                     }
 
-                    Projectile.Center = target.position + new Vector2(Projectile.localAI[0], Projectile.localAI[1]); // Stick to the NPC
-                    attachedRotationSpeed = MathHelper.Lerp(attachedRotationSpeed, 0.93f, 0.1f); // Ease the rotation speed
-                    Projectile.rotation += attachedRotationSpeed; // Update actual rotation
+                    Projectile.Center = target.position + new Vector2(Projectile.localAI[0], Projectile.localAI[1]);
+                    attachedRotationSpeed = MathHelper.Lerp(attachedRotationSpeed, 0.93f, 0.1f);
+                    Projectile.rotation += attachedRotationSpeed;
 
                     float sawIncrement = 1f;
                     if (Projectile.timeLeft < 100)
-                        sawIncrement *= Projectile.timeLeft / 100f; // Slow down saw ticks when near death
+                        sawIncrement *= Projectile.timeLeft / 100f;
 
-                    Projectile.localAI[2] += sawIncrement; // Increase cumulative attached time for scale growth
-                    Projectile.scale = 1f - 0.8f * (float)Math.Pow(0.5, Projectile.localAI[2] / 5f); // Exponential growth
+                    Projectile.localAI[2] += sawIncrement;
+                    Projectile.scale = 1f - 0.8f * (float)Math.Pow(0.5, Projectile.localAI[2] / 5f);
                     if (Projectile.scale > maxScale)
-                        Projectile.scale = maxScale; // Clamp the scale to the maximum
+                        Projectile.scale = maxScale;
 
-                    lockOnRadius = Projectile.scale * 100f; // Update lock-on radius based on current scale
+                    lockOnRadius = Projectile.scale * 100f;
 
                     Projectile.ai[1] += sawIncrement;
-                    if (Projectile.ai[1] >= 5) // Apply damage every 5 ticks
+                    if (Projectile.ai[1] >= 5)
                     {
-                        int damage = Projectile.damage; // Get projectile damage
                         NPC.HitInfo hitInfo = new NPC.HitInfo
                         {
-                            Damage = damage,
+                            Damage = dynamicDamage,
                             Knockback = 0f,
                             HitDirection = 0
                         };
-                        target.StrikeNPC(hitInfo); // Deal damage to the target NPC
-                        Projectile.ai[1] = 0f; // Reset saw timer
-                        SwordSlash darkParticle = SwordSlash.pool.RequestParticle();
-                        darkParticle.Prepare(
-                            //position
-                            new Vector2 (Projectile.localAI[0], Projectile.localAI[1] ),
-                            //velocity
-                            Projectile.velocity,//.ToRotation(),
-                                                //rotaiton
-                            Projectile.velocity.ToRotation() + MathHelper.PiOver2,// + Main.rand.NextFloat(-1f, 1f),
-                                                                                  //lifetime
-                            30,//Main.rand.Next(20, 40),
-                               //color normal
-                            Color.Crimson,//Color.DarkCyan * 0.5f,
-                                          //color glow
-                             Color.AntiqueWhite,//Color.Black * 0.33f,
-                                                //scale
-                            1f);
+                        target.StrikeNPC(hitInfo);
+                        Projectile.ai[1] = 0f;
 
-
-                        ParticleEngine.Particles.Add(darkParticle);
-                        //target.AddBuff(BuffID.OnFire, 300); // Apply On Fire debuff for 5 seconds
-                       // Dust.NewDust(Projectile.Center, 10, 10, DustID.FungiHit, 0f, 0f, 150, Color.Orange, 1.2f);
-                        //SoundEngine.PlaySound(GennedAssets.Sounds.NamelessDeity.SliceTelegraph with { MaxInstances = 16, PitchVariance = 0.3f }, Projectile.Center).WithVolumeBoost(0.5f);
+                        target.AddBuff(BuffID.OnFire, 300);
+                        Dust.NewDust(Projectile.Center, 10, 10, DustID.FungiHit, 0f, 0f, 150, Color.Orange, 1.2f);
+                        //SoundEngine.PlaySound(SoundID.Item36, Projectile.Center);
                     }
                 }
                 else
                 {
-                    Projectile.Kill(); // Remove projectile if NPC disappears
+                    Projectile.Kill();
                 }
             }
         }
+
+
 
         public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
         {
@@ -223,8 +234,9 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Rogue
             SwordTexture.Frame();
             Rectangle Sframe = SwordTexture.Frame(1, 4, 0, 0);
 
+            
             Vector2 Sorigin = new Vector2(Sframe.Width / 2, Sframe.Height / 2);
-            int swordcount = 4;
+            int swordcount = 6;
 
             for (int i = 0; i < swordcount; i++)
             {

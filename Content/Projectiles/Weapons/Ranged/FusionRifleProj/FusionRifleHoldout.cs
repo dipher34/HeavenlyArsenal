@@ -21,7 +21,7 @@ using Particle = Luminance.Core.Graphics.Particle;
 
 
 
-namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
+namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.FusionRifleProj
 {
     public class FusionRifleHoldout : BaseIdleHoldoutProjectile
     {
@@ -85,7 +85,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
             Projectile.MaxUpdates = 2;
         }
 
-        private int BurstCount = 0; // Tracks how many projectiles are left in the burst
+        public static int BurstCount = 0; // Tracks how many projectiles are left in the burst
 
         private enum FusionRifleState
         {
@@ -135,10 +135,6 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
         private void HandleCharging()
         {
 
-            bool rancorCircleExists = Main.projectile.Any(p =>
-            p.active &&
-            p.type == ModContent.ProjectileType<FusionRifle_Circle>() &&
-            p.owner == Projectile.owner);
 
             if (Main.mouseLeft && Owner.channel)
             {
@@ -243,14 +239,14 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
                     float intensity = ChargeupInterpolant * 0.5f; // Reduce glow intensity
                     Dust dust = Dust.NewDustPerfect(Projectile.Center, DustID.RuneWizard, Vector2.Zero, 100, Color.Cyan, intensity * 10);
                     dust.noGravity = false;
-                    ChargeTimer -= 10; // Decrease charge timer
+                    ChargeTimer -= 10;
                     if (ChargeTimer < 0)
-                        ChargeTimer = 0; // Clamp to zero
+                        ChargeTimer = 0;
                 }
             }
         }
 
-        private void ConstrainParticle(Vector2 anchor, ClothPoint? point, float angleOffset)
+        private void ConstrainParticle(Vector2 anchor, ClothPoint point, float angleOffset)
         {
             if (point is null)
                 return;
@@ -594,7 +590,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
         public override bool PreDraw(ref Color lightColor)
         {
             ClothTarget.Request(350, 350, Projectile.whoAmI, DrawCloth);
-            if (ClothTarget.TryGetTarget(Projectile.whoAmI, out RenderTarget2D? clothTarget) && clothTarget is not null)
+            if (ClothTarget.TryGetTarget(Projectile.whoAmI, out RenderTarget2D clothTarget) && clothTarget is not null)
             {
                 Main.spriteBatch.PrepareForShaders();
                 //new Texture Placeholder = GennedAssets.Textures.Extra.Code;

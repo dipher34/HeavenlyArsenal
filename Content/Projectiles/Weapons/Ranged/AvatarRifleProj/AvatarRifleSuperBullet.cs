@@ -13,7 +13,7 @@ using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged;
+namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj;
 
 public class AvatarRifleSuperBullet : GlobalProjectile
 {

@@ -8,6 +8,7 @@ using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Terraria;
 using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Items.Weapons.Rogue
@@ -17,8 +18,15 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Rogue
         public override string Texture => "HeavenlyArsenal/Content/Items/Weapons/Magic/avatar_FishingRod";
         public override void SetDefaults()
         {
-            //Item.DamageType = RogueDamageClass.Instance;
-            Item.DamageType= DamageClass.Throwing;
+
+        
+           
+            DamageClass d;
+            Mod calamity = ModLoader.GetMod("CalamityMod");
+            calamity.TryFind("RogueDamageClass", out d);
+            Item.DamageType = d;
+           
+
             Item.crit = 70;
             Item.damage = 4000;
             Item.useStyle = 1;

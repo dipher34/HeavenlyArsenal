@@ -18,7 +18,7 @@ using CalamityMod;
 using static NoxusBoss.Assets.GennedAssets.Sounds;
 using System.Runtime.CompilerServices;
 using Terraria.Audio;
-using HeavenlyArsenal.Content.Projectiles.Weapons.Ranged;
+using HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj;
 
 
 namespace HeavenlyArsenal.Content.Items.Weapons.Ranged

@@ -34,9 +34,10 @@ using HeavenlyArsenal.ArsenalPlayer;
 using HeavenlyArsenal.Content.Particles;
 using NoxusBoss.Assets;
 using NoxusBoss.Core.Graphics.RenderTargets;
+using HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.FusionRifleProj;
 
 
-namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
+namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
 {
     public class AvatarRifle_Holdout : BaseIdleHoldoutProjectile
     {
@@ -62,9 +63,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
         public static readonly SoundStyle CycleEmptySound = new SoundStyle("HeavenlyArsenal/Assets/Sounds/Items/Ranged/AvatarRifle/AvatarRifle_Cycle");
         public static readonly SoundStyle MagEmptySound = new SoundStyle("HeavenlyArsenal/Assets/Sounds/Items/Ranged/AvatarRifle/AvatarRifle_ClipEject");
 
-        public static readonly SoundStyle StrongFireSound = new SoundStyle("HeavenlyArsenal/Assets/Sounds/Items/Ranged/AvatarRifle/AvatarRifle_ClipEject");
-        public static readonly SoundStyle RealityFireSound = new SoundStyle("HeavenlyArsenal/Assets/Sounds/Items/Ranged/AvatarRifle/AvatarRifle_ClipEject");
-
+      
 
         /// <summary>
         /// The cloth simulation attached to the front of this rifle.
@@ -163,11 +162,11 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
         {
             float windSpeed = Math.Clamp(Main.WindForVisuals * Projectile.spriteDirection * 8f, -1.3f, 0f);
             Vector2 robePosition = Projectile.Center + new Vector2(14f, -50f);//.RotatedBy(Projecitle.Rotation);
-            Vector3 wind = Vector3.UnitX * (LumUtils.AperiodicSin(ExistenceTimer * 0.029f) * 0.67f + windSpeed) * 1.74f;
+            Vector3 wind = Vector3.UnitX * (AperiodicSin(ExistenceTimer * 0.029f) * 0.67f + windSpeed) * 1.74f;
         }
         public override void SafeAI()
         {
-            Cloth ??= new ClothSimulation(new Vector3(Projectile.Center, 10f*Projectile.direction), Projectile.width, 7, 0f, 60f, 0.02f);
+            //Cloth ??= new ClothSimulation(new Vector3(Projectile.Center, 10f*Projectile.direction), Projectile.width, 7, 0f, 60f, 0.02f);
 
 
             RibbonPhysics();
@@ -488,13 +487,13 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
             Vector2 tipPosition = armPosition + Projectile.velocity * Projectile.width * 1.55f + new Vector2(3, -3);
             CreateMuzzleFlash(tipPosition, Projectile.velocity);
 
-            float AmmoDifference = (MaxAmmo - AmmoCount);
+            float AmmoDifference = MaxAmmo - AmmoCount;
             //Main.NewText($"{Projectile.damage} + {(int)(MathF.Pow(AmmoDifference, MaxAmmo))} Damage", Color.AntiqueWhite);
 
             RecoilRotation += Projectile.spriteDirection * MathHelper.ToRadians(34f); // Spread angle for the muzzle flash particles
-            Projectile shot = Projectile.NewProjectileDirect(Projectile.GetSource_FromThis(), tipPosition, Projectile.velocity *12, bulletAMMO, Projectile.damage + (int)(MathF.Pow(AmmoDifference,MaxAmmo)), Projectile.knockBack, Projectile.owner);
+            Projectile shot = Projectile.NewProjectileDirect(Projectile.GetSource_FromThis(), tipPosition, Projectile.velocity *12, bulletAMMO, Projectile.damage + (int)MathF.Pow(AmmoDifference,MaxAmmo), Projectile.knockBack, Projectile.owner);
             shot.GetGlobalProjectile<AvatarRifleSuperBullet>().hasEmpowerment = true;
-            shot.GetGlobalProjectile<AvatarRifleSuperBullet>().empowerment = (int)MathHelper.Lerp(((int)MathF.Pow(MaxAmmo -(float)AmmoCount,2)),2,(7-AmmoCount)/MaxAmmo);
+            shot.GetGlobalProjectile<AvatarRifleSuperBullet>().empowerment = (int)MathHelper.Lerp((int)MathF.Pow(MaxAmmo -AmmoCount,2),2,(7-AmmoCount)/MaxAmmo);
             //SoundEngine.PlaySound(SoundID.Item41 with { Volume = 0.75f }, Projectile.Center);
             //Dust.NewDust(tipPosition, 1, 1, DustID.Firefly, Projectile.spriteDirection*5, 0, 100, default, 1);
 
@@ -804,7 +803,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
 
 
             ClothTarget.Request(350, 350, Projectile.whoAmI, DrawCloth);
-            if (ClothTarget.TryGetTarget(Projectile.whoAmI, out RenderTarget2D? clothTarget) && clothTarget is not null)
+            if (ClothTarget.TryGetTarget(Projectile.whoAmI, out RenderTarget2D clothTarget) && clothTarget is not null)
             {
                 Main.spriteBatch.PrepareForShaders();
 
@@ -839,7 +838,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
         /// <summary>
         /// Constrains a cloth particle to a specific anchor point with an optional angle offset.
         /// </summary>
-        private void ConstrainParticle(Vector2 anchor, ClothPoint? point, float angleOffset)
+        private void ConstrainParticle(Vector2 anchor, ClothPoint point, float angleOffset)
         {
             // Check if the particle (point) is null before proceeding
             if (point is null)
@@ -900,7 +899,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
                     for (int y = 0; y < Cloth.Height; y++)
                     {
                         // Calculate local wind force with turbulence and scaling
-                        Vector3 localWind = Vector3.UnitX * (LumUtils.AperiodicSin(Time * 0.01f + y * 0.05f) * windSpeed) * 1.2f;
+                        Vector3 localWind = Vector3.UnitX * (AperiodicSin(Time * 0.01f + y * 0.05f) * windSpeed) * 1.2f;
 
                         // Apply forces to the cloth particle at position (x, y)
                         Cloth.particleGrid[x, y].AddForce(localWind + rotationalForce);

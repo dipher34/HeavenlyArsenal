@@ -30,7 +30,7 @@ using NoxusBoss.Core.Graphics;
 using NoxusBoss.Core.World.WorldSaving;
 using System.Linq;
 using Terraria.Localization;
-using HeavenlyArsenal.Content.Projectiles.Weapons.Ranged;
+using HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.FusionRifleProj;
 
 namespace HeavenlyArsenal.Content.Items.Weapons.Ranged
 {

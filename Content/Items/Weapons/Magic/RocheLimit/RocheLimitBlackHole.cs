@@ -254,6 +254,8 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
         StandardMouseHoverMotion();
         CastMinorParticles();
         AbsorbGores();
+        AbsorbDusts();
+
 
         Brrrrrrr ??= LoopedSoundManager.CreateNew(GennedAssets.Sounds.NamelessDeity.QuasarLoopStart, GennedAssets.Sounds.NamelessDeity.QuasarLoop, () => !Projectile.active);
 
@@ -366,6 +368,19 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
             gore.velocity += gore.position.SafeDirectionTo(Projectile.Center) * 4f;
             if (gore.position.WithinRange(Projectile.Center, 150f))
                 gore.active = false;
+        }
+    }
+
+
+    private void AbsorbDusts()
+    {
+        for (int i = 0; i < Main.maxGore; i++)
+        {
+            Dust dust = Main.dust[i];
+            dust.position = Vector2.Lerp(dust.position, Projectile.Center, 0.02f);
+            dust.velocity += dust.position.SafeDirectionTo(Projectile.Center) * 4f;
+            if (dust.position.WithinRange(Projectile.Center, 150f))
+               dust.active = false;
         }
     }
 

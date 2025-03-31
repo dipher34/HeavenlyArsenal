@@ -20,7 +20,7 @@ using System.Linq;
 using Luminance.Assets;
 
 
-namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
+namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.FusionRifleProj
 {
     internal class FusionRifle_Projectile : ModProjectile//, IPixelatedPrimitiveRenderer
     {
@@ -137,7 +137,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
 
         public override void OnSpawn(IEntitySource source)
         {
-            //Projectile.rotation += 
+            FusionRifleHoldout.BurstCount++;
         }
         public override void OnKill(int timeLeft)
         {
