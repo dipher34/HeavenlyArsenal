@@ -35,6 +35,7 @@ using HeavenlyArsenal.Content.Particles;
 using NoxusBoss.Assets;
 using NoxusBoss.Core.Graphics.RenderTargets;
 using HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.FusionRifleProj;
+using Terraria.GameContent;
 
 
 namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
@@ -110,8 +111,8 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
         public override void SetStaticDefaults()
         {
             Main.projFrames[Projectile.type] = 18;
-            ClothTarget = new InstancedRequestableTarget();
-            Main.ContentThatNeedsRenderTargets.Add(ClothTarget);
+            //ClothTarget = new InstancedRequestableTarget();
+            //Main.ContentThatNeedsRenderTargets.Add(ClothTarget);
             ProjectileID.Sets.TrailingMode[Type] = 2;
             ProjectileID.Sets.TrailCacheLength[Type] = 10;
         }
@@ -215,7 +216,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
             rope.gravity = new Vector2(0f, 0.5f);
             rope.Update();
             ApplyWindToRope();
-            UpdateCloth();
+            //UpdateCloth();
             Time++;
         }
 
@@ -262,7 +263,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
             }
         }
 
-
+       
         private void HandlePostFire()
         {
            
@@ -291,6 +292,9 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
                     CurrentState = AvatarRifleState.Cycle;
                     StateTimer = AvatarRifle.CycleTime;//AvatarRifle.RPM;
                     
+                   
+                    
+                    
                 }
                 else
                 {
@@ -310,6 +314,9 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
 
 
         }
+
+       
+
 
         private void EjectShell(int SparkCount, Vector2 ShellPosition, float ShellVelocityMin, float ShellVelocityMax)
         {
@@ -472,6 +479,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
 
         private float recoilIntensity = 0f; // Tracks the current recoil intensity
         private float RecoilRotation = 0f;
+
         private const float maxRecoil = 20f; // Maximum recoil amount
         private float recoilRecoverySpeed = 0.5f; // Speed at which recoil eases out
         private void FireProjectile()
@@ -692,7 +700,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
 
         private Vector2 AnchorPosition()
         {
-            // You can customize this position as needed
+          
             return Projectile.Center + new Vector2(80, -5 * Projectile.spriteDirection).RotatedBy(Projectile.rotation) * Projectile.scale;
         }
 
@@ -755,6 +763,22 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
             }
         }
 
+
+        private Texture2D getBulletToDraw()
+        {
+
+            int bulletAMMO = AmmoID.Bullet;
+
+            Texture2D BulletValue = TextureAssets.Item[bulletAMMO].Value;
+            
+            return BulletValue;
+        }
+        private void DrawBullet(Texture2D Texture, Vector2 Drawpos, Color lightColor)
+        {
+            Main.spriteBatch.Draw(Texture, Drawpos, lightColor);
+        }
+
+
         public override bool PreDraw(ref Color lightColor)
         {
 
@@ -787,7 +811,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
 
             Rectangle frame = texture.Frame(1, 18, 0, Projectile.frame);
 
-
+          
             float rotation = Projectile.rotation;
             //SpriteEffects direction = SpriteEffects.None;
 
@@ -800,8 +824,10 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
 
             //DrawShroud();
 
+            Texture2D BulletTexture = getBulletToDraw();
+            DrawBullet(BulletTexture,drawPosition,lightColor);
 
-
+            /*
             ClothTarget.Request(350, 350, Projectile.whoAmI, DrawCloth);
             if (ClothTarget.TryGetTarget(Projectile.whoAmI, out RenderTarget2D clothTarget) && clothTarget is not null)
             {
@@ -816,28 +842,30 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
                 Main.spriteBatch.ResetToDefault();
 
             }
+            */
             return false;
         }
 
         // Property to hold the cloth simulation object
-        public ClothSimulation Cloth
-        {
-            get;
-            private set; // Only accessible within the class
-        }
+       // public ClothSimulation Cloth
+       // {
+      //      get;
+      //      private set; // Only accessible within the class
+      //  }
 
         /// <summary>
         /// The render target responsible for rendering the cloth.
         /// </summary>
-        public static InstancedRequestableTarget ClothTarget
-        {
-            get;
-            private set;
-        }
+     ///   public static InstancedRequestableTarget ClothTarget
+     //   {
+    //        get;
+    //        private set;
+    //    }
 
         /// <summary>
         /// Constrains a cloth particle to a specific anchor point with an optional angle offset.
         /// </summary>
+        /*
         private void ConstrainParticle(Vector2 anchor, ClothPoint point, float angleOffset)
         {
             // Check if the particle (point) is null before proceeding
@@ -938,7 +966,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
             // Render the cloth
             Cloth.Render();
         }
-
+        */
         public override bool? CanDamage() => false;
     }
 }

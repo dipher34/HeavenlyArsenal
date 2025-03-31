@@ -9,7 +9,7 @@ using Terraria.ID;
 using Terraria.ModLoader;
 
 
-namespace HeavenlyArsenal.Content.Projectiles.Weapons.Melee.Nadir2;
+namespace HeavenlyArsenal.Content.Projectiles.Weapons.Melee.AvatarSpear;
 public class AvatarSpear_Holdout : ModProjectile
 {
     public ref Player player => ref Main.player[Projectile.owner];

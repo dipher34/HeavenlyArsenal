@@ -1,5 +1,6 @@
 ﻿using CalamityMod.Rarities;
-using HeavenlyArsenal.Content.Projectiles.Weapons.Melee.Nadir2;
+using HeavenlyArsenal.Content.Projectiles.Weapons.Melee.AvatarSpear;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -92,8 +93,8 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee
                 {
                     if (projectile.active && projectile.type == ModContent.ProjectileType<AvatarSpear_Holdout>() && projectile.owner == player.whoAmI)
                     {
-                        projectile.Kill(); // Despawn the spear projectile
-                        break; // Only kill the first matching projectile
+                        projectile.Kill(); 
+                        break; 
                     }
                 }
             }

@@ -26,13 +26,15 @@ Mods: {
 		Items: {
 			avatar_FishingRod: {
 				DisplayName: FlyRift
-				FishingPower: ""
+				FishingPowerTooltip: ∞
 				Tooltip:
 					'''
-					Incomprehensible% Fishing Power
+					 Fishing Power
+
 					Upon Sufficient Ringing of the bell, A rift will open beneath you.
 					Cast the bell into the rift to Cause God to lash out, Shredding your foes.
 					'''
+				Tooltip: ""
 			}
 
 			AvatarRifle: {
@@ -65,11 +67,6 @@ Mods: {
 					Perhaps there's something you can do with this later?
 					'''
 				TooltipPostNamelessDeity: A s c e n d.
-			}
-
-			nadir2: {
-				DisplayName: Ossified Needle
-				Tooltip: ""
 			}
 
 			devMask: {
@@ -142,11 +139,6 @@ Mods: {
 				Tooltip: ""
 			}
 
-			ClothSpawner: {
-				DisplayName: Cloth Spawner
-				Tooltip: ""
-			}
-
 			Accessories: {
 				ElectricVambrace: {
 					DisplayName: Vambrace of Otonilou
@@ -166,21 +158,11 @@ Mods: {
 				DisplayName: Brutal Forgiveness
 				Tooltip:
 					'''
-					and thus [god] said to me,
+					... And thus [god] said to me,
 					"Take this, and [grow] your own garden."
 
-					now with 90% more flower!!
+					Now with 90% more flower!!
 					'''
-			}
-
-			Nadir2: {
-				DisplayName: Nadir2
-				Tooltip: ""
-			}
-
-			CosmicWatergun: {
-				DisplayName: Cosmic Watergun
-				Tooltip: ""
 			}
 
 			RocheLimit: {
@@ -194,24 +176,45 @@ Mods: {
 			}
 
 			SolynWhip_Item: {
-				DisplayName: Solyn Whip_ Item
-				Tooltip: ""
+				DisplayName: Solynel
+				Tooltip:
+					'''
+					why would you do this?
+					Summons the ghost of your friend from her eternal rest in the garden to fight for you for a short time on-hit.
+					'''
+				TooltipPreAOE:
+					'''
+					why would you do this?
+					temporarily summons a clone of your friend to fight for you for a short time on-hit.
+					'''
 			}
 
 			FlowerShuriken: {
 				DisplayName: Flower Shuriken
 				Tooltip: ""
 			}
+
+			AvatarSpear: {
+				DormantName: Slumbering Void
+				EmpoweredName: Crimson Needle
+				Tooltip: ""
+				DisplayName: Avatar Spear
+			}
+
+			AvatarBow: {
+				DisplayName: Avatar Bow
+				Tooltip: ""
+			}
 		}
 
 		Projectiles: {
-			incomplete_gunHoldout.DisplayName: incomplete_gun Holdout
+			Incomplete_gunHoldout.DisplayName: You shouldn't be seeing this!
 			nadir2_Holdout.DisplayName: nadir2_ Holdout
 			nadir2Lantern.DisplayName: nadir2 Lantern
 			ParasiteParadiseProjectile.DisplayName: Parasite Paradise Projectile
 			TheBlackBell_Projectile.DisplayName: The Black Bell Projectile
-			FusionRifleHoldout.DisplayName: Fusion Rifle Holdout
-			AvatarRifle_Holdout.DisplayName: Avatar Rifle_ Holdout
+			FusionRifleHoldout.DisplayName: Cold Fusion
+			AvatarRifle_Holdout.DisplayName: Avatar Rifle
 
 			Ranged: {
 				FusionRifle_Exhaust.DisplayName: Fusion Rifle_ Exhaust
@@ -243,8 +246,9 @@ Mods: {
 			SolynWhip_Projectile.DisplayName: Solyn Whip_ Projectile
 			RelativisticJet.DisplayName: Relativistic Jet
 			SolynWhip_BattleSolyn.DisplayName: Solyn Whip_ Battle Solyn
-			FusionRifle_Projectile.DisplayName: Fusion Rifle_ Projectile
+			FusionRifle_Projectile.DisplayName: Nothing
 			FlowerShuriken_Proj.DisplayName: Flower Shuriken_ Proj
+			AvatarSpear_Holdout.DisplayName: Avatar Spear_ Holdout
 		}
 
 		NPCs.AnAffrontToGod.DisplayName: An Affront To God

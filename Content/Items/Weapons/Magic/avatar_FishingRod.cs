@@ -9,6 +9,7 @@ using Terraria.ID;
 using Terraria.ModLoader;
 using CalamityMod.Items.Weapons.Summon;
 using HeavenlyArsenal.Content.Projectiles.Weapons.Magic;
+using System.Collections.Generic;
 
 namespace HeavenlyArsenal.Content.Items.Weapons.Magic;
 
@@ -52,6 +53,33 @@ public class avatar_FishingRod : ModItem
             .AddTile<GardenFountainTile>()
             .Register();
     }
+
+    public override void ModifyTooltips(List<TooltipLine> tooltips)
+    {
+        // Find the fishing power tooltip from localization
+        TooltipLine fishingPowerTooltip = tooltips.FirstOrDefault(t => t.Mod == Mod.Name && t.Name == "FishingPower");
+
+        // Find the main tooltip
+        TooltipLine mainTooltip = tooltips.FirstOrDefault(t => t.Mod == "Terraria" && t.Name == "Tooltip0");
+
+        if (fishingPowerTooltip != null)
+        {
+            // Set a different color for the fishing power tooltip
+            fishingPowerTooltip.OverrideColor = Color.Cyan;
+
+            // Move the fishing power tooltip to the top of the list
+            //tooltips.Remove(fishingPowerTooltip);
+            tooltips.Insert(0, fishingPowerTooltip);
+        }
+
+        if (mainTooltip != null && fishingPowerTooltip != null)
+        {
+            // Ensure "Fishing Power" isn't duplicated in the main tooltip
+            //mainTooltip.Text = mainTooltip.Text.Replace(fishingPowerTooltip.Text + "\n\n", "");
+        }
+    }
+
+
 
     // The following prevents the rod from using mana when first used
 

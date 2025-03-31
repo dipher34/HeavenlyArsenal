@@ -16,7 +16,7 @@ using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Projectiles.Misc
 {
-    public class incomplete_gunHoldout : BaseIdleHoldoutProjectile
+    public class Incomplete_gunHoldout : BaseIdleHoldoutProjectile
     {
 
 
