@@ -31,10 +31,11 @@ public class AvatarLonginusHeld : ModProjectile
         WhipSlash,
 
         // Empowered attacks
-        Empowered_RapidStabs,
-        Empowered_HeavyThrust,
-        Empowered_RipOut,
-        Empowered_Castigation
+        // RapidStabs
+        //SecondSlash,
+        SuperHeavyThrust,
+        RipOut,
+        Castigation
     }
 
     public override void SetStaticDefaults()
@@ -86,6 +87,16 @@ public class AvatarLonginusHeld : ModProjectile
         Vector2 handPosition = Player.MountedCenter;
         float attackSpeed = Player.GetAttackSpeed(DamageClass.Melee) * (1f + Projectile.extraUpdates * 0.15f);
 
+        if (AttackState != (int)AttackStates.Idle)
+        {
+            if (Time < 2 && Main.myPlayer == Projectile.owner)
+            {
+                Projectile.velocity = Player.DirectionTo(Main.MouseWorld) * 20f;
+                Projectile.direction = Projectile.velocity.X > 0 ? 1 : -1;
+                Projectile.netUpdate = true;
+            }
+        }
+
         switch (AttackState)
         {
             default:
@@ -95,19 +106,16 @@ public class AvatarLonginusHeld : ModProjectile
 
                 Projectile.scale = 1f;
                 Projectile.velocity = Vector2.Zero;
-
                 float motionBob = Player.velocity.X * 0.02f - Player.velocity.Y * 0.015f * Player.direction;
-                Projectile.rotation = Utils.AngleLerp(Projectile.rotation, -MathHelper.PiOver2 + 1f * Player.direction + motionBob, 0.1f);
+                Projectile.rotation = Utils.AngleLerp(Projectile.rotation, Player.fullRotation - MathHelper.PiOver2 + 1f * Player.direction + motionBob, 0.1f);
                 Projectile.spriteDirection = Player.direction;
 
-                Player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.ThreeQuarters, -0.3f * Player.direction + motionBob * 0.3f);
                 Player.SetCompositeArmBack(true, Player.CompositeArmStretchAmount.Full, -MathHelper.PiOver2 * Player.direction + motionBob * 1.2f);
+                Player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.ThreeQuarters, -0.3f * Player.direction + motionBob * 0.3f);
                 handPosition = Player.GetFrontHandPosition(Player.CompositeArmStretchAmount.ThreeQuarters, -0.3f * Player.direction);
 
                 if (Player.controlUseItem)
-                {
                     AttackState = (int)AttackStates.RapidStabs;
-                }
 
                 break;
 
@@ -115,21 +123,11 @@ public class AvatarLonginusHeld : ModProjectile
 
                 Player.SetDummyItemTime(5);
 
-                const int RapidWindUp = 30;
+                const int RapidWindUp = 50;
                 const int RapidStabCount = 4;
                 const int RapidWindDown = 50;
 
-                int RapidStabTime = 25 + (int)(60 / attackSpeed);
-
-                if (Time < 2)
-                {
-                    if (Main.myPlayer == Projectile.owner)
-                    {
-                        Projectile.velocity = Player.DirectionTo(Main.MouseWorld) * 20f;
-                        Projectile.direction = Projectile.velocity.X > 0 ? 1 : -1;
-                        Projectile.netUpdate = true;
-                    }
-                }
+                int RapidStabTime = 20 + (RapidStabCount + 3) * 5 + (int)(50 / attackSpeed);
 
                 if (Time < RapidWindUp)
                 {
@@ -138,9 +136,12 @@ public class AvatarLonginusHeld : ModProjectile
                     float wiggle = MathF.Sin(MathF.Pow(windProgress, 2f) * MathHelper.Pi) * -0.4f * Projectile.direction;
                     Projectile.rotation = Utils.AngleLerp(Projectile.rotation, Projectile.velocity.ToRotation() + wiggle, 0.9f);
                     offset = new Vector2(MathHelper.SmoothStep(0, -50, windProgress), 0).RotatedBy(Projectile.rotation);
-
                     Projectile.scale = 1f - windProgress * 0.33f;
+
+                    Player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.None, Projectile.rotation - MathHelper.PiOver2);
+                    handPosition = Player.GetFrontHandPosition(Player.CompositeArmStretchAmount.None, Projectile.rotation - MathHelper.PiOver2);
                 }
+
                 else if (Time < RapidWindUp + RapidStabTime - 1) // -1 here because the modulo is a bit quirky
                 {
                     float windDownProgress = Utils.GetLerpValue(RapidWindDown, 0f, Time - RapidWindUp - RapidStabTime, true);
@@ -163,16 +164,22 @@ public class AvatarLonginusHeld : ModProjectile
                     }
 
                     Projectile.rotation = Projectile.velocity.ToRotation();
-
                     offset = new Vector2(stabCurve * 200 - 50, 0).RotatedBy(Projectile.rotation);
-
                     Projectile.scale = 1f + stabCurve * 0.5f;
+
+                    int handSwingDir = (int)(Utils.GetLerpValue(0, RapidStabTime, Time - RapidWindUp, true) * RapidStabCount) % 2 > 0 ? 1 : -1;
+                    float handRot = Projectile.rotation - MathHelper.PiOver2 + (1.5f - stabProgress) * handSwingDir * Player.direction;
+                    Player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, handRot);
+                    handPosition = Player.GetFrontHandPosition(Player.CompositeArmStretchAmount.Full, handRot);
                 }
                 else
                 {
                     float windDownProgress = Utils.GetLerpValue(RapidWindDown / 4f, RapidWindDown, Time - RapidWindUp - RapidStabTime, true);
                     offset = new Vector2(150, 0).RotatedBy(Projectile.rotation) * MathF.Cbrt(1f - windDownProgress);
                     Projectile.scale = 1.5f - MathF.Pow(windDownProgress, 3);
+
+                    Player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, Projectile.rotation - MathHelper.PiOver2);
+                    handPosition = Player.GetFrontHandPosition(Player.CompositeArmStretchAmount.Full, Projectile.rotation - MathHelper.PiOver2);
                 }
 
                 Player.ChangeDir(Projectile.velocity.X > 0 ? 1 : -1);
@@ -197,20 +204,10 @@ public class AvatarLonginusHeld : ModProjectile
 
             case (int)AttackStates.WhipSlash:
 
-                const int SlashWindUp = 40;
-                int SlashTime = 20 + (int)(30 / attackSpeed);
-                int SlashWindDown = 10 + (int)(40 / attackSpeed);
+                const int SlashWindUp = 30;
+                int SlashTime = 35 + (int)(30 / attackSpeed);
+                int SlashWindDown = 20 + (int)(30 / attackSpeed);
                 float SlashRotation = MathHelper.ToRadians(190);
-
-                if (Time < 2)
-                {
-                    if (Main.myPlayer == Projectile.owner)
-                    {
-                        Projectile.velocity = Player.DirectionTo(Main.MouseWorld) * 20f;
-                        Projectile.direction = Projectile.velocity.X > 0 ? 1 : -1;
-                        Projectile.netUpdate = true;
-                    }
-                }
 
                 if (Time < SlashWindUp)
                 {
@@ -230,7 +227,7 @@ public class AvatarLonginusHeld : ModProjectile
                         SoundEngine.PlaySound(GennedAssets.Sounds.NamelessDeity.DaggerBurst with { MaxInstances = 0 }, Projectile.Center);
 
                     if (Time == SlashWindUp + SlashTime - 1)
-                        SoundEngine.PlaySound(GennedAssets.Sounds.NamelessDeity.GenericBurst with { MaxInstances = 0 }, Projectile.Center);
+                        SoundEngine.PlaySound(GennedAssets.Sounds.NamelessDeity.SliceTelegraph with { MaxInstances = 0 }, Projectile.Center);
 
                     float slashProgress = Utils.GetLerpValue(0, SlashTime, Time - SlashWindUp, true);
                     float windDown = Utils.GetLerpValue(0, SlashWindDown, Time - SlashWindUp - SlashTime, true);
@@ -245,6 +242,8 @@ public class AvatarLonginusHeld : ModProjectile
                     Projectile.scale = 1f + slashProgress * (1f - MathF.Sqrt(windDown));
                 }
 
+                Player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, Projectile.rotation - MathHelper.PiOver2);
+                handPosition = Player.GetFrontHandPosition(Player.CompositeArmStretchAmount.Full, Projectile.rotation - MathHelper.PiOver2);
                 Player.ChangeDir(Projectile.velocity.X > 0 ? 1 : -1);
                 Time++;
 
@@ -270,15 +269,6 @@ public class AvatarLonginusHeld : ModProjectile
                 int HeavyThrustTime = 10 + (int)(30 / Player.GetAttackSpeed(DamageClass.Melee));
                 int HeavyWindDown = 10 + (int)(20 / Player.GetAttackSpeed(DamageClass.Melee));
 
-                if (Time < 2)
-                {
-                    if (Main.myPlayer == Projectile.owner)
-                    {
-                        Projectile.velocity = Player.DirectionTo(Main.MouseWorld) * 20f;
-                        Projectile.netUpdate = true;
-                    }
-                }
-
                 if (Time < HeavyWindUp)
                 {
                     float windProgress = Time / (HeavyWindUp - 1f);
@@ -287,6 +277,9 @@ public class AvatarLonginusHeld : ModProjectile
                     Projectile.rotation = Utils.AngleLerp(Projectile.rotation, Projectile.velocity.ToRotation() + wiggle, windProgress);
                     offset = new Vector2(MathHelper.SmoothStep(0, -80, windProgress), 0).RotatedBy(Projectile.rotation);
                     Projectile.scale = 1f;
+
+                    Player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.None, Projectile.rotation + MathHelper.PiOver2);
+                    handPosition = Player.GetFrontHandPosition(Player.CompositeArmStretchAmount.None, Projectile.rotation + MathHelper.PiOver2);
                 }
                 else
                 {
@@ -303,6 +296,9 @@ public class AvatarLonginusHeld : ModProjectile
                     Projectile.rotation = Utils.AngleLerp(Projectile.rotation, Projectile.velocity.ToRotation() - (thrustCurve - 1f) * 0.3f * Projectile.direction, 0.5f - thrustCurve * 0.2f);
                     offset = new Vector2(MathHelper.SmoothStep(0, 150, thrustCurve) * (1f - windDownCurve), 0).RotatedBy(Projectile.rotation);
                     Projectile.scale = 1.5f - windDownCurve * 0.5f;
+
+                    Player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, Projectile.rotation - MathHelper.PiOver2 * thrustProgress);
+                    handPosition = Player.GetFrontHandPosition(Player.CompositeArmStretchAmount.Full, Projectile.rotation - MathHelper.PiOver2 * thrustProgress);
                 }
 
                 Player.ChangeDir(Projectile.velocity.X > 0 ? 1 : -1);
@@ -330,15 +326,6 @@ public class AvatarLonginusHeld : ModProjectile
                 const int ThrowWindUp = 30;
                 const int ThrowTime = 50;
                 const int TPTime = 30;
-
-                if (Time < 2)
-                {
-                    if (Main.myPlayer == Projectile.owner)
-                    {
-                        Projectile.velocity = Player.DirectionTo(Main.MouseWorld) * 20f;
-                        Projectile.netUpdate = true;
-                    }
-                }
 
                 Player.velocity *= 0.9f;
                 Player.SetImmuneTimeForAllTypes(60);

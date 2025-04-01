@@ -59,7 +59,10 @@ public class AvatarLonginus : ModItem
         if (player.whoAmI == Main.myPlayer)
         {
             if (!SpearOut(player))
-                Projectile.NewProjectile(player.GetSource_ItemUse(Item), player.Center.X, player.Center.Y, 0f, 0f, Item.shoot, Item.damage, Item.knockBack, player.whoAmI);
+            {
+                Projectile spear = Projectile.NewProjectileDirect(player.GetSource_ItemUse(Item), player.Center, Vector2.Zero, Item.shoot, Item.damage, Item.knockBack, player.whoAmI);
+                spear.rotation = -MathHelper.PiOver2 + 1f * player.direction;
+            }
         }
     }
 
