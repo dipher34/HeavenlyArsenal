@@ -1,5 +1,6 @@
 ﻿using CalamityMod.Rarities;
 using HeavenlyArsenal.Content.Projectiles.Weapons.Melee.AvatarSpear;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Terraria;
 using Terraria.Audio;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -57,7 +59,12 @@ public class AvatarLonginus : ModItem
         if (player.whoAmI == Main.myPlayer)
         {
             if (!SpearOut(player))
-                Projectile.NewProjectile(player.GetSource_ItemUse(Item), player.Center.X, player.Center.Y, 0f, 0f, Item.shoot, Item.damage, Item.knockBack, player.whoAmI);
+            {
+                Projectile spear = Projectile.NewProjectileDirect(player.GetSource_ItemUse(Item), player.Center, Vector2.Zero, Item.shoot, Item.damage, Item.knockBack, player.whoAmI);
+                spear.rotation = -MathHelper.PiOver2 + 1f * player.direction;
+            }
         }
     }
+
+    public override bool Shoot(Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback) => false;
 }
