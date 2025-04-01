@@ -27,6 +27,7 @@ public class AvatarLonginus : ModItem
 
         Item.damage = 10000;
         Item.shootSpeed = 40f;
+        Item.crit = 84;
         Item.width = 40;
         Item.height = 32;
         Item.useTime = 40;
@@ -35,7 +36,7 @@ public class AvatarLonginus : ModItem
         Item.useAnimation = 0;
         Item.useTurn = true;
         Item.channel = true;
-        Item.knockBack = 6;
+        Item.knockBack = 3;
         Item.autoReuse = true;
         Item.ChangePlayerDirectionOnShoot = true;
         Item.noMelee = false;
@@ -67,4 +68,6 @@ public class AvatarLonginus : ModItem
     }
 
     public override bool Shoot(Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback) => false;
+
+    
 }

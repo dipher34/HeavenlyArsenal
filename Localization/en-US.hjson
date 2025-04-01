@@ -196,6 +196,11 @@ Mods: {
 				DormantName: Slumbering Void
 				EmpoweredName: Crimson Needle
 				DisplayName: Avatar Longinus
+				Tooltip: Goddamn the sun
+			}
+
+			LifeAndCessation: {
+				DisplayName: Life And Cessation
 				Tooltip: ""
 			}
 		}
@@ -242,6 +247,10 @@ Mods: {
 			FusionRifle_Projectile.DisplayName: Nothing
 			FlowerShuriken_Proj.DisplayName: Flower Shuriken_ Proj
 			AvatarLonginusHeld.DisplayName: Avatar Longinus Held
+			HeldLifeCessationProjectile.DisplayName: Held Life Cessation Projectile
+			LilyStarProjectile.DisplayName: Lily Star Projectile
+			LifeCessationEnergy.DisplayName: Life Cessation Energy
+			LillyStarProjectile.DisplayName: Lilly Star Projectile
 		}
 
 		NPCs.AnAffrontToGod.DisplayName: An Affront To God

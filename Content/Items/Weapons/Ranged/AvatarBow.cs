@@ -13,11 +13,12 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged
         public override void SetDefaults()
         {
            Item.DefaultToBow(Item.width, Item.height);
-            Item.damage = 100;
-            Item.DamageType = DamageClass.Ranged;
-            Item.shootSpeed = 20;
-            Item.useAmmo = AmmoID.Arrow;
-            
+           Item.damage = 100;
+           Item.DamageType = DamageClass.Ranged;
+           Item.shootSpeed = 20;
+           Item.useAmmo = AmmoID.Arrow;
+           Item.useAnimation = 4;
+            Item.useTime = 10;
         }
 
 

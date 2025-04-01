@@ -773,10 +773,14 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
             
             return BulletValue;
         }
-        private void DrawBullet(Vector2 Drawpos, Color lightColor)
+        private void DrawBullet(Vector2 Drawpos, Color lightColor, Texture2D BulletTexture)
         {
+            SpriteEffects spriteEffects = Projectile.direction * Player.gravDir < 0 ? SpriteEffects.FlipVertically : 0;
 
-            Main.spriteBatch.Draw(getBulletToDraw(), Drawpos, lightColor);
+
+            Rectangle frame = BulletTexture.Frame(1, 1, 0, Projectile.frame);
+            Main.EntitySpriteDraw(BulletTexture, Projectile.Center - Main.screenPosition, frame, lightColor, Projectile.rotation, origin, Projectile.scale, spriteEffects, 0);
+
         }
 
 
@@ -799,7 +803,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
                 float length = RopeDirection.Length();
 
 
-                //Main.EntitySpriteDraw(ropeTexture, start, frame, lightColor, Projectile.rotation, new Vector2(0, ropeTexture.Height / 2f), Projectile.scale, spriteEffects, 0);
+                
                 Main.spriteBatch.Draw(ropeTexture, start, null, lightColor.MultiplyRGB(Color.Crimson), Roperotation, new Vector2(0, ropeTexture.Height /2f), new Vector2(length / ropeTexture.Width, 3f), SpriteEffects.None, 0f);
             }
 
@@ -824,9 +828,9 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
             //Main.EntitySpriteDraw(texture, drawPosition, frame, lightColor, Projectile.rotation, frame.Size() * 0.5f, 1f, 0, 0);
 
             //DrawShroud();
+            Vector2 Bulletorigin = new Vector2(frame.Width / 2 - 24, frame.Height / 2 - 7 * Projectile.direction * Player.gravDir);
 
-           
-            DrawBullet(drawPosition,lightColor);
+            DrawBullet(drawPosition,lightColor, getBulletToDraw());
 
             /*
             ClothTarget.Request(350, 350, Projectile.whoAmI, DrawCloth);

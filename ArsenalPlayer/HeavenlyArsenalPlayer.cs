@@ -30,9 +30,9 @@ namespace HeavenlyArsenal.ArsenalPlayer
         internal bool ElectricVambrace;
         public int AvatarRifleCounter = 7;
 
+        public float CessationHeat = 0;
 
-
-
+        public bool CessationHeld;
         public bool HasReducedDashFirstFrame { get; private set; }
 
 
@@ -109,6 +109,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
 
         public override void ResetEffects()
         {
+            CessationHeld = false;
             ElectricVambrace = false;
             hasAvatarRifle = false;
         }
