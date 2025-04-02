@@ -95,7 +95,14 @@ class HeldLifeCessationProjectile : ModProjectile
 
     public override void AI()
     {
-
+        if (Projectile.ai[2] % 100 == 0)
+        {
+            Projectile.frame++;
+            if (Projectile.frame > 2)
+            {
+                Projectile.frame = 0;
+            }
+        }
         if (Time % 3 == 0)
         {
             
@@ -286,7 +293,7 @@ class HeldLifeCessationProjectile : ModProjectile
         Texture2D texture = Terraria.GameContent.TextureAssets.Projectile[Projectile.type].Value;
         Vector2 drawPosition = Projectile.Center - Main.screenPosition;
 
-        Rectangle frame = texture.Frame(1, 1, 0, Projectile.frame);
+        Rectangle frame = texture.Frame(1, 1, 0, 0);
 
 
 
@@ -300,6 +307,8 @@ class HeldLifeCessationProjectile : ModProjectile
         Texture2D LillyTexture = GennedAssets.Textures.SecondPhaseForm.SpiderLily;
         
         Rectangle Lillyframe = LillyTexture.Frame(1, 3, 0, Projectile.frame);
+
+        
         Vector2 Lorigin = new Vector2(Lillyframe.Width/2, Lillyframe.Height*1.5f * Projectile.direction * Player.gravDir);
 
 

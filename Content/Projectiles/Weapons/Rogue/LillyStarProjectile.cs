@@ -178,11 +178,11 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
         {
             if (npc.CanBeChasedBy(this, false))
             {
-                float distanceToCursor = Vector2.Distance(npc.Center, cursorPosition);
-                if (distanceToCursor < maxTargetDistance && (target == null || distanceToCursor < Vector2.Distance(target.Center, cursorPosition)))
+                float DistanceToNPC = Vector2.Distance(npc.Center, cursorPosition);
+                if (DistanceToNPC < maxTargetDistance && (target == null || DistanceToNPC < Vector2.Distance(target.Center, cursorPosition)))
                 {
                     target = npc;
-                    maxTargetDistance = distanceToCursor;
+                    maxTargetDistance = DistanceToNPC;
                 }
             }
         }
