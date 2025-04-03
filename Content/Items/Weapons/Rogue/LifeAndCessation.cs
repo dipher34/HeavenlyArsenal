@@ -40,7 +40,7 @@ class LifeAndCessation : ModItem
         Item.useStyle = ItemUseStyleID.Shoot;
         Item.noUseGraphic = true; 
         Item.shoot = ModContent.ProjectileType<HeldLifeCessationProjectile>();
-        Item.shootSpeed = 0f; // The “held projectile” doesn’t really move. lmao.
+        Item.shootSpeed = 0.1f; // The “held projectile” doesn’t really move. lmao.
         Item.autoReuse = true;
 
         // Sound/consumable details

@@ -16,6 +16,8 @@ using Terraria.DataStructures;
 using HeavenlyArsenal.Common.UI;
 using System.Threading;
 using Luminance.Core.Sounds;
+
+
 namespace HeavenlyArsenal.Content.Projectiles.Weapons.Rogue;
 
 class HeldLifeCessationProjectile : ModProjectile
@@ -52,6 +54,13 @@ class HeldLifeCessationProjectile : ModProjectile
     }
 
     public ref float Time => ref Projectile.ai[2];
+
+    public bool IsAbsorbingHeat
+    {
+        get;
+        set;
+    }
+
     public override void SetStaticDefaults()
     {
        
@@ -61,7 +70,7 @@ class HeldLifeCessationProjectile : ModProjectile
     {
         Projectile.width = 32;
         Projectile.height = 32;
-        Projectile.friendly = false;
+        Projectile.friendly = true  ;
         Projectile.hostile = false;
         Projectile.penetrate = -1;
         Projectile.ignoreWater = true;
@@ -132,8 +141,9 @@ class HeldLifeCessationProjectile : ModProjectile
         Owner.heldProj = Projectile.whoAmI;
 
         Projectile.velocity = Vector2.Lerp(Projectile.velocity.SafeNormalize(Vector2.Zero), Owner.DirectionTo(Main.MouseWorld).SafeNormalize(Vector2.Zero), 0.08f) * Owner.HeldItem.shootSpeed;
-        
-        
+
+
+        Main.NewText($"Velocity = {Projectile.velocity}", Color.AntiqueWhite);
         
         Projectile.rotation = Projectile.velocity.ToRotation();
 
@@ -146,9 +156,8 @@ class HeldLifeCessationProjectile : ModProjectile
         Projectile.rotation = toMouse.ToRotation();
 
 
-        
-        Projectile.ai[2] = MathF.Sqrt(Utils.GetLerpValue(0, 50, Time, true) * Utils.GetLerpValue(10, 30, Projectile.timeLeft, true));
 
+        //Projectile.ai[2] = MathF.Sqrt(Utils.GetLerpValue(0, 50, Time, true) * Utils.GetLerpValue(10, 30, Projectile.timeLeft, true));
 
         
         if (Heat > 0|| player.channel)
@@ -158,56 +167,56 @@ class HeldLifeCessationProjectile : ModProjectile
 
         if (Owner.controlUseItem)
         {
+            IsDisipateHeat = false;
             AbsorbHeat();
+            if (Heat != maxHeat)
+            {
+                IsAbsorbingHeat = true;
+                
+            }
+            else
+                IsAbsorbingHeat = false;
+           
         }
         else if (!Owner.controlUseItem)
         {
-           
+            IsAbsorbingHeat = false;
             ReleaseHeat();
+            if (Heat != minHeat)
+            {
+                IsDisipateHeat = true;
+               
+            }
+            else
+                IsDisipateHeat = false;
         }
         
 
         Projectile.ai[0]++;
+        Main.NewText($"IsAbsorbingHeat: {IsAbsorbingHeat}, IsDisipateHeat: {IsDisipateHeat}", Color.CadetBlue);
+
 
     }
-    
+
 
     public void AbsorbHeat()
     {
-        if (Heat < maxHeat)
-        {
-            Heat += heatIncrement;
-        }
-        else if (Heat > maxHeat)
-        {
-            Heat = maxHeat;
-        }
-
-        if (Heat %2 == 0 )
-        {
-            Projectile.NewProjectile(
-                Projectile.GetSource_FromThis(), // The source for the projectile
-                Owner.Center,
-                Projectile.velocity, // speed
-                ModContent.ProjectileType<LifeCessationEnergy>(),
-                Player.HeldItem.damage,
-                Player.HeldItem.knockBack,
-                Owner.whoAmI
-            );
-        }
-    
-        
+        Heat = MathHelper.Clamp(Heat + heatIncrement, minHeat, maxHeat);
     }
+
     private float previousHeat = 0;
     private const float significantIncreaseThreshold = 0.1f; // Define the heat increase threshold for resetting HasScreamed.
     private const float minimumHeatThreshold = 0.5f; // Define the minimum heat to enable screaming.
     private const float lilyStarActivationInterval = 0.15f; // Interval for activating ReleaseLilyStars.
 
+ 
     public void ReleaseHeat()
     {
+       
         if (Heat > 0) 
         {
-            IsDisipateHeat = true;
+            
+            
             if (Heat > minimumHeatThreshold)
             {
                 // Check if heat has risen significantly since the last call
@@ -219,27 +228,50 @@ class HeldLifeCessationProjectile : ModProjectile
             }
            
 
-            Heat -= heatIncrement;
+            Heat = MathHelper.Clamp(Heat-heatIncrement,minHeat,maxHeat);
             
 
             // Adjust activation logic for ReleaseLilyStars to every 0.15 heat
             if (Heat % lilyStarActivationInterval < heatIncrement && Heat > 0.4)
             {
-                ReleaseLilyStars(Main.player[Projectile.owner]);
+                //ReleaseLilyStars(Main.player[Projectile.owner]);
             }
         }
-        else if (Heat < 0)
+        else if (Heat <= 0)
         {
             Heat = minHeat;
             HasScreamed = false;
-            IsDisipateHeat = false;
+            
         }
 
         // Update previousHeat at the end
         previousHeat = Heat;
+
     }
+    public float FadeOutInterpolant => InverseLerp(0f, 11f, Projectile.timeLeft);
 
+    public void HeatFullSparkle()
+    {
+        /*
+        Texture2D ChromaticSpires = GennedAssets.Textures.GreyscaleTextures.ChromaticSpires;
 
+        float spireScale = MathHelper.Lerp(0.85f, 1.1f, Sin01(Main.GlobalTimeWrappedHourly * 17.5f + Projectile.identity)) * Projectile.scale * 0.46f;
+        float spireOpacity = MathF.Pow(FadeOutInterpolant, 1.9f) * Projectile.Opacity;
+        Vector2 drawPosition = Projectile.Center - Main.screenPosition;
+        Main.spriteBatch.Draw(ChromaticSpires, drawPosition, null, (Color.Violet with { A = 0 }) * spireOpacity, Projectile.rotation + MathHelper.PiOver4, ChromaticSpires.Size() * 0.5f, spireScale, 0, 0f);
+        */
+        
+        Vector2 sparklePos = Projectile.Center + new Vector2(6, 0).RotatedBy(Projectile.rotation);
+        Texture2D sparkle = ModContent.Request<Texture2D>("HeavenlyArsenal/Assets/Textures/Extra/Sparkle").Value;
+        Color sparkleColor = new Color(255, 20, 0);//new GradientColor(SlimeUtils.GoozColors, 0.2f, 0.2f).ValueAt(Time + 10);
+        sparkleColor.A = 0;
+
+        Vector2 sparkleScaleX = new Vector2(1.5f, 1.33f) * Projectile.ai[2];
+        Vector2 sparkleScaleY = new Vector2(1.5f, 1.33f) * Projectile.ai[2];
+        Main.EntitySpriteDraw(sparkle, sparklePos - Main.screenPosition, sparkle.Frame(), Color.Black * 0.3f, 0f, sparkle.Size() * 0.5f, sparkleScaleX, 0, 0);
+        Main.EntitySpriteDraw(sparkle, sparklePos - Main.screenPosition, sparkle.Frame(), Color.Black * 0.3f, MathHelper.PiOver2, sparkle.Size() * 0.5f, sparkleScaleY, 0, 0);
+        
+    }
 
     public void Scream()
     {
@@ -313,6 +345,41 @@ class HeldLifeCessationProjectile : ModProjectile
 
 
         Main.EntitySpriteDraw(LillyTexture, Projectile.Center - Main.screenPosition, Lillyframe, lightColor, rotation, Lorigin, Projectile.scale*0.1f, spriteEffects, 0);
+
+        if (Heat == maxHeat)
+        {
+            HeatFullSparkle();
+
+        }
+
+
         return false;
     }
+
+
+
+    public override bool? Colliding(Rectangle projHitbox, Microsoft.Xna.Framework.Rectangle targetHitbox)
+    {
+        return targetHitbox.IntersectsConeFastInaccurate(Projectile.Center, 4000, Projectile.rotation, MathHelper.Pi / 7f);
+    }
+
+
+
+    public override bool? CanDamage()
+    {
+        if (IsAbsorbingHeat && !IsDisipateHeat)
+        {
+            return true;
+        }
+        else if (IsDisipateHeat)
+        {
+            return false;
+        }
+        else
+        {
+            return false;
+        }
+    } 
+
+
 }

@@ -86,7 +86,7 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
     public bool DanglingFromTop
     {
         get => Projectile.localAI[2] == 0f;
-        set => Projectile.localAI[2] = 1f - value.ToInt();
+        set => Projectile.localAI[2] = 1f - value.ToInt();  
     }
 
     public bool HasFlownPastPlayer
@@ -95,6 +95,7 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
         set => Projectile.ai[2] = value.ToInt();
     }
 
+    public ref Player Owner => ref Main.player[Projectile.owner];
     public ref float Time => ref Projectile.localAI[0];
 
     public ref float DangleVerticalOffset => ref Projectile.localAI[1];
@@ -133,7 +134,10 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
         Projectile.DamageType = ModContent.GetInstance<RogueDamageClass>();
 
         Projectile.timeLeft = 400;
-        Projectile.aiStyle = 0; 
+        Projectile.aiStyle = 0;
+
+        Projectile.damage = Projectile.damage;
+            //Owner.GetWeaponDamage(Owner.heldProj);
     }
 
     
@@ -188,14 +192,14 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
         }
       
 
-        // Apply fading and scaling effects (common to both phases)
+       
         Projectile.frame = Projectile.identity % Main.projFrames[Type];
         Projectile.Opacity = InverseLerp(45f, 90f, Time);
         Projectile.scale = Projectile.Opacity * (MathHelper.Lerp(0.6f, 0.9f, Cos01(MathHelper.TwoPi * Time / 10f + Projectile.identity * 0.3f)) + (Time - 120f) * 0.006f);
         Projectile.Opacity *= FadeOutInterpolant;
         Projectile.scale += (1f - FadeOutInterpolant) * 2f;
 
-        // Pulsating rotation
+       
         float pulseInterpolant = Sin01(MathHelper.TwoPi * Time / 54f);
         Projectile.rotation = (pulseInterpolant <= 0.5f) ? MathHelper.PiOver4 : 0f;
         Projectile.scale *= MathF.Pow(pulseInterpolant, 0.1f);
@@ -205,10 +209,7 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
         // Dangle phase: first 200 frames.
         if (Time < 200f || target == null)
         {
-            // Use the projectile's owner for anchoring the rope.
-            Player owner = Main.player[Projectile.owner];
-
-            
+       
             float hoverOffsetFactor = MathHelper.Lerp(0.69f, 1.3f, (Projectile.identity / 13f) % 1f);
             float ropeLength = MathHelper.Lerp(840f, 990f, (Projectile.identity / 14f) % 1f);
             
@@ -217,8 +218,8 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
                 + new Vector2(0, verticalOffset) );
           
             DanglingRope ??= new VerletSimulatedRope(dangleTop, Vector2.Zero, 50, ropeLength);
-            DanglingRope.Update(dangleTop, Utils.Remap(owner.velocity.Y, 0f, -12f, 0.5f, -0.1f));
-            Main.NewText($"RopeTop: {dangleTop}", Color.AntiqueWhite);
+            DanglingRope.Update(dangleTop, Utils.Remap(Owner.velocity.Y, 0f, -12f, 0.5f, -0.1f));
+            Main.NewText($"RopeTop: {dangleTop}. Projectile ID: {Projectile.identity}", Color.AntiqueWhite);
             
             Projectile.Center = DanglingRope.EndPosition;
             Projectile.velocity *= 0.971f;
@@ -231,8 +232,9 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
                 float newSpeed = MathHelper.Clamp(originalSpeed + 0.6f, 2f, 18.6f);
 
                 // Lerp the velocity toward the direction of the target enemy.
-                Projectile.velocity = Vector2.Lerp(Projectile.velocity, Projectile.SafeDirectionTo(target.Center) * originalSpeed, 0.042f);
-                Projectile.velocity = Projectile.velocity.SafeNormalize(Vector2.Zero) * newSpeed;
+                Projectile.velocity += Projectile.SafeDirectionTo(target.Center);
+                //Projectile.velocity = Vector2.Lerp(Projectile.velocity, Projectile.SafeDirectionTo(target.Center) * originalSpeed, 0.042f);
+                //Projectile.velocity = Projectile.velocity.SafeNormalize(Vector2.Zero) * newSpeed;
                 //DangleVerticalOffset += 6f;
                 //DangleVerticalOffset *= 1.2f;
             }
