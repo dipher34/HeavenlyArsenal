@@ -297,8 +297,8 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.FusionRifleProj
 
         private void HandleFiring()
         {
-            int countburst = 0;
-            Owner.itemAnimation = Owner.itemAnimationMax;
+            
+            //Owner.itemAnimation = Owner.itemAnimationMax;
             if (BurstCount == FusionRifle.BoltsPerBurst)
             {
                 firingSoundInstance = firingSoundEffect.CreateInstance();
@@ -309,10 +309,10 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.FusionRifleProj
             {
                 if (StateTimer <= 0)
                 {
-                    countburst++;
+                    BurstCount--;
                     FireBurstProjectile();
-                    //BurstCount--;
-                    BurstCount = 0;
+                    
+                    Main.NewText($"BurstCount: {BurstCount}, state: {CurrentState}", Color.AntiqueWhite);
                     StateTimer = 5; // Cycle between burst projectiles (adjust as needed)
                 }
                 else
@@ -322,11 +322,11 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.FusionRifleProj
             }
             else
             {
-                Main.NewText($"Bolts fired: {countburst}", Color.AliceBlue);
+                //Main.NewText($"Bolts fired: {countburst}", Color.AliceBlue);
                 Owner.PickAmmo(Owner.HeldItem, out _, out _, out _, out _, out _);
                 CurrentState = FusionRifleState.Delay; // Transition to delay state after the burst
                 StateTimer = 60; // Cycle duration after firing
-                ChargeTimer = 0; // Reset charge
+                //ChargeTimer = 0; // Reset charge
             }
         }
 

@@ -4,6 +4,7 @@ using CalamityMod.Items.Accessories;
 using CalamityMod.Items.Armor.Demonshade;
 using CalamityMod.Tiles.Furniture.CraftingStations;
 using HeavenlyArsenal.ArsenalPlayer;
+using NoxusBoss.Content.Rarities;
 using System.Collections.Generic;
 using Terraria;
 using Terraria.ID;
@@ -18,7 +19,7 @@ namespace HeavenlyArsenal.Content.Items.Armor
 	public class ShintoArmorHelmet : ModItem
 	{
 		public static readonly int AdditiveGenericDamageBonus = 20;
-        public const float TeleportRange = 845f;
+        public const float TeleportRange = 2000f;
 
         // Boosted by Cross Necklace.
         internal static readonly int ShadowVeilIFrames = 80;
@@ -38,8 +39,8 @@ namespace HeavenlyArsenal.Content.Items.Armor
 			Item.width = 18; // Width of the item
 			Item.height = 18; // Height of the item
 			Item.value = Item.sellPrice(gold: 999); // How many coins the item is worth
-			Item.rare = ItemRarityID.Green; // The rarity of the item
-			Item.defense = 60; // The amount of defense the item will give when equipped
+            Item.rare = ModContent.RarityType<AvatarRarity>();  // The rarity of the item
+            Item.defense = 60; // The amount of defense the item will give when equipped
 		}
 
 		// IsArmorSet determines what armor pieces are needed for the setbonus to take effect
@@ -54,7 +55,13 @@ namespace HeavenlyArsenal.Content.Items.Armor
             player.jumpSpeedBoost += 2f;
             player.GetModPlayer<ShintoArmorPlayer>().SetActive = true;
             player.GetDamage(DamageClass.Generic) += 0.18f;
-            player.maxMinions += 5;
+            player.maxMinions += 10;
+            var modPlayer = player.Calamity();
+            
+            modPlayer.rogueStealthMax += 0.5f;
+            player.setBonus = this.GetLocalizedValue("SetBonus");
+            //player.GetDamage<ThrowingDamageClass>() += 0.05f;
+            player.Calamity().wearingRogueArmor = true;
         }
 
         
@@ -65,7 +72,7 @@ namespace HeavenlyArsenal.Content.Items.Armor
             player.Calamity().stealthGenStandstill += 0.15f;
             player.GetDamage(DamageClass.Generic) += 0.20f;
             player.GetCritChance(DamageClass.Generic) += 15;
-            player.GetAttackSpeed(DamageClass.Melee) += 0.15f;
+            player.GetAttackSpeed(DamageClass.Generic) += 0.15f;
 			player.GetModPlayer<ShintoArmorPlayer>().ShadowVeil = true;
 		}
         public override void ModifyTooltips(List<TooltipLine> list) => list.IntegrateHotkey(CalamityKeybinds.SpectralVeilHotKey);

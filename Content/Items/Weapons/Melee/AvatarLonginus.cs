@@ -33,6 +33,7 @@ public class AvatarLonginus : ModItem
         Item.useTime = 40;
         Item.reuseDelay = 40;
 
+        Item.DamageType = DamageClass.Melee;
         Item.useAnimation = 0;
         Item.useTurn = true;
         Item.channel = true;

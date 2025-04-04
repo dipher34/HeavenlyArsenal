@@ -5,6 +5,8 @@ using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
+using NoxusBoss.Content.Particles;
+using NoxusBoss.Content.Particles.Metaballs;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -412,6 +414,22 @@ public class AvatarLonginusHeld : ModProjectile
                     {
                         DoShake(1.5f);
                         SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.ArmJutOut with { Pitch = 1f, MaxInstances = 0 }, Projectile.Center);
+                        // Explode into a bunch of gore.
+                        // why?? just for fun, i guess :pensive:
+                        //sorgey :glock: :pensive:
+                        BloodMetaball metaball = ModContent.GetInstance<BloodMetaball>();
+                        for (int i = 0; i < 50; i++)
+                        {
+                            Vector2 bloodSpawnPosition = Projectile.Center + offset*3;
+                            Vector2 bloodVelocity = Main.rand.NextVector2Circular(23.5f, 8f) - Vector2.UnitY * 9f;
+                            if (Main.rand.NextBool(6))
+                                bloodVelocity *= 1.45f;
+                            if (Main.rand.NextBool(6))
+                                bloodVelocity *= 1.45f;
+                            bloodVelocity += Projectile.velocity * 0.85f;
+
+                            metaball.CreateParticle(bloodSpawnPosition, bloodVelocity, Main.rand.NextFloat(30f, 50f), Main.rand.NextFloat());
+                        }
                     }
 
                     float ripProgress = Utils.GetLerpValue(0, RipTime, Time - PullTime, true);
@@ -582,7 +600,12 @@ public class AvatarLonginusHeld : ModProjectile
             case (int)AvatarSpearAttacks.HeavyStab:
             case (int)AvatarSpearAttacks.RipOut:
 
-                addHeat = 0.02f;
+                if (IsEmpowered)
+                {
+                    addHeat = 0.34f;
+                }
+                else
+                    addHeat = 0.03f;
 
                 break;
 

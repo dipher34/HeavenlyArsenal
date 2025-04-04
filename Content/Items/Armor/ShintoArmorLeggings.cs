@@ -1,4 +1,6 @@
 ﻿using CalamityMod;
+using CalamityMod.CalPlayer.Dashes;
+using CalamityMod.CalPlayer;
 using CalamityMod.Items.Accessories;
 using CalamityMod.Items.Armor.Demonshade;
 using CalamityMod.Tiles.Furniture.CraftingStations;
@@ -6,6 +8,7 @@ using Terraria;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
+using NoxusBoss.Content.Rarities;
 
 namespace HeavenlyArsenal.Content.Items.Armor
 {
@@ -22,8 +25,8 @@ namespace HeavenlyArsenal.Content.Items.Armor
 			Item.width = 18; // Width of the item
 			Item.height = 18; // Height of the item
 			Item.value = Item.sellPrice(gold: 1); // How many coins the item is worth
-			Item.rare = ItemRarityID.Green; // The rarity of the item
-			Item.defense = 54; // The amount of defense the item will give when equipped
+            Item.rare = ModContent.RarityType<AvatarRarity>();  // The rarity of the item
+            Item.defense = 54; // The amount of defense the item will give when equipped
 		}
         public override void UpdateEquip(Player player)
         {
@@ -36,6 +39,14 @@ namespace HeavenlyArsenal.Content.Items.Armor
             var modPlayer = player.Calamity();
             modPlayer.shadowSpeed = true;
             player.moveSpeed += 0.3f;
+
+            player.autoJump = true;
+            player.jumpSpeedBoost += 1.6f;
+            player.noFallDmg = true;
+            player.blackBelt = true;
+            modPlayer.DashID = ShintoArmorDash.ID;
+            player.dashType = 0;
+            player.spikedBoots = 2;
         }
         // Please see Content/ExampleRecipes.cs for a detailed explanation of recipe creation.
         public override void AddRecipes() {
@@ -47,6 +58,16 @@ namespace HeavenlyArsenal.Content.Items.Armor
                 .AddIngredient(ItemID.NinjaPants)
                 .AddIngredient(ItemID.CrystalNinjaLeggings)
                 .AddIngredient(CalamityHunt.Find<ModItem>("ShogunPants").Type)
+                .AddIngredient<StatisVoidSash>()
+                .AddTile<DraedonsForge>()
+                .Register();
+            }
+            else
+            {
+                CreateRecipe()
+                .AddIngredient<DemonshadeGreaves>()
+                .AddIngredient(ItemID.NinjaPants)
+                .AddIngredient(ItemID.CrystalNinjaLeggings)
                 .AddIngredient<StatisVoidSash>()
                 .AddTile<DraedonsForge>()
                 .Register();

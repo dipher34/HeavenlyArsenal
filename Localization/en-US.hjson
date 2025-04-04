@@ -205,27 +205,43 @@ Mods: {
 			}
 
 			ShintoArmorHelmet: {
-				SetBonus: You get Shinto with it
-				DisplayName: Shinto Armor Helmet
+				SetBonus:
+					'''
+					100% increased summon damage and +10 max minions
+
+					'''
+				DisplayName: Visage of Silent Stars
 				Tooltip:
 					'''
-					Effects of Spectral Veil
-
-
+					Press [KEY] to consume 25% of your maximum stealth to perform a mid-range teleport and render you momentarily invulnerable
+					If you dodge something while invulnerable, you instantly gain full stealth
+					Teleportation is disabled while Chaos State is active
+					Stealth generates 15% faster
+					50% increased damage
+					30% increased critical strike chance
+					15% increased attack speed
 					'''
 			}
 
 			ShintoArmorBreastplate: {
-				DisplayName: Shinto Armor Breastplate
-				Tooltip: ""
+				DisplayName: Mantle of Dimming Radience
+				Tooltip:
+					'''
+					20% increased damage
+					Reduces damage taken by 9% and greatly increases life regeneration
+					Increases max life and mana by 350
+
+					'''
 			}
 
 			ShintoArmorLeggings: {
-				DisplayName: Shinto Armor Leggings
+				DisplayName: Steps of the Darkened Passage
 				Tooltip:
 					'''
-					Provides a dash if you do not have one already
-
+					20% increased damage
+					50% increased movement speed 
+					Shadow Speed
+					Greatly improved acceleration and maneuverability 
 					'''
 			}
 		}

@@ -8,30 +8,46 @@ using CalamityMod.Items.Accessories;
 using CalamityMod;
 using CalamityMod.CalPlayer;
 using HeavenlyArsenal.Content.Items.Armor;
+using System.Text;
+using Terraria.Audio;
+using System.Collections.Generic;
 
 namespace HeavenlyArsenal.ArsenalPlayer
 {
     class ShintoArmorPlayer : ModPlayer
     {
         public bool SetActive;
-        public int maxBarrier = 560;
-        public int barrier = 0;
+        public int maxBarrier;
+        public int barrier;
         public int timeSinceLastHit;
-        public int rechargeDelay = 30;
-        public int rechargeRate = 100;
-        public float barrierDamageReduction = 0.5f;
-        public bool ShadowShieldVisible = false;
+        public int Iframe;
+        public int rechargeDelay;
+        public int rechargeRate;
+        public float barrierDamageReduction = 0.78f;
+        public bool ShadowShieldVisible = true;
         public bool ShadowVeil;
+        internal float barrierShieldPartialRechargeProgress = 0f;
 
-        
+        public Dictionary<string, CooldownInstance> cooldowns;
 
-        
         public int ShadowVeilImmunity = 0;
+
+        public override void Initialize()
+        {
+            cooldowns = new Dictionary<string, CooldownInstance>();
+            maxBarrier = ShintoArmorBreastplate.ShieldDurabilityMax;
+            barrier = 0;
+            timeSinceLastHit = 0;
+            Iframe = 0;
+            rechargeDelay = ShintoArmorBreastplate.ShieldRechargeDelay;
+            rechargeRate = ShintoArmorBreastplate.ShieldRechargeRate;
+        }
+
         public override void PostUpdateMiscEffects()
         {
             if (SetActive)
             {
-                //Main.NewText($"Barrier: {barrier}, TimeSinceLastHit: {timeSinceLastHit}",Color.AntiqueWhite);
+                //Main.NewText($"Barrier: {barrier}, TimeSinceLastHit: {timeSinceLastHit}", Color.AntiqueWhite);
                 Player.buffImmune[BuffID.Silenced] = true;
                 Player.buffImmune[BuffID.Cursed] = true;
                 Player.buffImmune[BuffID.OgreSpit] = true;
@@ -45,6 +61,8 @@ namespace HeavenlyArsenal.ArsenalPlayer
                 Player.buffImmune[BuffID.Dazed] = true;
                 Player.buffImmune[BuffID.Venom] = true;
                 Player.buffImmune[BuffID.CursedInferno] = true;
+                Player.buffImmune[BuffID.OnFire] = true;
+                Player.buffImmune[BuffID.Weak] = true;
                 if (ModLoader.TryGetMod("Calamity", out Mod CalamityMod))
                 {
                     Mod calamity = ModLoader.GetMod("CalamityMod");
@@ -73,17 +91,59 @@ namespace HeavenlyArsenal.ArsenalPlayer
                     calamity.Call("SetWearingPostMLSummonerArmor", Player, true);
                 }
             }
+            else
+            {
+                barrier = 0;
+                timeSinceLastHit = 0;
+                rechargeDelay = ShintoArmorBreastplate.ShieldRechargeDelay;
+            }
+            if (SetActive)
+            {
+                // Begin visual cooldown handling for shield recharge.
 
+                // If the shield is completely discharged and not recharging, start the recharge cooldown.
+                if (timeSinceLastHit == 0 && !cooldowns.ContainsKey(BarrierRecharge.ID))
+                    Player.AddCooldown(BarrierRecharge.ID, ShintoArmorBreastplate.ShieldRechargeDelay);
+
+                // Update the durability cooldown display if the shield is active.
+                if (barrier > 0 && !cooldowns.ContainsKey(BarrierDurability.ID))
+                {
+                    var durabilityCooldown = Player.AddCooldown(BarrierDurability.ID, ShintoArmorBreastplate.ShieldDurabilityMax);
+                    durabilityCooldown.timeLeft = barrier;
+                }
+
+                // Only update recharge progress visuals once the recharge delay has passed.
+                if (timeSinceLastHit >= rechargeDelay && barrier > 0 && !cooldowns.ContainsKey(BarrierRecharge.ID))
+                {
+                    barrierShieldPartialRechargeProgress += ShintoArmorBreastplate.ShieldDurabilityMax / (float)ShintoArmorBreastplate.TotalShieldRechargeTime;
+                    int pointsActuallyRecharged = (int)MathF.Floor(barrierShieldPartialRechargeProgress);
+                   // durabilityCooldown.timeLeft += 
+                    // This value is used only for visual display.
+                    int displayBarrier = Math.Min(barrier + pointsActuallyRecharged, TheSponge.ShieldDurabilityMax);
+
+                    barrierShieldPartialRechargeProgress -= 400 - timeSinceLastHit;
+
+                    if (cooldowns.TryGetValue(BarrierDurability.ID, out var cdDurability))
+                        cdDurability.timeLeft = displayBarrier;
+                }
+            }
+
+            if (Iframe > 0)
+            {
+                Iframe--;
+            }
+
+            
             if (ShadowVeil)
             {
                 CalamityPlayer modPlayer = Player.Calamity();
                 bool wearingRogueArmor = modPlayer.wearingRogueArmor;
                 float rogueStealth = modPlayer.rogueStealth;
                 float rogueStealthMax = modPlayer.rogueStealthMax;
-                int chaosStateDuration = 900; 
+                int chaosStateDuration = 900;
 
                 if (CalamityKeybinds.SpectralVeilHotKey.JustPressed && ShadowVeil && Main.myPlayer == Player.whoAmI && rogueStealth >= rogueStealthMax * 0.25f &&
-                wearingRogueArmor && rogueStealthMax > 0)
+                    wearingRogueArmor && rogueStealthMax > 0)
                 {
                     if (!Player.chaosState)
                     {
@@ -133,34 +193,59 @@ namespace HeavenlyArsenal.ArsenalPlayer
 
         public override void ModifyHurt(ref Player.HurtModifiers modifiers)
         {
-            if (barrier > 0)
+            if (SetActive && barrier > 0 && Iframe <= 0)
             {
-                modifiers.ModifyHurtInfo += ModifyDamage;
-                timeSinceLastHit = 0;
+                modifiers.DisableSound();
+                SoundEngine.PlaySound(ShintoArmorBreastplate.ShieldHurtSound, Player.Center);
             }
-        }
-
-        private void ModifyDamage(ref Player.HurtInfo info)
-        {
-            if (barrier > 0)
+            else if (SetActive && barrier <= 0)
             {
-                int incoming = info.Damage;
-                CombatText.NewText(Player.Hitbox, Color.Cyan, incoming);
-
-                // Subtract the full incoming damage from the barrier.
-                barrier -= incoming;
-                if (barrier < 0)
+                if(timeSinceLastHit !< 0)
                 {
+                    SoundEngine.PlaySound(ShintoArmorBreastplate.BreakSound, Player.Center);
                     barrier = 0;
                 }
 
-                // Cancel all damage to the player.
-                info.Damage = 0;
+                
             }
         }
+
+        public override bool FreeDodge(Player.HurtInfo info)
+        {
+            if (barrier > 0 && SetActive)
+            {
+                int incoming = info.Damage;
+
+                if (Iframe <= 0)
+                {
+                    int actualDamage = (int)Math.Round(incoming * barrierDamageReduction, 0);
+                    Iframe = Player.ComputeHitIFrames(info);
+                    barrier -= actualDamage;
+                    CombatText.NewText(Player.Hitbox, Color.Cyan, actualDamage);
+                    Main.NewText($"Barrier: {barrier}, TimeSinceLastHit: {timeSinceLastHit}", Color.AntiqueWhite);
+                    timeSinceLastHit = 0;
+                }
+
+                if (barrier < 0)
+                {
+                    barrier = 0;
+                    return true;
+                }
+
+                // Cancel all damage to the player.
+                return true;
+            }
+            else if(barrier== 0 && timeSinceLastHit < Iframe)
+            {
+                return true;
+            }
+            else
+                return false;
+        }
+
         public override void PostUpdateEquips()
         {
-            if (barrier > 0)
+            if (barrier > 0 && SetActive)
             {
                 Player.statDefense += 30;
             }
@@ -168,10 +253,12 @@ namespace HeavenlyArsenal.ArsenalPlayer
 
         public override void UpdateBadLifeRegen()
         {
-            if (maxBarrier > 0)
+            // Increment time since last hit only when the shield is active.
+            if (maxBarrier > 0 && SetActive)
                 timeSinceLastHit++;
 
-            if (timeSinceLastHit >= rechargeDelay && barrier < maxBarrier)
+            // Only update the actual recharge if the recharge delay has passed and no recharge cooldown is active.
+            if (!cooldowns.ContainsKey(BarrierRecharge.ID) && timeSinceLastHit >= rechargeDelay && barrier < maxBarrier && SetActive)
             {
                 int rechargeRateWhole = rechargeRate / 60;
                 barrier += Math.Min(rechargeRateWhole, maxBarrier - barrier);
@@ -179,15 +266,21 @@ namespace HeavenlyArsenal.ArsenalPlayer
                 if (rechargeRate % 60 != 0)
                 {
                     int rechargeSubDelay = 60 / (rechargeRate % 60);
+                    
+                    //starts recharging at 400 timesince
                     if (timeSinceLastHit % rechargeSubDelay == 0 && barrier < maxBarrier)
+                    {
+                        //Main.NewText($"Here: {timeSinceLastHit}", Color.AntiqueWhite);
+                        
                         barrier++;
+                    }
+
                 }
             }
         }
 
         public override void ResetEffects()
         {
-            //barrier = 0;
             SetActive = false;
         }
     }
