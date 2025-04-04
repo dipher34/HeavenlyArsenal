@@ -79,9 +79,10 @@ class HeldLifeCessationProjectile : ModProjectile
     }
     public Vector2 SpiderLilyPosition => Main.MouseWorld;//Player.Center - Vector2.UnitY * 1f * LilyScale * 140f;
 
-
-    public static readonly SoundStyle HeatReleaseLoop = GennedAssets.Sounds.Avatar.SuctionLoop;
+    public static readonly SoundStyle HeatReleaseLoopStart = GennedAssets.Sounds.Avatar.UniversalAnnihilationCharge;
+    public static readonly SoundStyle HeatReleaseLoop = GennedAssets.Sounds.Avatar.UniversalAnnihilationLoop;
         //SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.SuctionLoop with { Volume = 0.3f, MaxInstances = 32 });
+    
     public override void OnSpawn(IEntitySource source)
     {
         Projectile.ai[0] = 0;
@@ -135,6 +136,7 @@ class HeldLifeCessationProjectile : ModProjectile
             UpdateLoopedSounds();
         }
 
+        Projectile.ai[2] = MathF.Sqrt(Utils.GetLerpValue(0, 50, Time, true) * Utils.GetLerpValue(10, 30, Projectile.timeLeft, true));
 
         Projectile.Center = Owner.MountedCenter + Projectile.velocity.SafeNormalize(Vector2.Zero) * 25 + new Vector2(0, Owner.gfxOffY) + Main.rand.NextVector2Circular(2, 2) * Projectile.ai[2];
 
@@ -157,7 +159,7 @@ class HeldLifeCessationProjectile : ModProjectile
 
 
 
-        //Projectile.ai[2] = MathF.Sqrt(Utils.GetLerpValue(0, 50, Time, true) * Utils.GetLerpValue(10, 30, Projectile.timeLeft, true));
+       
 
         
         if (Heat > 0|| player.channel)
@@ -202,6 +204,8 @@ class HeldLifeCessationProjectile : ModProjectile
     public void AbsorbHeat()
     {
         Heat = MathHelper.Clamp(Heat + heatIncrement, minHeat, maxHeat);
+       
+        //SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.AbsoluteZeroChargeUp with { Volume = 1.3f, MaxInstances = 32 }, Projectile.Center);
     }
 
     private float previousHeat = 0;
@@ -360,13 +364,14 @@ class HeldLifeCessationProjectile : ModProjectile
 
     public override bool? Colliding(Rectangle projHitbox, Microsoft.Xna.Framework.Rectangle targetHitbox)
     {
-        return targetHitbox.IntersectsConeFastInaccurate(Projectile.Center, 4000, Projectile.rotation, MathHelper.Pi / 7f);
+        return targetHitbox.IntersectsConeFastInaccurate(Projectile.Center, 400, Projectile.rotation+MathHelper.PiOver2, MathHelper.Pi / 8f);
     }
 
 
 
     public override bool? CanDamage()
     {
+        /*
         if (IsAbsorbingHeat && !IsDisipateHeat)
         {
             return true;
@@ -381,5 +386,7 @@ class HeldLifeCessationProjectile : ModProjectile
         }
     } 
 
-
+        */
+        return false;
+    }
 }

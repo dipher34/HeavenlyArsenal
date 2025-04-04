@@ -203,6 +203,38 @@ Mods: {
 				DisplayName: Life And Cessation
 				Tooltip: ""
 			}
+
+			ExampleBreastplate: {
+				DisplayName: Example Breastplate
+				Tooltip: ""
+			}
+
+			ExampleHelmet: {
+				SetBonus: Mods.HeavenlyArsenal.Items.ExampleHelmet.SetBonus
+				DisplayName: Example Helmet
+				Tooltip: ""
+			}
+
+			ExampleLeggings: {
+				DisplayName: Example Leggings
+				Tooltip: ""
+			}
+
+			ShintoArmorHelmet: {
+				SetBonus: Mods.HeavenlyArsenal.Items.ShintoArmorHelmet.SetBonus
+				DisplayName: Shinto Armor Helmet
+				Tooltip: ""
+			}
+
+			ShintoArmorBreastplate: {
+				DisplayName: Shinto Armor Breastplate
+				Tooltip: ""
+			}
+
+			ShintoArmorLeggings: {
+				DisplayName: Shinto Armor Leggings
+				Tooltip: ""
+			}
 		}
 
 		Projectiles: {
