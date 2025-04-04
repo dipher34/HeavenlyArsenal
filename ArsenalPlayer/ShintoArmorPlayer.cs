@@ -22,7 +22,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
         {
             if (active)
             {
-                Main.NewText($"Barrier: {barrier}, TimeSinceLastHit: {timeSinceLastHit}",Color.AntiqueWhite);
+                //Main.NewText($"Barrier: {barrier}, TimeSinceLastHit: {timeSinceLastHit}",Color.AntiqueWhite);
                 Player.buffImmune[BuffID.Silenced] = true;
                 Player.buffImmune[BuffID.Cursed] = true;
                 Player.buffImmune[BuffID.OgreSpit] = true;
@@ -122,7 +122,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
 
         public override void ResetEffects()
         {
-            barrier = 0;
+            //barrier = 0;
             active = false;
         }
     }
