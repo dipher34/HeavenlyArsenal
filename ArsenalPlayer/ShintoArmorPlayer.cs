@@ -13,6 +13,7 @@ using Terraria.Audio;
 using System.Collections.Generic;
 using CalamityMod.CalPlayer.Dashes;
 using Microsoft.Xna.Framework.Graphics;
+using ReLogic.Content;
 
 namespace HeavenlyArsenal.ArsenalPlayer
 {
@@ -43,7 +44,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
         public Vector2[] verletPoints;
         public Vector2[] verletOldPoints;
         private bool verletInitialized = false;
-        public static Texture2D chainTexture;
+        public static Asset<Texture2D> chainTexture;
         public bool ChestplateEquipped = false;
 
         public override void Initialize()
@@ -68,7 +69,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
         }
         public override void Load()
         {
-            chainTexture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Items/Armor/ShintoArmorBreastplate").Value;
+            chainTexture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Items/Armor/ShintoArmorBreastplate");
             PlayerDashManager.TryAddDash(new ShintoArmorDash());
         }
 
@@ -258,7 +259,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
                     verletOldPoints[i] = currentPos;
                     // Update the position using the damped and clamped velocity plus gravity.
                     verletPoints[i] = currentPos + velocity + gravity * dt * dt;
-                    Terraria.Dust.NewDustPerfect(currentPos, DustID.AncientLight, Vector2.Zero, 150, Color.AntiqueWhite, 1);
+                    //Terraria.Dust.NewDustPerfect(currentPos, DustID.AncientLight, Vector2.Zero, 150, Color.AntiqueWhite, 1);
                 }
 
                 // Constrain segments to maintain constant distance.
@@ -292,7 +293,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
                 // Load the chain segment texture if not already loaded.
                 if (chainTexture == null)
                 {
-                    chainTexture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Items/Armor/ShintoArmorBreastplate").Value;
+                    chainTexture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Items/Armor/ShintoArmorBreastplate");
                 }
 
                 // Draw the chain segments.

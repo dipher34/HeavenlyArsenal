@@ -29,7 +29,7 @@ namespace HeavenlyArsenal.Content.Items.Armor
             drawInfo.drawPlayer.GetModPlayer<ShintoArmorPlayer>().ShadowVeil = true;
 
             int segmentCount = ShintoArmorPlayer.segmentCount;
-            Texture2D chainTexture = ShintoArmorPlayer.chainTexture;
+            Texture2D chainTexture = ShintoArmorPlayer.chainTexture.Value;
             Vector2[] verletPoints = drawInfo.drawPlayer.GetModPlayer<ShintoArmorPlayer>().verletPoints;
           
             for (int i = 0; i < segmentCount - 1; i++)
@@ -41,7 +41,7 @@ namespace HeavenlyArsenal.Content.Items.Armor
                 float scale = segmentVector.Length() / chainTexture.Width; // stretch texture to fill segment length
 
                 //Main.spriteBatch.Draw(chainTexture, posA, null, Color.White, rotation, new Vector2(0, chainTexture.Height / 2f), new Vector2(scale, 1f), SpriteEffects.None, 0f);
-                drawInfo.DrawDataCache.Add(new DrawData(chainTexture, posA, null, Color.White, 0f, new Vector2(0, chainTexture.Height / 2f), 10f, SpriteEffects.None, 0));
+                drawInfo.DrawDataCache.Add(new DrawData(chainTexture, posA - Main.screenPosition, null, Color.White, 0f, new Vector2(0, chainTexture.Height / 2f), 10f, SpriteEffects.None, 0));
                 //Main.NewText($"I'm doing my part! drawn:{posA}, drawp", Color.AntiqueWhite);
             }
            

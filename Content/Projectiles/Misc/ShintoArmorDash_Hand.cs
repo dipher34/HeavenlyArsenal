@@ -172,8 +172,8 @@ namespace HeavenlyArsenal.Content.Projectiles.Misc
                 //tentacle.segments[^1].pinned = false;
             }
 
-            tentacle.startPos = Projectile.Center;
-            tentacle.endPos = Player.MountedCenter;
+            tentacle.segments[0].position = Projectile.Center;
+            tentacle.segments[^1].position = Player.MountedCenter;
             tentacle.gravity = -Vector2.UnitX * Player.direction * 0.05f - Vector2.UnitY * 0.01f;
             tentacle.damping = Utils.GetLerpValue(20, 0, Player.velocity.Length(), true) * 0.05f;
             tentacle.Update();

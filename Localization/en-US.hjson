@@ -292,6 +292,7 @@ Mods: {
 			LilyStarProjectile.DisplayName: Lily Star Projectile
 			LifeCessationEnergy.DisplayName: Life Cessation Energy
 			LillyStarProjectile.DisplayName: Lilly Star Projectile
+			ShintoArmorDash_Hand.DisplayName: Shinto Armor Dash_ Hand
 		}
 
 		NPCs.AnAffrontToGod.DisplayName: An Affront To God
