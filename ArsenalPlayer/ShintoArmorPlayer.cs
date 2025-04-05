@@ -30,12 +30,16 @@ namespace HeavenlyArsenal.ArsenalPlayer
         public bool ShadowVeil;
         internal float barrierShieldPartialRechargeProgress = 0f;
 
+        public bool IsDashing;
+
+
+
         public Dictionary<string, CooldownInstance> cooldowns;
 
         public int ShadowVeilImmunity = 0;
 
         public const int segmentCount = 10;
-        public const float segmentLength = 20f;
+        public const float segmentLength = 5f;
         public Vector2[] verletPoints;
         public Vector2[] verletOldPoints;
         private bool verletInitialized = false;
@@ -44,6 +48,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
 
         public override void Initialize()
         {
+
             cooldowns = new Dictionary<string, CooldownInstance>();
             maxBarrier = ShintoArmorBreastplate.ShieldDurabilityMax;
             barrier = 0;
@@ -53,6 +58,9 @@ namespace HeavenlyArsenal.ArsenalPlayer
             rechargeRate = ShintoArmorBreastplate.ShieldRechargeRate;
             // Initialize Verlet arrays
 
+            ChestplateEquipped = false;
+            IsDashing = false;
+
             verletPoints = new Vector2[segmentCount];
             verletOldPoints = new Vector2[segmentCount];
             verletInitialized = false; // Will initialize on first update when Player is valid.
@@ -60,7 +68,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
         }
         public override void Load()
         {
-            chainTexture = // Load it here
+            chainTexture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Items/Armor/ShintoArmorBreastplate").Value;
             PlayerDashManager.TryAddDash(new ShintoArmorDash());
         }
 
@@ -224,17 +232,33 @@ namespace HeavenlyArsenal.ArsenalPlayer
                     verletInitialized = true;
                 }
 
-                // Set simulation parameters
+                // Set simulation parameters.
                 Vector2 gravity = new Vector2(0, 0.5f); // tweak gravity as needed
-                float dt = 1f; // assuming a fixed timestep for simplicity
+                float dt = 1f;
+                float dampingCoefficient = 0.99f; // Adjust this value to control damping.
+                                                  // Define a maximum velocity based on segment length; adjust the multiplier as needed.
+                float maxVelocity = segmentLength * 1.5f;
 
-                // Update simulation for each segment (skip the first because it's fixed)
                 for (int i = 1; i < segmentCount; i++)
                 {
                     Vector2 currentPos = verletPoints[i];
+                    // Compute the raw velocity from the previous simulation step.
                     Vector2 velocity = currentPos - verletOldPoints[i];
+
+                    // Clamp the velocity if it exceeds the maximum allowed value.
+                    if (velocity.Length() > maxVelocity)
+                    {
+                        velocity = Vector2.Normalize(velocity) * maxVelocity;
+                    }
+
+                    // Apply damping to the velocity.
+                    velocity *= dampingCoefficient;
+
+                    // Store the current position for the next iteration.
                     verletOldPoints[i] = currentPos;
+                    // Update the position using the damped and clamped velocity plus gravity.
                     verletPoints[i] = currentPos + velocity + gravity * dt * dt;
+                    Terraria.Dust.NewDustPerfect(currentPos, DustID.AncientLight, Vector2.Zero, 150, Color.AntiqueWhite, 1);
                 }
 
                 // Constrain segments to maintain constant distance.
@@ -242,8 +266,8 @@ namespace HeavenlyArsenal.ArsenalPlayer
                 int constraintIterations = 5;
                 for (int iter = 0; iter < constraintIterations; iter++)
                 {
-                    // Fix the first segment to the player's center.
-                    verletPoints[0] = Player.Center;
+                    // Fix the first segment to the player's top.
+                    verletPoints[0] = new Vector2(Player.Center.X - 7 * Player.direction, Player.Center.Y - Player.height / 4);
 
                     for (int i = 0; i < segmentCount - 1; i++)
                     {
@@ -274,10 +298,15 @@ namespace HeavenlyArsenal.ArsenalPlayer
                 // Draw the chain segments.
                 // (Assumes that Main.spriteBatch is active for immediate drawing. In a real mod, you might use a PostDraw hook.)
             }
-            
+
+            if (IsDashing)
+            {
+                Main.NewText($"Im doing things!", Color.Coral);
+            }
+
         }
-        
-        
+
+
 
         public override void ModifyHurt(ref Player.HurtModifiers modifiers)
         {
@@ -369,7 +398,10 @@ namespace HeavenlyArsenal.ArsenalPlayer
 
         public override void ResetEffects()
         {
+            IsDashing = false;
             SetActive = false;
+            ChestplateEquipped = false;
+
         }
     }
 }

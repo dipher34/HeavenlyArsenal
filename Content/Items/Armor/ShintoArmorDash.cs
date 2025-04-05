@@ -3,7 +3,9 @@ using CalamityMod.CalPlayer.Dashes;
 using CalamityMod.Enums;
 using CalamityMod.Particles;
 using CalamityMod.Projectiles.Rogue;
+using HeavenlyArsenal.ArsenalPlayer;
 using HeavenlyArsenal.Content.Items.Weapons.Summon.AntishadowAssassin;
+using HeavenlyArsenal.Content.Projectiles.Misc;
 using Microsoft.Xna.Framework;
 using NoxusBoss.Assets;
 using Terraria;
@@ -28,6 +30,9 @@ public class ShintoArmorDash : PlayerDashEffect
     {
         Time = 0;
         SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.HarshGlitch, player.Center, null);
+        player.GetModPlayer<ShintoArmorPlayer>().IsDashing = true;
+        
+        Projectile.NewProjectile(player.GetSource_FromThis(), player.Center, Vector2.Zero, ModContent.ProjectileType<ShintoArmorDash_Hand>(), 40, 0, -1, 0, 0, 0);
     }
 
     public override void MidDashEffects(Player player, ref float dashSpeed, ref float dashSpeedDecelerationFactor, ref float runSpeedDecelerationFactor)
@@ -40,7 +45,7 @@ public class ShintoArmorDash : PlayerDashEffect
             Color trailColor = Main.rand.NextBool(3) ? Color.DarkRed : Color.Black;
             Particle Trail = new SparkParticle(trailPos, player.velocity * 0.2f, false, 35, trailScale, trailColor);
             GeneralParticleHandler.SpawnParticle(Trail);
-           
+
             {
                 int fireBrightness = Main.rand.Next(20);
                 Color fireColor = new Color(fireBrightness, fireBrightness, fireBrightness);

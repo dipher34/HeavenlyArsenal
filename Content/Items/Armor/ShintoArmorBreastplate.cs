@@ -68,6 +68,7 @@ namespace HeavenlyArsenal.Content.Items.Armor
             player.GetDamage<GenericDamageClass>() += 0.15f;
             player.GetCritChance<GenericDamageClass>() += 18;
             player.GetAttackSpeed<GenericDamageClass>() += 0.25f;
+            player.GetModPlayer<ShintoArmorPlayer>().ChestplateEquipped = true;
         }
 
         // Please see Content/ExampleRecipes.cs for a detailed explanation of recipe creation.
