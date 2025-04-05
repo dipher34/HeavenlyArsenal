@@ -36,15 +36,15 @@ namespace HeavenlyArsenal.Content.Items.Armor
             player.maxRunSpeed *= 1.2f;
             player.accRunSpeed *= 0.5f;
             player.runSlowdown *= 2f;
-            var modPlayer = player.Calamity();
-            modPlayer.shadowSpeed = true;
+            var ShintoArmorPlayer = player.Calamity();
+            ShintoArmorPlayer.shadowSpeed = true;
             player.moveSpeed += 0.3f;
 
             player.autoJump = true;
             player.jumpSpeedBoost += 1.6f;
             player.noFallDmg = true;
             player.blackBelt = true;
-            modPlayer.DashID = ShintoArmorDash.ID;
+            ShintoArmorPlayer.DashID = ShintoArmorDash.ID;
             player.dashType = 0;
             player.spikedBoots = 2;
         }

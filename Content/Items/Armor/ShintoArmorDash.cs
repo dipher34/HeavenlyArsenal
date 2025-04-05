@@ -5,14 +5,16 @@ using CalamityMod.Particles;
 using CalamityMod.Projectiles.Rogue;
 using HeavenlyArsenal.Content.Items.Weapons.Summon.AntishadowAssassin;
 using Microsoft.Xna.Framework;
+using NoxusBoss.Assets;
 using Terraria;
+using Terraria.Audio;
 using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Items.Armor;
 
 public class ShintoArmorDash : PlayerDashEffect
 {
-    public static new string ID => "Void Sash";
+    public static new string ID => "ShintoArmorDash";
 
     public override DashCollisionType CollisionType => DashCollisionType.NoCollision;
 
@@ -25,27 +27,29 @@ public class ShintoArmorDash : PlayerDashEffect
     public override void OnDashEffects(Player player)
     {
         Time = 0;
+        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.HarshGlitch, player.Center, null);
     }
 
     public override void MidDashEffects(Player player, ref float dashSpeed, ref float dashSpeedDecelerationFactor, ref float runSpeedDecelerationFactor)
     {
         Time++;
-        if (Time % 3 == 0)
+        if (Time % 2 == 0)
         {
             Vector2 trailPos = player.Center - (player.velocity * 2) + Main.rand.NextVector2Circular(10, 20);
             float trailScale = player.velocity.X * player.direction * 0.08f;
-            Color trailColor = Main.rand.NextBool(3) ? Color.Indigo : Color.DarkOrchid;
+            Color trailColor = Main.rand.NextBool(3) ? Color.DarkRed : Color.Black;
             Particle Trail = new SparkParticle(trailPos, player.velocity * 0.2f, false, 35, trailScale, trailColor);
             GeneralParticleHandler.SpawnParticle(Trail);
            
             {
                 int fireBrightness = Main.rand.Next(20);
                 Color fireColor = new Color(fireBrightness, fireBrightness, fireBrightness);
+                /*
                 if (i % 6 == 0)
                     fireColor = new Color(174, 0, Main.rand.Next(16), 0);
-
+                */
                 Vector2 position = player.Center + Main.rand.NextVector2Circular(60f, 60f);
-                AntishadowFireParticleSystemManager.CreateNew(Own, false, position, Main.rand.NextVector2Circular(17f, 17f), Vector2.One * Main.rand.NextFloat(30f, 125f), fireColor);
+                AntishadowFireParticleSystemManager.CreateNew(player.whoAmI, false, position, Main.rand.NextVector2Circular(17f, 17f), Vector2.One * Main.rand.NextFloat(30f, 125f), fireColor);
             }
         }
         /*

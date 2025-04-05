@@ -11,6 +11,8 @@ using HeavenlyArsenal.Content.Items.Armor;
 using System.Text;
 using Terraria.Audio;
 using System.Collections.Generic;
+using CalamityMod.CalPlayer.Dashes;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace HeavenlyArsenal.ArsenalPlayer
 {
@@ -32,6 +34,14 @@ namespace HeavenlyArsenal.ArsenalPlayer
 
         public int ShadowVeilImmunity = 0;
 
+        public const int segmentCount = 10;
+        public const float segmentLength = 20f;
+        public Vector2[] verletPoints;
+        public Vector2[] verletOldPoints;
+        private bool verletInitialized = false;
+        public static Texture2D chainTexture;
+        public bool ChestplateEquipped = false;
+
         public override void Initialize()
         {
             cooldowns = new Dictionary<string, CooldownInstance>();
@@ -41,6 +51,16 @@ namespace HeavenlyArsenal.ArsenalPlayer
             Iframe = 0;
             rechargeDelay = ShintoArmorBreastplate.ShieldRechargeDelay;
             rechargeRate = ShintoArmorBreastplate.ShieldRechargeRate;
+            // Initialize Verlet arrays
+
+            verletPoints = new Vector2[segmentCount];
+            verletOldPoints = new Vector2[segmentCount];
+            verletInitialized = false; // Will initialize on first update when Player is valid.
+
+        }
+        public override void Load()
+        {
+            PlayerDashManager.TryAddDash(new ShintoArmorDash());
         }
 
         public override void PostUpdateMiscEffects()
@@ -189,7 +209,74 @@ namespace HeavenlyArsenal.ArsenalPlayer
                     }
                 }
             }
+            if (ChestplateEquipped)
+            {
+                if (!verletInitialized)
+                {
+                    Vector2 startPos = Player.Center;
+                    for (int i = 0; i < segmentCount; i++)
+                    {
+                        // Offset each segment downward by segmentLength pixels.
+                        verletPoints[i] = startPos + new Vector2(0, i * segmentLength);
+                        verletOldPoints[i] = verletPoints[i];
+                    }
+                    verletInitialized = true;
+                }
+
+                // Set simulation parameters
+                Vector2 gravity = new Vector2(0, 0.5f); // tweak gravity as needed
+                float dt = 1f; // assuming a fixed timestep for simplicity
+
+                // Update simulation for each segment (skip the first because it's fixed)
+                for (int i = 1; i < segmentCount; i++)
+                {
+                    Vector2 currentPos = verletPoints[i];
+                    Vector2 velocity = currentPos - verletOldPoints[i];
+                    verletOldPoints[i] = currentPos;
+                    verletPoints[i] = currentPos + velocity + gravity * dt * dt;
+                }
+
+                // Constrain segments to maintain constant distance.
+                // Iterate multiple times for stability.
+                int constraintIterations = 5;
+                for (int iter = 0; iter < constraintIterations; iter++)
+                {
+                    // Fix the first segment to the player's center.
+                    verletPoints[0] = Player.Center;
+
+                    for (int i = 0; i < segmentCount - 1; i++)
+                    {
+                        Vector2 delta = verletPoints[i + 1] - verletPoints[i];
+                        float dist = delta.Length();
+                        float diff = (dist - segmentLength) / dist;
+                        Vector2 offset = delta * diff * 0.5f;
+
+                        if (i == 0)
+                        {
+                            // First segment is fixed, so adjust only the second.
+                            verletPoints[i + 1] -= offset * 2f;
+                        }
+                        else
+                        {
+                            verletPoints[i] += offset;
+                            verletPoints[i + 1] -= offset;
+                        }
+                    }
+                }
+
+                // Load the chain segment texture if not already loaded.
+                if (chainTexture == null)
+                {
+                    chainTexture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Items/Armor/ShintoArmorBreastplate").Value;
+                }
+
+                // Draw the chain segments.
+                // (Assumes that Main.spriteBatch is active for immediate drawing. In a real mod, you might use a PostDraw hook.)
+            }
+            
         }
+        
+        
 
         public override void ModifyHurt(ref Player.HurtModifiers modifiers)
         {

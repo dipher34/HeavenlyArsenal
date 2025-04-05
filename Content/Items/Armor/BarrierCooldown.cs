@@ -25,7 +25,7 @@ public class BarrierDurability : CooldownHandler
 
     public static new string ID => "BarrierDurability";
     public override bool CanTickDown => !instance.player.Calamity().sponge || instance.timeLeft <= 0;
-    public override bool ShouldDisplay => true;//player.GetModPlayer<ShintoArmorPlayer>().barrier;
+    public override bool ShouldDisplay => true;//player.GetShintoArmorPlayer<ShintoArmorPlayer>().barrier;
     public override LocalizedText DisplayName => GetText($"UI.Cooldowns.{ID}");
     public override string Texture => "CalamityMod/Cooldowns/SpongeDurability";
     public override string OutlineTexture => "CalamityMod/Cooldowns/SpongeOutline";
