@@ -38,6 +38,11 @@ namespace HeavenlyArsenal.Content.Items.Armor
         public static int ShieldRechargeRate = 25;
         public static int TotalShieldRechargeTime = 200;
 
+        public static int AbyssDash_Iframes = 10 * 60;
+        public static int AbyssDash_Cooldown = 10 * 60;
+
+        public static readonly SoundStyle AbyssDash_Start = GennedAssets.Sounds.Avatar.AngryDistant with { PitchVariance = 0.4f, Volume = 0.6f, MaxInstances = 0 };
+
         public static readonly SoundStyle ShieldHurtSound = GennedAssets.Sounds.Avatar.DeadStarCoreCrack with { PitchVariance = 0.6f, Volume = 0.6f, MaxInstances = 0 };
         public static readonly SoundStyle ActivationSound = GennedAssets.Sounds.Avatar.DeadStarCoreCritical with { PitchVariance = 0.6f, Volume = 0.6f, MaxInstances = 0 };
         public static readonly SoundStyle BreakSound = GennedAssets.Sounds.Avatar.DeadStarCoreExplode with { PitchVariance = 0.6f, Volume = 0.6f, MaxInstances = 0 };
@@ -48,7 +53,13 @@ namespace HeavenlyArsenal.Content.Items.Armor
         public static Texture2D NoiseTex = GennedAssets.Textures.Noise.TurbulentNoise;
         public override LocalizedText Tooltip => base.Tooltip.WithFormatArgs(MaxManaIncrease, MaxMinionIncrease);
 
-		public override void SetDefaults() {
+        public override void SetStaticDefaults()
+        {
+            var equipSlot = EquipLoader.GetEquipSlot(Mod, Name, EquipType.Body);
+            ArmorIDs.Body.Sets.HidesArms[equipSlot] = true;
+            ArmorIDs.Body.Sets.HidesTopSkin[equipSlot] = true;
+        }
+        public override void SetDefaults() {
 			Item.width = 18; // Width of the item
 			Item.height = 18; // Height of the item
 			Item.value = Item.sellPrice(gold: 4445); // How many coins the item is worth

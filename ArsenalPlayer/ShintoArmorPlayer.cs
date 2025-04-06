@@ -32,7 +32,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
         internal float barrierShieldPartialRechargeProgress = 0f;
 
         public bool IsDashing;
-
+        public bool empoweredDash;
 
 
         public Dictionary<string, CooldownInstance> cooldowns;
@@ -61,6 +61,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
 
             ChestplateEquipped = false;
             IsDashing = false;
+            empoweredDash = false;
 
             verletPoints = new Vector2[segmentCount];
             verletOldPoints = new Vector2[segmentCount];
@@ -71,6 +72,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
         {
             chainTexture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Items/Armor/ShintoArmor_Cape");
             PlayerDashManager.TryAddDash(new ShintoArmorDash());
+            PlayerDashManager.TryAddDash(new AbyssDash());
         }
 
         public override void PostUpdateMiscEffects()
@@ -302,6 +304,14 @@ namespace HeavenlyArsenal.ArsenalPlayer
                 Main.NewText($"Im doing things!", Color.Coral);
             }
 
+            if (!cooldowns.ContainsKey(AbyssDashCooldown.ID)) 
+            {
+                empoweredDash = true;
+            }
+            else
+            {
+                empoweredDash = false;
+            }
         }
 
 

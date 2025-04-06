@@ -24,7 +24,7 @@ public class ShintoArmorDash : PlayerDashEffect
     public int Time = 0;
     public bool AngleSwap = true;
 
-    public override float CalculateDashSpeed(Player player) => 25.4f;
+    public override float CalculateDashSpeed(Player player) => 30.4f;
 
     public override void OnDashEffects(Player player)
     {
@@ -32,7 +32,7 @@ public class ShintoArmorDash : PlayerDashEffect
         SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.HarshGlitch, player.Center, null);
         player.GetModPlayer<ShintoArmorPlayer>().IsDashing = true;
         
-        Projectile.NewProjectile(player.GetSource_FromThis(), player.Center, Vector2.Zero, ModContent.ProjectileType<ShintoArmorDash_Hand>(), 40, 0, -1, 0, 0, 0);
+        //Projectile.NewProjectile(player.GetSource_FromThis(), player.Center, Vector2.Zero, ModContent.ProjectileType<ShintoArmorDash_Hand>(), 40, 0, -1, 0, 0, 0);
     }
 
     public override void MidDashEffects(Player player, ref float dashSpeed, ref float dashSpeedDecelerationFactor, ref float runSpeedDecelerationFactor)

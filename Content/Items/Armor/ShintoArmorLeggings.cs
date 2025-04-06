@@ -9,6 +9,7 @@ using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 using NoxusBoss.Content.Rarities;
+using HeavenlyArsenal.ArsenalPlayer;
 
 namespace HeavenlyArsenal.Content.Items.Armor
 {
@@ -36,15 +37,20 @@ namespace HeavenlyArsenal.Content.Items.Armor
             player.maxRunSpeed *= 1.2f;
             player.accRunSpeed *= 0.5f;
             player.runSlowdown *= 2f;
-            var ShintoArmorPlayer = player.Calamity();
-            ShintoArmorPlayer.shadowSpeed = true;
+            var modPlayer = player.Calamity();
+            modPlayer.shadowSpeed = true;
             player.moveSpeed += 0.3f;
 
             player.autoJump = true;
             player.jumpSpeedBoost += 1.6f;
             player.noFallDmg = true;
             player.blackBelt = true;
-            ShintoArmorPlayer.DashID = ShintoArmorDash.ID;
+            if(player.GetModPlayer<ShintoArmorPlayer>().empoweredDash == true)
+            {
+                modPlayer.DashID = AbyssDash.ID;
+            }
+            else
+                modPlayer.DashID = ShintoArmorDash.ID;
             player.dashType = 0;
             player.spikedBoots = 2;
         }
