@@ -4,10 +4,13 @@ using CalamityMod.Enums;
 using CalamityMod.Particles;
 using CalamityMod.Projectiles.Rogue;
 using HeavenlyArsenal.ArsenalPlayer;
+using HeavenlyArsenal.Common.utils;
 using HeavenlyArsenal.Content.Items.Weapons.Summon.AntishadowAssassin;
+using HeavenlyArsenal.Content.Particles;
 using HeavenlyArsenal.Content.Projectiles.Misc;
 using Microsoft.Xna.Framework;
 using NoxusBoss.Assets;
+using System.Security.Principal;
 using Terraria;
 using Terraria.Audio;
 using Terraria.ModLoader;
@@ -39,24 +42,37 @@ public class ShintoArmorDash : PlayerDashEffect
     {
         player.GetModPlayer<ShintoArmorPlayer>().IsDashing = true;
         Time++;
-        if (Time % 1 == 0)
+        //if (Time % 1 == 0)
+        AntishadowCrack darkParticle = AntishadowCrack.pool.RequestParticle();
+        darkParticle.Prepare(player.Center, player.velocity * 0.2f, Main.rand.NextFloat()*10f, 35, Color.Red, Color.DarkRed,1f);
+
+
+        ParticleEngine.Particles.Add(darkParticle);
+        for (int i = 0; i < 7; i++)
         {
-            
-            Vector2 trailPos = player.Center - (player.velocity * 2) + Main.rand.NextVector2Circular(10, 20);
-            float trailScale = player.velocity.X * player.direction * 0.08f;
-            Color trailColor = Main.rand.NextBool(3) ? Color.DarkRed : Color.Black;
+
+            Vector2 trailPos = player.Center - (player.velocity * 2);
+            float trailScale = player.velocity.X * player.direction * 0.04f;
+            Color trailColor = Color.DarkRed;
             Particle Trail = new SparkParticle(trailPos, player.velocity * 0.2f, false, 35, trailScale, trailColor);
             GeneralParticleHandler.SpawnParticle(Trail);
+        }
 
+            for (int i = 0; i < 16; i++)
+        {
+
+
+            //Particle Trail2 = new SparkParticle(trailPos, player.velocity * 0.2f, false, 35, trailScale*0.98f, Color.DarkRed);
+            //GeneralParticleHandler.SpawnParticle(Trail2);
             {
-                int fireBrightness = Main.rand.Next(20);
+                int fireBrightness = Main.rand.Next(40);
                 Color fireColor = new Color(fireBrightness, fireBrightness, fireBrightness);
-                /*
-                if (i % 6 == 0)
-                    fireColor = new Color(174, 0, Main.rand.Next(16), 0);
-                */
-                Vector2 position = player.Center + Main.rand.NextVector2Circular(60f, 60f);
-                AntishadowFireParticleSystemManager.CreateNew(player.whoAmI, false, position, Main.rand.NextVector2Circular(17f, 17f), Vector2.One * Main.rand.NextFloat(30f, 125f), fireColor);
+                
+               if(Main.rand.NextBool(3)&& player.velocity.X > 20)
+                    fireColor = new Color(220, 20, Main.rand.Next(16), 255);
+                
+                Vector2 position = player.Center + Main.rand.NextVector2Circular(30f, 30f);
+                AntishadowFireParticleSystemManager.CreateNew(player.whoAmI, false, position, Main.rand.NextVector2Circular(30f, player.velocity.X * 0.76f), Vector2.One * Main.rand.NextFloat(30f, 50f), fireColor);
             }
         }
         /*
@@ -80,6 +96,6 @@ public class ShintoArmorDash : PlayerDashEffect
         }
         */
         // Dash at a faster speed than the default value.
-        dashSpeed = 14f;
+        dashSpeed = 19f;
     }
 }

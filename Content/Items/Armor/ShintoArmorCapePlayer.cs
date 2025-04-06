@@ -68,7 +68,7 @@ namespace HeavenlyArsenal.Content.Items.Armor
                 Main.spriteBatch.GraphicsDevice.Clear(Color.Transparent);
                 Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, RasterizerState.CullNone, null);
 
-                Vector2 robePosition = Player.Center + new Vector2(-13.5f+Player.direction, -50f).RotatedBy(Player.fullRotation);
+                Vector2 robePosition = Player.Center + new Vector2(-5 - (-6 * Player.direction), -50f).RotatedBy(Player.fullRotation);
 
                 Matrix world = Matrix.CreateTranslation(-robePosition.X + backSize / 2, -robePosition.Y + backSize / 2, 0f);
                 
