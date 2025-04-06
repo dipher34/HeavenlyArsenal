@@ -39,8 +39,9 @@ public class ShintoArmorDash : PlayerDashEffect
     {
         player.GetModPlayer<ShintoArmorPlayer>().IsDashing = true;
         Time++;
-        if (Time % 2 == 0)
+        if (Time % 1 == 0)
         {
+            
             Vector2 trailPos = player.Center - (player.velocity * 2) + Main.rand.NextVector2Circular(10, 20);
             float trailScale = player.velocity.X * player.direction * 0.08f;
             Color trailColor = Main.rand.NextBool(3) ? Color.DarkRed : Color.Black;

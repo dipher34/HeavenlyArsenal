@@ -45,7 +45,7 @@ namespace HeavenlyArsenal.Content.Items.Armor
             player.jumpSpeedBoost += 1.6f;
             player.noFallDmg = true;
             player.blackBelt = true;
-            if(player.GetModPlayer<ShintoArmorPlayer>().empoweredDash == true)
+            if(player.GetModPlayer<ShintoArmorPlayer>().empoweredDash== true)
             {
                 modPlayer.DashID = AbyssDash.ID;
             }

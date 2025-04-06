@@ -39,7 +39,7 @@ namespace HeavenlyArsenal.Content.Items.Armor
         public static int TotalShieldRechargeTime = 200;
 
         public static int AbyssDash_Iframes = 10 * 60;
-        public static int AbyssDash_Cooldown = 10 * 60;
+        public static int AbyssDash_Cooldown = 60;
 
         public static readonly SoundStyle AbyssDash_Start = GennedAssets.Sounds.Avatar.AngryDistant with { PitchVariance = 0.4f, Volume = 0.6f, MaxInstances = 0 };
 
