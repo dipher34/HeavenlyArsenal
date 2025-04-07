@@ -16,6 +16,7 @@ using System;
 using System.Diagnostics.Metrics;
 using Terraria;
 using Terraria.Audio;
+using Terraria.DataStructures;
 using Terraria.Graphics.Effects;
 using Terraria.ID;
 using Terraria.Localization;
@@ -246,4 +247,23 @@ namespace HeavenlyArsenal.Content.Items.Armor
 
         }
     }
+    public class ShintoArmorBreastplate_DrawLayer : PlayerDrawLayer
+    {
+
+        public override Position GetDefaultPosition() => new BeforeParent(PlayerDrawLayers.FrontAccFront);
+
+        public override bool GetDefaultVisibility(PlayerDrawSet drawInfo) => drawInfo.drawPlayer.body == EquipLoader.GetEquipSlot(Mod, nameof(ShintoArmorBreastplate), EquipType.Body);
+
+        public override bool IsHeadLayer => false;
+
+
+
+        protected override void Draw(ref PlayerDrawSet drawInfo)
+        {
+
+
+
+        }
+    }
+
 }
