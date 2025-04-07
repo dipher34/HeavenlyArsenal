@@ -4,8 +4,12 @@ using System.Linq;
 using HeavenlyArsenal.ArsenalPlayer;
 using HeavenlyArsenal.Common.Utilities;
 using HeavenlyArsenal.Common.utils;
+using Luminance.Common.Utilities;
+using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using NoxusBoss.Assets;
+using NoxusBoss.Content.NPCs.Bosses.Avatar;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.ID;
@@ -191,7 +195,13 @@ namespace HeavenlyArsenal.Content.Projectiles.Misc
             Texture2D texture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Projectiles/Misc/ShintoArmorDash_Hand").Value;
 
             Color light = Lighting.GetColor(Player.Center.ToTileCoordinates());
-
+            Main.spriteBatch.PrepareForShaders();
+            //new Texture Placeholder = GennedAssets.Textures.Extra.Code;
+            ManagedShader postProcessingShader = ShaderManager.GetShader("HeavenlyArsenal.FusionRifleClothPostProcessingShader");
+            postProcessingShader.TrySetParameter("textureSize", texture.Size()*3);
+            postProcessingShader.TrySetParameter("edgeColor", new Color(228, 37, 40).ToVector4());
+            postProcessingShader.SetTexture(GennedAssets.Textures.FirstPhaseForm.RiftInnerTexture, 0, SamplerState.LinearWrap);
+            postProcessingShader.Apply();
             if (tentacle != null)
             {
                 List<Vector2> points = new List<Vector2>();
@@ -217,18 +227,22 @@ namespace HeavenlyArsenal.Content.Projectiles.Misc
                         tentacleGlowFrame = texture.Frame(2, 5, 1, 0);
                         stretch = new Vector2(Projectile.scale * 0.6f, points[i].Distance(points[i - 1]) / (tentacleFrame.Height - 2f) * 1.2f);
                     }
+                  
+
+                    
                     Main.EntitySpriteDraw(texture, points[i] - Main.screenPosition, tentacleFrame, Color.Lerp(light, Color.White, 1f - (float)i / points.Count), rot, tentacleFrame.Size() * new Vector2(0.5f, 0f), stretch, 0, 0);
 
                     Color glowColor = Color.Crimson;
                         
                         //new GradientColor(SlimeUtils.GoozOilColors, 0.5f, 0.5f).ValueAt(Main.GlobalTimeWrappedHourly * 150 + i * 10) * 0.5f;
                     glowColor.A /= 2;
-                    Main.EntitySpriteDraw(texture, points[i] - Main.screenPosition, tentacleGlowFrame, glowColor.MultiplyRGBA(Color.Lerp(light, Color.White, 1f - (float)i / points.Count)) * 1.5f, rot, tentacleFrame.Size() * new Vector2(0.5f, 0f), stretch, 0, 0);
+                    //Main.EntitySpriteDraw(texture, points[i] - Main.screenPosition, tentacleGlowFrame, glowColor.MultiplyRGBA(Color.Lerp(light, Color.White, 1f - (float)i / points.Count)) * 1.5f, rot, tentacleFrame.Size() * new Vector2(0.5f, 0f), stretch, 0, 0);
+                    
                 }
 
                 //Utils.DrawBorderString(Main.spriteBatch, Index.ToString(), Projectile.Center - Vector2.UnitY * 50 - Main.screenPosition, Color.White);
             }
-
+            Main.spriteBatch.ResetToDefault();
             return false;
         }
     }

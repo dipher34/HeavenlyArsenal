@@ -57,16 +57,13 @@ namespace HeavenlyArsenal.ArsenalPlayer
             Iframe = 0;
             rechargeDelay = ShintoArmorBreastplate.ShieldRechargeDelay;
             rechargeRate = ShintoArmorBreastplate.ShieldRechargeRate;
-            // Initialize Verlet arrays
+           
 
             ChestplateEquipped = false;
             IsDashing = false;
             empoweredDash = false;
 
-            verletPoints = new Vector2[segmentCount];
-            verletOldPoints = new Vector2[segmentCount];
-            verletInitialized = false; // Will initialize on first update when Player is valid.
-
+          
         }
         public override void Load()
         {

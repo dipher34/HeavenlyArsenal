@@ -18,6 +18,9 @@ using System.Threading;
 using Luminance.Core.Sounds;
 
 
+using System.Runtime.InteropServices;
+
+
 namespace HeavenlyArsenal.Content.Projectiles.Weapons.Rogue;
 
 class HeldLifeCessationProjectile : ModProjectile
@@ -54,7 +57,7 @@ class HeldLifeCessationProjectile : ModProjectile
     }
 
     public ref float Time => ref Projectile.ai[2];
-
+    public ref float Size => ref Projectile.ai[1];
     public bool IsAbsorbingHeat
     {
         get;
@@ -137,13 +140,13 @@ class HeldLifeCessationProjectile : ModProjectile
         }
 
         Projectile.ai[2] = MathF.Sqrt(Utils.GetLerpValue(0, 50, Time, true) * Utils.GetLerpValue(10, 30, Projectile.timeLeft, true));
-
-        Projectile.Center = Owner.MountedCenter + Projectile.velocity.SafeNormalize(Vector2.Zero) * 25 + new Vector2(0, Owner.gfxOffY) + Main.rand.NextVector2Circular(2, 2) * Projectile.ai[2];
+        Owner.ChangeDir(Projectile.velocity.X > 0 ? 1 : -1);
+        Owner.SetDummyItemTime(4);
 
         Owner.heldProj = Projectile.whoAmI;
-
         Projectile.velocity = Vector2.Lerp(Projectile.velocity.SafeNormalize(Vector2.Zero), Owner.DirectionTo(Main.MouseWorld).SafeNormalize(Vector2.Zero), 0.08f) * Owner.HeldItem.shootSpeed;
-
+        Projectile.Center = Owner.MountedCenter + Projectile.velocity.SafeNormalize(Vector2.Zero) * 25 + new Vector2(0, Owner.gfxOffY) + Main.rand.NextVector2Circular(2, 2) * Projectile.ai[2];
+        Projectile.rotation = Projectile.velocity.ToRotation();
 
         Main.NewText($"Velocity = {Projectile.velocity}", Color.AntiqueWhite);
         
@@ -158,10 +161,10 @@ class HeldLifeCessationProjectile : ModProjectile
         Projectile.rotation = toMouse.ToRotation();
 
 
-
        
 
-        
+
+
         if (Heat > 0|| player.channel)
         {
             Projectile.timeLeft = 2;
@@ -209,6 +212,7 @@ class HeldLifeCessationProjectile : ModProjectile
     }
 
     private float previousHeat = 0;
+    private float newRot;
     private const float significantIncreaseThreshold = 0.1f; // Define the heat increase threshold for resetting HasScreamed.
     private const float minimumHeatThreshold = 0.5f; // Define the minimum heat to enable screaming.
     private const float lilyStarActivationInterval = 0.15f; // Interval for activating ReleaseLilyStars.
@@ -289,7 +293,7 @@ class HeldLifeCessationProjectile : ModProjectile
             GeneralScreenEffectSystem.ChromaticAberration.Start(Player.Center, 3f, 90);
 
             if (Main.netMode != NetmodeID.MultiplayerClient)
-                NewProjectileBetter(Projectile.GetSource_FromThis(), energySource, Vector2.Zero, ModContent.ProjectileType<DarkWave>(), 0, 0f);
+                //NewProjectileBetter(Projectile.GetSource_FromThis(), energySource, Vector2.Zero, ModContent.ProjectileType<DarkWave>(), 0, 0f);
             HasScreamed = true;
         }
     }
@@ -320,7 +324,16 @@ class HeldLifeCessationProjectile : ModProjectile
     }
 
 
+    public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
+    {
+        if (IsAbsorbingHeat)
+        {
+            Heat += 0.1f;
 
+        }
+
+        base.OnHitNPC(target, hit, damageDone);
+    }
 
 
     public override bool PreDraw(ref Color lightColor)
@@ -331,7 +344,25 @@ class HeldLifeCessationProjectile : ModProjectile
 
         Rectangle frame = texture.Frame(1, 1, 0, 0);
 
+        Vector2 sparklePos = Projectile.Center + new Vector2(6, 0).RotatedBy(Projectile.rotation);
+        Texture2D sparkle = ModContent.Request<Texture2D>("HeavenlyArsenal/Assets/Textures/Extra/Sparkle").Value;
+        Color sparkleColor = new Color(255, 20, 0);//new GradientColor(SlimeUtils.GoozColors, 0.2f, 0.2f).ValueAt(Time + 10);
+        sparkleColor.A = 0;
 
+        Vector2 sparkleScaleX = new Vector2(1.5f, 1.33f) * Projectile.ai[2];
+        Vector2 sparkleScaleY = new Vector2(1.5f, 1.33f) * Projectile.ai[2];
+        Main.EntitySpriteDraw(sparkle, sparklePos - Main.screenPosition, sparkle.Frame(), Color.Black * 0.3f, 0f, sparkle.Size() * 0.5f, sparkleScaleX, 0, 0);
+        Main.EntitySpriteDraw(sparkle, sparklePos - Main.screenPosition, sparkle.Frame(), Color.Black * 0.3f, MathHelper.PiOver2, sparkle.Size() * 0.5f, sparkleScaleY, 0, 0);
+
+        Vector2[] positions = new Vector2[500];
+        float[] rotations = new float[500];
+        for (int i = 0; i < 500; i++)
+        {
+            rotations[i] = newRot.AngleLerp(Projectile.rotation, MathF.Sqrt(i / 500f)) + MathF.Sin(Time * 0.2f - i / 50f) * 0.1f * (1f - i / 500f) * Projectile.ai[2];
+            positions[i] = sparklePos + new Vector2(Size * (i / 500f) * Projectile.ai[2], 0).RotatedBy(rotations[i]);
+
+
+        }
 
 
         float rotation = Projectile.rotation+MathHelper.PiOver2;
