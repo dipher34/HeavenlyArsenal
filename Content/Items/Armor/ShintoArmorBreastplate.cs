@@ -192,7 +192,7 @@ namespace HeavenlyArsenal.Content.Items.Armor
             if (Main.netMode != NetmodeID.Server)
             {
                 //register the faulds texture. This appears either when the leggings  or the chestplate is equipped (both works)
-
+                EquipLoader.AddEquipTexture(Mod, Texture + "_Bulk", EquipType.Front, this);
                 EquipLoader.AddEquipTexture(Mod, Texture + "_Waist", EquipType.Waist, this);
                 //EquipLoader.AddEquipTexture(Mod, "HeavenlyArsenal/Content/Items/Armor/ShintoArmorFaulds_Waist", EquipType.Waist, name: "ShintoArmorFaulds");
             }
@@ -215,6 +215,9 @@ namespace HeavenlyArsenal.Content.Items.Armor
             {
                 player.waist = EquipLoader.GetEquipSlot(Mod, Name, EquipType.Waist);
                 player.cWaist = player.cBody;
+
+                player.front = EquipLoader.GetEquipSlot(Mod, Name, EquipType.Front);
+                player.front = player.cBody;
             }
         }
 
