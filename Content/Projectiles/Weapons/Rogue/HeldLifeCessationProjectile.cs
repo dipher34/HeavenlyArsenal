@@ -242,7 +242,7 @@ class HeldLifeCessationProjectile : ModProjectile
             // Adjust activation logic for ReleaseLilyStars to every 0.15 heat
             if (Heat % lilyStarActivationInterval < heatIncrement && Heat > 0.4)
             {
-                //ReleaseLilyStars(Main.player[Projectile.owner]);
+                ReleaseLilyStars(Main.player[Projectile.owner]);
             }
         }
         else if (Heat <= 0)

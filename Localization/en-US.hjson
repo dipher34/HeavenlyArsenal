@@ -273,6 +273,11 @@ Mods: {
 				DisplayName: Ancient Coin
 				Tooltip: Its old
 			}
+
+			ChaliceOfFun: {
+				DisplayName: Chalice Of Fun
+				Tooltip: ""
+			}
 		}
 
 		Projectiles: {

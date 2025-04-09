@@ -7,6 +7,7 @@ using CalamityMod.Items.Accessories;
 using CalamityMod.Items.Armor.Demonshade;
 using CalamityMod.Tiles.Furniture.CraftingStations;
 using HeavenlyArsenal.ArsenalPlayer;
+using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
@@ -149,32 +150,59 @@ namespace HeavenlyArsenal.Content.Items.Armor
                     shieldEffect.Parameters["blowUpSize"].SetValue(0.56f);
                     shieldEffect.Parameters["noiseScale"].SetValue(noiseScale);
 
-                    float baseShieldOpacity = 0.9f + 0.1f * MathF.Sin(Main.GlobalTimeWrappedHourly * 1.95f);
+                    float baseShieldOpacity = 0.6f + 0.1f * MathF.Sin(Main.GlobalTimeWrappedHourly * 0.95f);
+
                     float minShieldStrengthOpacityMultiplier = 0.25f;
                     float finalShieldOpacity = baseShieldOpacity * MathHelper.Lerp(minShieldStrengthOpacityMultiplier, 1f, visualShieldStrength);
                     shieldEffect.Parameters["shieldOpacity"].SetValue(finalShieldOpacity);
-                    shieldEffect.Parameters["shieldEdgeBlendStrenght"].SetValue(4f);
+                    shieldEffect.Parameters["shieldEdgeBlendStrenght"].SetValue(1f);
 
-                    Color shieldColor = new Color(220, 20, 70); // #189CCC
+                    Color shieldColor = new Color(163, 0, 41); // #189CCC
                     Color primaryEdgeColor = shieldColor;
-                    Color secondaryEdgeColor = new Color(0, 0 , 0); // #22E0E3                   
+                    Color secondaryEdgeColor = new Color(163,0,41); // #22E0E3                   
                    // Main.NewText($"Shield Opacity: {baseShieldOpacity}", Color.AliceBlue);
                     Color edgeColor = CalamityUtils.MulticolorLerp(Main.GlobalTimeWrappedHourly * 0.2f, primaryEdgeColor, secondaryEdgeColor);
 
                     shieldEffect.Parameters["shieldColor"].SetValue(shieldColor.ToVector3());
                     shieldEffect.Parameters["shieldEdgeColor"].SetValue(edgeColor.ToVector3());
+
+                    shieldEffect.CurrentTechnique.Passes[0].Apply();
+
+
+                    Main.pixelShader.CurrentTechnique.Passes[0].Apply();
+
+
+                    float rotation = 0f;
+                    //Texture2D ShieldNoise = AssetDirectory.Textures.VoidLake.Value;
+                    Texture2D glow = GennedAssets.Textures.Noise.MoltenNoise.Value;
+
+                    Main.spriteBatch.End();
+
+                   
+                    Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Additive, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, shieldEffect, Main.GameViewMatrix.TransformationMatrix);
+                    // Fetch shield noise overlay texture (this is the polygon texture fed to the shader)
+                    Vector2 pos = player.MountedCenter + player.gfxOffY * Vector2.UnitY - Main.screenPosition;
+
+                    
+                    Main.EntitySpriteDraw(glow, pos, null, Color.AntiqueWhite, rotation, glow.Size() / 2f, 0.1f, 0, 0);
+                    
                     
                     Main.spriteBatch.End();
-                    Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Additive, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, shieldEffect, Main.GameViewMatrix.TransformationMatrix);
+                    Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.Transform);
+
+                    Vector2 drawPosition = player.Center - Main.screenPosition;
+
+                   
+
+                    SpriteEffects direction = SpriteEffects.None;
+                    Vector2 Gorigin = new Vector2(glow.Width / 2 , glow.Height / 2);
+
+
+                    //Main.spriteBatch.Draw(glow, drawPosition, null, Color.Crimson, rotation, Gorigin, 0.05f, direction, 0f);
+
                 }
 
                 alreadyDrawnShieldForPlayer = true;
-
-                // Fetch shield noise overlay texture (this is the polygon texture fed to the shader)
-                Vector2 pos = player.MountedCenter + player.gfxOffY * Vector2.UnitY - Main.screenPosition;
-                
-                //Main.spriteBatch.Draw(NoiseTex, pos, null, Color.White, 0, tex.Size() / 2f, scale, 0, 0);
-                Main.EntitySpriteDraw(tex, pos, null, Color.AntiqueWhite, 0, NoiseTex.Size()/2, 60, 0, 0);
 
             }
 

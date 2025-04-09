@@ -1,10 +1,12 @@
-﻿using CalamityMod.CalPlayer;
+﻿using CalamityMod;
+using CalamityMod.CalPlayer;
 using CalamityMod.Items;
 using CalamityMod.Items.Materials;
 using CalamityMod.Items.Placeables;
 using CalamityMod.Projectiles.Typeless;
 using CalamityMod.Rarities;
 using HeavenlyArsenal.ArsenalPlayer;
+using HeavenlyArsenal.Content.Items.Armor;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
@@ -30,7 +32,9 @@ namespace HeavenlyArsenal.Content.Items.Accessories
         
         public override void UpdateAccessory(Player player, bool hideVisual)
         {
-            player.GetModPlayer<HeavenlyArsenalPlayer>().ElectricVambrace = true;
+            //player.GetModPlayer<HeavenlyArsenalPlayer>().ElectricVambrace = true;
+            var modPlayer = player.Calamity();
+            modPlayer.DashID = ElectricVambraceDash.ID;
         }
 
 

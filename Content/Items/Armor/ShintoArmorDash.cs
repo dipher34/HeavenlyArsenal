@@ -32,10 +32,20 @@ public class ShintoArmorDash : PlayerDashEffect
     public override void OnDashEffects(Player player)
     {
         Time = 0;
-        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.HarshGlitch, player.Center, null);
+        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.HarshGlitch with { PitchVariance = 0.45f, MaxInstances = 0, }, player.Center, null);
+        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.ArmSwing with { PitchVariance = 0.25f, MaxInstances = 0, }, player.Center, null);
         player.GetModPlayer<ShintoArmorPlayer>().IsDashing = true;
-        
-        //Projectile.NewProjectile(player.GetSource_FromThis(), player.Center, Vector2.Zero, ModContent.ProjectileType<ShintoArmorDash_Hand>(), 40, 0, -1, 0, 0, 0);
+        player.SetImmuneTimeForAllTypes(20); 
+        for (int i = 0; i < Main.rand.Next(1, 5); i++)
+        {
+            Vector2 lightningPos = player.Center + Main.rand.NextVector2Circular(24, 24);
+
+            HeatLightning particle = HeatLightning.pool.RequestParticle();
+            particle.Prepare(lightningPos, player.velocity + Main.rand.NextVector2Circular(10, 10), Main.rand.NextFloat(-2f, 2f), 10 + i * 3, Main.rand.NextFloat(0.5f, 1f));
+            ParticleEngine.Particles.Add(particle);
+        }
+
+        //Projectile.NewProjectile(player.GetSource_FromThis(), player.Center, Vector2.Zero, ModContent.ProjectileType<ShintoArmorDash_Hand>(), 40, 0, -1, 0, 0, 0);  
     }
 
     public override void MidDashEffects(Player player, ref float dashSpeed, ref float dashSpeedDecelerationFactor, ref float runSpeedDecelerationFactor)
@@ -43,11 +53,11 @@ public class ShintoArmorDash : PlayerDashEffect
         player.GetModPlayer<ShintoArmorPlayer>().IsDashing = true;
         Time++;
         //if (Time % 1 == 0)
-        AntishadowCrack darkParticle = AntishadowCrack.pool.RequestParticle();
-        darkParticle.Prepare(player.Center, player.velocity * 0.2f, Main.rand.NextFloat()*10f, 35, Color.Red, Color.DarkRed,1f);
+        //AntishadowCrack darkParticle = AntishadowCrack.pool.RequestParticle();
+        //darkParticle.Prepare(player.Center, player.velocity * 0.2f, Main.rand.NextFloat()*10f, 35, Color.Red, Color.DarkRed,1f);
 
 
-        ParticleEngine.Particles.Add(darkParticle);
+       // ParticleEngine.Particles.Add(darkParticle);
         for (int i = 0; i < 7; i++)
         {
 
@@ -59,22 +69,23 @@ public class ShintoArmorDash : PlayerDashEffect
         }
 
             for (int i = 0; i < 16; i++)
-        {
+            {
 
 
             //Particle Trail2 = new SparkParticle(trailPos, player.velocity * 0.2f, false, 35, trailScale*0.98f, Color.DarkRed);
             //GeneralParticleHandler.SpawnParticle(Trail2);
-            {
+            
                 int fireBrightness = Main.rand.Next(40);
                 Color fireColor = new Color(fireBrightness, fireBrightness, fireBrightness);
                 
-               if(Main.rand.NextBool(3)&& player.velocity.X > 20)
+               if(Main.rand.NextBool(3)&& player.velocity.X > 20*player.direction)
                     fireColor = new Color(220, 20, Main.rand.Next(16), 255);
+
                 
                 Vector2 position = player.Center + Main.rand.NextVector2Circular(30f, 30f);
                 AntishadowFireParticleSystemManager.CreateNew(player.whoAmI, false, position, Main.rand.NextVector2Circular(30f, player.velocity.X * 0.76f), Vector2.One * Main.rand.NextFloat(30f, 50f), fireColor);
+            
             }
-        }
         /*
         // Periodically release scythes.
         player.Calamity().statisTimer++;

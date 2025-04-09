@@ -2,6 +2,7 @@
 using CalamityMod.Balancing;
 using CalamityMod.Items.Accessories;
 using CalamityMod.Items.Armor.Demonshade;
+using CalamityMod.Items.Armor.Statigel;
 using CalamityMod.Tiles.Furniture.CraftingStations;
 using HeavenlyArsenal.ArsenalPlayer;
 using NoxusBoss.Content.Rarities;
@@ -62,10 +63,12 @@ namespace HeavenlyArsenal.Content.Items.Armor
 
         
 		public override void UpdateEquip(Player player)
-		{ 
-            
-            player.Calamity().stealthGenMoving += 0.15f;
-            player.Calamity().stealthGenStandstill += 0.15f;
+		{
+
+            var modPlayer = player.Calamity();
+            modPlayer.laudanum = true;
+            modPlayer.heartOfDarkness = true;
+            modPlayer.stressPills = true;
             player.GetDamage(DamageClass.Generic) += 0.20f;
             player.GetCritChance(DamageClass.Generic) += 15;
             player.GetAttackSpeed(DamageClass.Generic) += 0.15f;
@@ -84,8 +87,9 @@ namespace HeavenlyArsenal.Content.Items.Armor
                 .AddIngredient<DemonshadeHelm>()
                 .AddIngredient(ItemID.NinjaHood)
 				.AddIngredient(ItemID.CrystalNinjaHelmet)
+                .AddIngredient<StatigelHeadMelee>()
 				.AddIngredient(CalamityHunt.Find<ModItem>("ShogunHelm").Type)
-				.AddIngredient<SpectralVeil>()
+				.AddIngredient<OccultSkullCrown>()
 				.AddTile<DraedonsForge>()
                 .Register();
             }
@@ -95,7 +99,8 @@ namespace HeavenlyArsenal.Content.Items.Armor
                .AddIngredient<DemonshadeHelm>()
                .AddIngredient(ItemID.NinjaHood)
                .AddIngredient(ItemID.CrystalNinjaHelmet)
-               .AddIngredient<SpectralVeil>()
+               .AddIngredient<StatigelHeadMelee>()
+               .AddIngredient<OccultSkullCrown>()
                .AddTile<DraedonsForge>()
                .Register();
             }

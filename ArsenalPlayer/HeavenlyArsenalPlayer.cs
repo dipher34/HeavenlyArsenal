@@ -16,6 +16,8 @@ using CalamityMod.Projectiles.Typeless;
 using Terraria.Audio;
 using HeavenlyArsenal.Projectiles.Misc;
 using Terraria.Chat;
+using HeavenlyArsenal.Content.Items.Armor;
+using CalamityMod.CalPlayer.Dashes;
 
 
 
@@ -46,6 +48,14 @@ namespace HeavenlyArsenal.ArsenalPlayer
             private set; 
         }
 
+        public override void Load()
+        {
+
+            PlayerDashManager.TryAddDash(new ElectricVambraceDash());
+           
+
+        }
+
         public override void PostUpdate()
 
         {
@@ -66,34 +76,9 @@ namespace HeavenlyArsenal.ArsenalPlayer
                         
                         int damage = Player.ApplyArmorAccDamageBonusesTo(Player.GetBestClassDamage().ApplyTo(750));
                         isVambraceDashing = true;
-                        //Projectile.NewProjectile(Player.GetSource_FromThis(), Player.Center + Player.velocity * 1.5f, Vector2.Zero, ModContent.ProjectileType<VambraceDash>(), damage, 20f, Player.whoAmI);
-
-                        Projectile.NewProjectile(Player.GetSource_FromThis(), Player.Center + Player.velocity * 1.5f, Vector2.Zero, ModContent.ProjectileType<VambraceDash>(), damage, 50f, Player.whoAmI);
-                        //HasReducedDashFirstFrame = true;
-                        Console.WriteLine("ElectricVambrace spawned a projectile (VambraceDash)!");
+                       
 
                     }
-                   // float numberOfDusts = 10f;
-                   // float rotFactor = 180f / numberOfDusts;
-                    
-                    //float sparkscale = MathF.Min(Player.velocity.X * Player.direction * 0.08f, 1.2f);
-                    //Vector2 SparkVelocity1 = Player.velocity.RotatedBy(Player.direction * -3, default) * 0.1f - Player.velocity / 2f;
-                    //SparkParticle spark = new SparkParticle(Player.Center + Player.velocity.RotatedBy(2f * Player.direction) * 1.5f, SparkVelocity1, false, Main.rand.Next(11, 13), sparkscale, Main.rand.NextBool() ? Color.DarkOrange : Color.OrangeRed);
-                    //GeneralParticleHandler.SpawnParticle(spark);
-                    //Vector2 SparkVelocity2 = Player.velocity.RotatedBy(Player.direction * 3, default) * 0.1f - Player.velocity / 2f;
-                    //SparkParticle spark2 = new SparkParticle(Player.Center + Player.velocity.RotatedBy(-2f * Player.direction) * 1.5f, SparkVelocity2, false, Main.rand.Next(11, 13), sparkscale, Main.rand.NextBool() ? Color.DarkOrange : Color.OrangeRed);
-                    //GeneralParticleHandler.SpawnParticle(spark2);
-
-                    //if (Player.miscCounter % 6 == 0 && Player.velocity != Vector2.Zero)
-                   // {
-                     //   int damage = Player.ApplyArmorAccDamageBonusesTo(Player.GetBestClassDamage().ApplyTo(170));
-                     //   Projectile.NewProjectile(Player.GetSource_FromThis(), Player.Center + Player.velocity * 1.5f, Vector2.Zero, ModContent.ProjectileType<PauldronDash>(), damage, 10f, Player.whoAmI);
-                   // }
-
-
-
-
-
 
                     else
                         isVambraceDashing = false;
@@ -107,6 +92,13 @@ namespace HeavenlyArsenal.ArsenalPlayer
         }
 
 
+        public override void PostUpdateMiscEffects()
+        {
+            if (ElectricVambrace)
+            {
+                
+            }
+        }
         public override void ResetEffects()
         {
             CessationHeld = false;

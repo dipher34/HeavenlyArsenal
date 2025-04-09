@@ -832,7 +832,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
             //DrawShroud();
             Vector2 Bulletorigin = new Vector2(frame.Width / 2 - 24, frame.Height / 2 - 7 * Projectile.direction * Player.gravDir);
 
-            DrawBullet(drawPosition,lightColor, getBulletToDraw());
+            //DrawBullet(drawPosition,lightColor, getBulletToDraw());
 
             /*
             ClothTarget.Request(350, 350, Projectile.whoAmI, DrawCloth);

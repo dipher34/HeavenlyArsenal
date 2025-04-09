@@ -21,6 +21,9 @@ using Terraria.Graphics.Shaders;
 using HeavenlyArsenal.Content.Items.Weapons.Summon.AntishadowAssassin;
 using Steamworks;
 using NoxusBoss.Core.Graphics.TentInterior.Cutscenes;
+using HeavenlyArsenal.Content.Particles;
+using HeavenlyArsenal.Common.Graphics;
+using NoxusBoss.Content.NPCs.Bosses.Avatar.Projectiles;
 
 namespace HeavenlyArsenal.ArsenalPlayer
 {
@@ -33,7 +36,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
         public int Iframe;
         public int rechargeDelay;
         public int rechargeRate;
-        public float barrierDamageReduction = 0.78f;
+        public float barrierDamageReduction = 0.65f;
         public bool ShadowShieldVisible = true;
         public bool ShadowVeil;
         internal float barrierShieldPartialRechargeProgress = 0f;
@@ -71,6 +74,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
            
             PlayerDashManager.TryAddDash(new ShintoArmorDash());
             PlayerDashManager.TryAddDash(new AbyssDash());
+
         }
 
         public override void PostUpdateMiscEffects()
@@ -93,6 +97,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
                 Player.buffImmune[BuffID.CursedInferno] = true;
                 Player.buffImmune[BuffID.OnFire] = true;
                 Player.buffImmune[BuffID.Weak] = true;
+                Player.buffImmune[BuffID.BrokenArmor] = true;
                 if (ModLoader.TryGetMod("Calamity", out Mod CalamityMod))
                 {
                     Mod calamity = ModLoader.GetMod("CalamityMod");
@@ -120,17 +125,29 @@ namespace HeavenlyArsenal.ArsenalPlayer
                     calamity.Call("SetWearingRogueArmor", Player, true);
                     calamity.Call("SetWearingPostMLSummonerArmor", Player, true);
                 }
-            }
-            else
-            {
-                barrier = 0;
-                timeSinceLastHit = 0;
-                rechargeDelay = ShintoArmorBreastplate.ShieldRechargeDelay;
-            }
-            if (SetActive)
-            {
+                /*
+                if (ModLoader.TryGetMod("CalamityHunt", out Mod CalamityHunt))
+                {
+                    Mod Hunt = ModLoader.GetMod("CalamityHunt");
+                    
+                    {
+                        ModPlayer ShogunArmorPlayer = Player.GetModPlayer(CalamityHunt.Find<ModPlayer>("ShogunArmorPlayer"));
+                        if (ShogunArmorPlayer != null)
+                        {
+                            CalamityHunt.Find<ModPlayer>(ShogunArmorPlayer).active = true;
+                            ShogunArmorPlayer//active = true;
+                        }
+                    }
+                    
+                   
+                }
+                */
+
+
+                // Shield stuff
+
                 // Begin visual cooldown handling for shield recharge.
-                
+
                 // If the shield is completely discharged and not recharging, start the recharge cooldown.
                 if (timeSinceLastHit == 0 && !cooldowns.ContainsKey(BarrierRecharge.ID))
                     Player.AddCooldown(BarrierRecharge.ID, ShintoArmorBreastplate.ShieldRechargeDelay);
@@ -147,7 +164,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
                 {
                     barrierShieldPartialRechargeProgress += ShintoArmorBreastplate.ShieldDurabilityMax / (float)ShintoArmorBreastplate.TotalShieldRechargeTime;
                     int pointsActuallyRecharged = (int)MathF.Floor(barrierShieldPartialRechargeProgress);
-                   // durabilityCooldown.timeLeft += 
+                    // durabilityCooldown.timeLeft += 
                     // This value is used only for visual display.
                     int displayBarrier = Math.Min(barrier + pointsActuallyRecharged, TheSponge.ShieldDurabilityMax);
 
@@ -156,15 +173,22 @@ namespace HeavenlyArsenal.ArsenalPlayer
                     if (cooldowns.TryGetValue(BarrierDurability.ID, out var cdDurability))
                         cdDurability.timeLeft = displayBarrier;
                 }
+
+
+
             }
             else
             {
-                if (cooldowns.ContainsKey(BarrierDurability.ID))
+                barrier = 0;
+                timeSinceLastHit = 0;
+                rechargeDelay = ShintoArmorBreastplate.ShieldRechargeDelay;
+                if (cooldowns.ContainsKey(BarrierDurability.ID) || cooldowns.ContainsKey(BarrierRecharge.ID))
                 {
                     cooldowns.Remove(BarrierDurability.ID);
+                    cooldowns.Remove(BarrierRecharge.ID);
                 }
             }
-
+      
             if (Iframe > 0)
             {
                 Iframe--;
@@ -269,13 +293,28 @@ namespace HeavenlyArsenal.ArsenalPlayer
 
                 }
             }
-            if (VoidBeltEquipped&& barrier <= 0 && Main.rand.NextBool(10))
+           
+        }
+
+
+        public void BarrierTakeDamageVFX()
+        {
+            for (int i = 0; i < Main.rand.Next(1, 5); i++)
             {
-               
-                VoidBelt();
+                Vector2 lightningPos = Player.Center + Main.rand.NextVector2Circular(24, 24);
+
+                HeatLightning particle = HeatLightning.pool.RequestParticle();
+                particle.Prepare(lightningPos, Player.velocity + Main.rand.NextVector2Circular(10, 10), Main.rand.NextFloat(-2f, 2f), 10 + i * 3, Main.rand.NextFloat(0.5f, 1f));
+                ParticleEngine.Particles.Add(particle);
             }
         }
 
+        public void BarrierCrack(Player player)
+        {
+            //GeneralScreenEffectSystem.RadialBlur.Start(Player.Center, 3f, 90);
+            if (Main.netMode != NetmodeID.MultiplayerClient)
+                Projectile.NewProjectile(player.GetSource_FromThis(),player.Center.X,player.Center.Y,0,0, ModContent.ProjectileType<DarkWave>(), 0, 0f);
+        }
         public override bool FreeDodge(Player.HurtInfo info)
         {
             if (barrier > 0 && SetActive)
@@ -294,14 +333,19 @@ namespace HeavenlyArsenal.ArsenalPlayer
                     }
                     Iframe = Player.ComputeHitIFrames(info);
                     barrier -= actualDamage;
+
+
+                    BarrierTakeDamageVFX();
                     CombatText.NewText(Player.Hitbox, Color.Cyan, actualDamage);
-                    Main.NewText($"Barrier: {barrier}, TimeSinceLastHit: {timeSinceLastHit}", Color.AntiqueWhite);
+                    Main.NewText($"Barrier: {barrier}, TimeSinceLastHit: {timeSinceLastHit}, Damage taken: {actualDamage}, Incoming damage: {incoming}", Color.AntiqueWhite);
                     timeSinceLastHit = 0;
                 }
 
                 if (barrier < 0)
                 {
                     barrier = 0;
+                    cooldowns.Remove(BarrierDurability.ID);
+                    BarrierCrack(Player);
                     return true;
                 }
 
@@ -310,6 +354,12 @@ namespace HeavenlyArsenal.ArsenalPlayer
             }
             else if(barrier== 0 && timeSinceLastHit < Iframe)
             {
+                return true;
+            }
+            else if (VoidBeltEquipped && barrier <= 0 && Main.rand.NextBool(7))
+            {
+
+                VoidBelt();
                 return true;
             }
             else
