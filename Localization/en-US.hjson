@@ -382,6 +382,7 @@ Mods: {
 			EyeOfTranscendenceProjectile.DisplayName: Eye Of Transcendence Projectile
 			EyeOfTranscendence_Held.DisplayName: Eye Of Transcendence_ Held
 			AvatarBow_Held.DisplayName: Avatar Bow_ Held
+			AvatarSpearRupture.DisplayName: Avatar Spear Rupture
 		}
 
 		NPCs.AnAffrontToGod.DisplayName: An Affront To God

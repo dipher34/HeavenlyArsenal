@@ -24,23 +24,30 @@ namespace HeavenlyArsenal.Common.Scenes
     // Data structure that defines a trade.
     public class TradeDefinition
     {
-        // The item type required to trigger this trade.
         public int InputItemType { get; set; }
-        // The minimum distance (in pixels) from the player that the input item must be.
         public float MinDistance { get; set; }
-        // The output items to be spawned and their quantities.
-        public Dictionary<int, int> OutputItems { get; set; }
-        // The placement style of the spawned output items.
+        public List<(int itemType, int quantity)> OutputItems { get; set; }
         public ItemReturnType ReturnType { get; set; }
 
-        public TradeDefinition(int inputItemType, float minDistance, Dictionary<int, int> outputItems, ItemReturnType returnType)
+        public TradeDefinition(int inputItemType, float minDistance, ItemReturnType returnType, params int[] outputItemPairs)
         {
             InputItemType = inputItemType;
             MinDistance = minDistance;
-            OutputItems = outputItems;
             ReturnType = returnType;
+            OutputItems = new List<(int, int)>();
+
+            if (outputItemPairs.Length % 2 != 0)
+            {
+                throw new ArgumentException("Output item pairs must be in itemType, quantity format.");
+            }
+
+            for (int i = 0; i < outputItemPairs.Length; i += 2)
+            {
+                OutputItems.Add((outputItemPairs[i], outputItemPairs[i + 1]));
+            }
         }
     }
+
 
     // The main ModSystem that processes trades.
     class VoidTradingSystem : ModSystem
@@ -48,59 +55,49 @@ namespace HeavenlyArsenal.Common.Scenes
         // A list of all possible trade definitions.
         private List<TradeDefinition> tradeDefinitions = new List<TradeDefinition>();
 
-        public override void Load()
+        public override void PostSetupContent()
         {
-            
+            // Initialize trade definitions.
             tradeDefinitions.Add(new TradeDefinition(
-                // Input: AncientCoin
-                ModContent.ItemType<AncientCoin>(),
-                // Minimum distance required between the coin and the player.
-                1000f,
-                // Output: Armor trade – one of each armor piece.
-                new Dictionary<int, int>
-                {
-                    { ModContent.ItemType<ShintoArmorLeggings>(), 1 },
-                    { ModContent.ItemType<ShintoArmorBreastplate>(), 1 },
-                    { ModContent.ItemType<ShintoArmorHelmetAll>(), 1 }
-                },
-                // Return type determines the spawn location of the output items.
-                ItemReturnType.None
-            ));
+               //item to trade
+               ModContent.ItemType<ChaliceOfFun>(),
+               1000f,
+               ItemReturnType.None,
+               //Items to get back
 
+               ModContent.ItemType<ChaliceOfTheBloodGod>(), 1,
+               ModContent.ItemType<AncientCoin>(), 1
+                ));
 
             
-            tradeDefinitions.Add(new TradeDefinition(
-                // Input: Chalice of the blood god
-                ModContent.ItemType<ChaliceOfTheBloodGod>(),
-                // Minimum distance required between the coin and the player.
-                1000f,
-                
-                new Dictionary<int, int>
-                {
-                    { ModContent.ItemType<ChaliceOfFun>(), 1 }
-                },
-                
-                ItemReturnType.None
-            ));
+               tradeDefinitions.Add(new TradeDefinition(
+               //item to trade
+               ModContent.ItemType<ChaliceOfTheBloodGod>(),
+               1000f,
+               ItemReturnType.None,
+               //Items to get back
+               
+               ModContent.ItemType<ChaliceOfFun>(), 1,
+               ModContent.ItemType<ShintoArmorLeggings>(), 1,
+               ModContent.ItemType<ShintoArmorBreastplate>(), 1,
+               ModContent.ItemType<ShintoArmorHelmetAll>(), 1
+                ));
 
-            
-            // reference
-            /*
+
             tradeDefinitions.Add(new TradeDefinition(
-                ModContent.ItemType<ExampleInputItem>(), 
-                800f, 
-                new Dictionary<int, int>
-                {
-                    { ModContent.ItemType<ExampleOutputItem1>(), 2 },
-                    { ModContent.ItemType<ExampleOutputItem2>(), 1 }
-                },
-                ItemReturnType.SpatOut
-            ));
-            */
+               //item to trade
+               ModContent.ItemType<CoinofDeceit>(),
+               1000f,
+               ItemReturnType.None,
+               //Items to get back
+
+               ModContent.ItemType<AncientCoin>(), 1
+                ));
         }
 
         public override void PostUpdateEverything()
         {
+           
             // Only process trades when in the Avatar Universe.
             if (AvatarUniverseExplorationSystem.InAvatarUniverse)
             {
@@ -113,45 +110,45 @@ namespace HeavenlyArsenal.Common.Scenes
                     for (int i = 0; i < Main.maxItems; i++)
                     {
                         Item worldItem = Main.item[i];
+
                         if (worldItem.active && worldItem.type == trade.InputItemType)
                         {
                             // Check that the found item meets the minimum distance requirement.
                             if (Vector2.Distance(worldItem.Center, player.Center) > trade.MinDistance)
                             {
+                                // Log the deletion for debugging.
+                                Main.NewText($"Deleting trade input item: {worldItem.Name}", Color.AntiqueWhite);
+
                                 // Remove the input item.
                                 worldItem.TurnToAir();
-                                // Play a sound to indicate successful trade execution.
-                                SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.Clap);
 
+                                // Play a sound to indicate successful trade execution.
+                                SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.Clap with { PitchVariance = 0.2f });
                                 // Process each output item defined in this trade.
-                                foreach (var outputPair in trade.OutputItems)
+                                foreach ((int outputItemType, int quantity) in trade.OutputItems)
                                 {
-                                    int outputItemType = outputPair.Key;
-                                    int quantity = outputPair.Value;
-                                    for (int q = 0; q < quantity; q++)
+                                    Main.NewText($"Prepairing to create:{outputItemType}", Color.AntiqueWhite);
+                                    for (int r = 0; r < quantity; r++)
                                     {
-                                        // Determine the spawn position based on the specified return type.
                                         Vector2 spawnPosition = GetSpawnPosition(player, trade.ReturnType);
 
-                                        // Spawn the output item.
                                         int index = Item.NewItem(new EntitySource_Misc("VoidTradingSystem"),
-                                            (int)spawnPosition.X, (int)spawnPosition.Y, player.width, player.height, outputItemType);
-
-                                        //weeee
+                                            (int)spawnPosition.X, (int)spawnPosition.Y,
+                                            player.width, player.height, outputItemType); // Ensure outputItemType is correctly used here.
+                                        Main.NewText($"Created item: {Main.item[index].Name} (Type: {outputItemType}), Index: {index}", Color.AntiqueWhite);
                                         if (index >= 0 && index < Main.maxItems)
                                         {
-                                            Main.item[index].velocity.Y++;
+                                            // Optional: additional properties
                                         }
                                     }
                                 }
-                                // Once we process this trade for one valid input item, exit the inner loop.
-                                break;
                             }
                         }
                     }
                 }
             }
         }
+       
 
         /// <summary>
         /// Determines the spawn position for an output item based on the specified return type.
