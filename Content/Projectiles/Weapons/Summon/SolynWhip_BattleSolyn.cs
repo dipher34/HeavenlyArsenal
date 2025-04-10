@@ -26,7 +26,7 @@ public class SolynWhip_BattleSolyn : ModProjectile
         Projectile.tileCollide = false;
         Projectile.width = 35;
         Projectile.height = Projectile.width;
-        Projectile.aiStyle = -1;    
+        Projectile.aiStyle = -1;
     }
     public override void SetStaticDefaults()
     {
@@ -37,7 +37,7 @@ public class SolynWhip_BattleSolyn : ModProjectile
     public override void AI()
     {
         Player player = Main.player[Projectile.owner];
-        if (!player.active || player.dead)
+        if (!player.active || player.dead ||!player.HasBuff<SolynWhip_Onhit_Buff>())
          {
              Main.NewText($"I should be dead!", Color.AntiqueWhite);
              Projectile.Kill();
@@ -348,7 +348,7 @@ public class SolynWhip_BattleSolyn : ModProjectile
             //Main.NewText($"Rendering ghost solyn!! as: {new Vector4(Projectile.frame, Projectile.frame, texture.Width, texture.Height)}", Color.AntiqueWhite);
             soulShader.Apply();
             Main.EntitySpriteDraw(texture, Projectile.Center - Main.screenPosition,frame, lightColor, Projectile.rotation, drawPosition, Projectile.scale, spriteEffects, 0);
-            //Main.EntitySpriteDraw(GennedAssets.Textures.Friendly.SolynGlow.Value, Projectile.Center, frame, Projectile.GetAlpha(glowmaskColor) * 0.26f, Projectile.rotation, frame.Size() * 0.5f, EffectiveScale, direction);
+            Main.EntitySpriteDraw(GennedAssets.Textures.Friendly.SolynGlow.Value, Projectile.Center, frame, Projectile.GetAlpha(glowmaskColor) * 0.26f, Projectile.rotation, frame.Size() * 0.5f, Projectile.scale, direction);
 
             Main.spriteBatch.ExitShaderRegion();
         } 

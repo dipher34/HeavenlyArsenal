@@ -45,16 +45,35 @@ namespace HeavenlyArsenal.Content.Buffs
             if (!GeneralScreenEffectSystem.ChromaticAberration.Active)
                 GeneralScreenEffectSystem.ChromaticAberration.Start(player.Center, 0.75f, 0);
             player.wellFed = true;
-            player.statDefense += 5;
-            player.GetAttackSpeed<MeleeDamageClass>() += 1f;
-            player.GetDamage<GenericDamageClass>() += 0.425f;
-            player.GetCritChance<GenericDamageClass>() += 5f;
-            player.GetKnockback<SummonDamageClass>() += 1f;
-            
-            
-            player.moveSpeed += 1f;
-            player.pickSpeed -= 0.2f;
-            player.jumpSpeedBoost += 1f;
+
+
+            if (player.GetModPlayer<StimPlayer>().Addicted)
+            {
+                player.statDefense += 5;
+                player.GetAttackSpeed<MeleeDamageClass>() += 0.5f;
+                player.GetDamage<GenericDamageClass>() += 0.325f;
+                player.GetCritChance<GenericDamageClass>() += 2f;
+                player.GetKnockback<SummonDamageClass>() += 0.5f;
+
+
+                player.moveSpeed += 0.99f;
+                player.pickSpeed -= 0.2f;
+                player.jumpSpeedBoost += 1f;
+            }
+            else
+            {
+                player.statDefense += 5;
+                player.GetAttackSpeed<MeleeDamageClass>() += 1f;
+                player.GetDamage<GenericDamageClass>() += 0.425f;
+                player.GetCritChance<GenericDamageClass>() += 5f;
+                player.GetKnockback<SummonDamageClass>() += 1f;
+
+
+                player.moveSpeed += 1f;
+                player.pickSpeed -= 0.2f;
+                player.jumpSpeedBoost += 1f;
+            }
+           
 
             player.ClearBuff(BuffID.WellFed);
             player.ClearBuff(BuffID.WellFed2);

@@ -4,6 +4,7 @@ using CalamityMod.Items.Materials;
 using HeavenlyArsenal.ArsenalPlayer;
 using HeavenlyArsenal.Content.Buffs;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Core.Graphics.GeneralScreenEffects;
 using System;
 using System.Collections.Generic;
@@ -48,7 +49,12 @@ namespace HeavenlyArsenal.Content.Items.Consumables
             player.statLife -= 50;
             if (Main.myPlayer == player.whoAmI)
             {
-                player.HealEffect(-50, true);
+                if (player.GetModPlayer<StimPlayer>().Addicted)
+                {
+                    player.HealEffect(-150, true);
+                }
+                else
+                    player.HealEffect(-50, true);
                 GeneralScreenEffectSystem.ChromaticAberration.Start(player.Center, 3f, 10);
                 GeneralScreenEffectSystem.RadialBlur.Start(player.Center, 1, 60);
                 player.GetModPlayer<StimPlayer>().UseStim();
@@ -56,16 +62,21 @@ namespace HeavenlyArsenal.Content.Items.Consumables
             if (player.statLife <= 0)
             {
                player.KillMe(PlayerDeathReason.ByCustomReason(CalamityUtils.GetText("Status.Death.AstralInjection" + Main.rand.Next(1, 2 + 1)).Format(player.name)), 1000.0, 0, false);
+                ;
             }
         }
 
         public override void UseAnimation(Player player)
         {
-            player.itemLocation = new Vector2(player.Center.X-40, player.Center.Y+10);
+           player.itemLocation = new Vector2(player.Center.X-40, player.Center.Y+10);
            player.itemRotation = MathHelper.ToRadians(45f*player.direction);
-            player.itemWidth = 14;
+           player.itemWidth = 14;
+            
            
         }
+
+
+
         public override void AddRecipes()
         {
             CreateRecipe()
