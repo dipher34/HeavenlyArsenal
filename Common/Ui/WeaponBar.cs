@@ -62,7 +62,7 @@ public class WeaponBar : ModSystem
 
                             int fillAmount = (fillPercent > 0.99f) ? barCharge.Width : (int)(barCharge.Width * fillPercent);
                             Rectangle fillFrame = new Rectangle(0, 0, fillAmount, barCharge.Height);
-                            Vector2 position = ((Main.LocalPlayer.Center - Main.screenPosition) + Baroffset) / Main.UIScale - new Vector2(barCharge.Width / 2f, 48f / Main.UIScale);
+                            Vector2 position = ((Main.LocalPlayer.Center - Main.screenPosition) + Baroffset) - new Vector2(barCharge.Width / 2f, 48f / Main.UIScale);
 
                             float fadeOut = Utils.GetLerpValue(0, 30, showTime, true);
                             Main.spriteBatch.Draw(bar, position, bar.Frame(), baseColor * fadeOut, 0, Vector2.Zero, 1f, 0, 0);
@@ -71,7 +71,7 @@ public class WeaponBar : ModSystem
 
                         return true;
                     },
-                    InterfaceScaleType.UI));
+                    InterfaceScaleType.Game));
             }
         }
     }

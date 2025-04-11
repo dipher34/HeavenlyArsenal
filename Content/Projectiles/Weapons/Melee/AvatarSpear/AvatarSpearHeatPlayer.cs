@@ -62,7 +62,7 @@ public class AvatarSpearHeatPlayer : ModPlayer
         if (Active && Main.rand.NextBool(13))
         {
             HeatLightning particle = HeatLightning.pool.RequestParticle();
-            particle.Prepare(Player.MountedCenter, Player.velocity * 2f + Main.rand.NextVector2Circular(10, 10), Main.rand.NextFloat(-2f, 2f), 10, Main.rand.NextFloat(0.5f, 1f));
+            particle.Prepare(Player.MountedCenter, Player.velocity * 2f + Main.rand.NextVector2Circular(10, 10), Main.rand.NextFloat(-2f, 2f), Main.rand.Next(5, 15), Main.rand.NextFloat(0.3f, 1.5f));
             ParticleEngine.Particles.Add(particle);
         }
     }

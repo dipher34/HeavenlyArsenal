@@ -1,5 +1,6 @@
 ﻿
 using HeavenlyArsenal.Common.Graphics;
+using HeavenlyArsenal.Common.Players;
 using HeavenlyArsenal.Common.UI;
 using HeavenlyArsenal.Content.Items.Weapons.Melee;
 using HeavenlyArsenal.Content.Particles;
@@ -79,6 +80,7 @@ public class AvatarLonginusHeld : ModProjectile
         // RapidStabs
         SecondSlash,
         RipOut,
+        Rupture,
         Castigation
     }
 
@@ -130,14 +132,14 @@ public class AvatarLonginusHeld : ModProjectile
                 Player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.ThreeQuarters, -0.3f * Player.direction + motionBob * 0.3f);
                 handPosition = Player.GetFrontHandPosition(Player.CompositeArmStretchAmount.ThreeQuarters, -0.3f * Player.direction);
 
-                if (Player.altFunctionUse == 1)
+                if (Player.altFunctionUse == 1 && Player.ItemTimeIsZero)
                 {
                     if (IsEmpowered && Player.GetModPlayer<AvatarSpearHeatPlayer>().ConsumeHeat(0.5f, false))
                         AttackState = (int)AvatarSpearAttacks.Castigation;
                     else
                         AttackState = (int)AvatarSpearAttacks.ThrowRupture;
                 }
-                else if (InUse)
+                else if (InUse && Player.ItemTimeIsZero)
                     AttackState = (int)AvatarSpearAttacks.RapidStabs;
 
                 IsEmpowered = Player.GetModPlayer<AvatarSpearHeatPlayer>().Active;
@@ -146,7 +148,7 @@ public class AvatarLonginusHeld : ModProjectile
 
             case (int)AvatarSpearAttacks.RapidStabs:
 
-                Player.SetDummyItemTime(5);
+                Player.SetDummyItemTime(10);
 
                 const int RapidWindUp = 50;
                 int RapidStabCount = IsEmpowered ? 10 : 5;
@@ -184,7 +186,7 @@ public class AvatarLonginusHeld : ModProjectile
 
                     if (Time % timePerStab == 0)
                     {
-                        SoundEngine.PlaySound(GennedAssets.Sounds.NPCKilled.FogwoodDeath with { Pitch = 1f, PitchVariance = 0.2f, Volume = 0.7f, MaxInstances = 0 }, Projectile.Center);
+                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.StakeImpale with { Pitch = 1f, PitchVariance = 0.2f, Volume = 0.4f, MaxInstances = 0 }, Projectile.Center);
 
                         if (Main.myPlayer == Projectile.owner)
                         {
@@ -240,6 +242,8 @@ public class AvatarLonginusHeld : ModProjectile
             case (int)AvatarSpearAttacks.WhipSlash:
             case (int)AvatarSpearAttacks.SecondSlash:
 
+                Player.SetDummyItemTime(10);
+
                 bool isSecondSlash = AttackState == (int)AvatarSpearAttacks.SecondSlash;
 
                 int SlashWindUp = isSecondSlash ? 20 : 30;
@@ -268,7 +272,7 @@ public class AvatarLonginusHeld : ModProjectile
                         canHit = true;
 
                     if (Time == SlashWindUp + 1)
-                        SoundEngine.PlaySound(SoundID.Item71 with { Pitch = -0.6f, Volume = 2f, MaxInstances = 0 }, Projectile.Center);
+                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.StakeGraze with { Pitch = 0.2f, PitchVariance = 0.1f, Volume = 0.66f, MaxInstances = 0 }, Projectile.Center);
 
                     if (Time == SlashWindUp + SlashTime - 1)
                     {
@@ -322,6 +326,8 @@ public class AvatarLonginusHeld : ModProjectile
 
             case (int)AvatarSpearAttacks.HeavyStab:
 
+                Player.SetDummyItemTime(10);
+
                 int HeavyWindUp = IsEmpowered ? 60 : 80;
                 int HeavyThrustTime = 10 + (int)(30 / Player.GetAttackSpeed(DamageClass.Melee));
                 int HeavyWindDown = 10 + (int)(20 / Player.GetAttackSpeed(DamageClass.Melee));
@@ -342,24 +348,23 @@ public class AvatarLonginusHeld : ModProjectile
                     handPosition = Player.GetFrontHandPosition(Player.CompositeArmStretchAmount.Full, Projectile.rotation + MathHelper.PiOver2);
 
                     if (Time == (IsEmpowered ? 0 : HeavyWindUp / 4))
-                    {
-                        DoShake(0.5f);
-                        SoundEngine.PlaySound(GennedAssets.Sounds.Common.TeleportIn with { Pitch = 1f, MaxInstances = 0 }, Projectile.Center);
-                    }
+                        SoundEngine.PlaySound(GennedAssets.Sounds.Enemies.DismalLanternSway with { Pitch = 0.4f, MaxInstances = 0 }, Projectile.Center);
                 }
                 else
                 {
-                    if (Time == HeavyWindUp + 1)
+                    if (Time == HeavyWindUp + 10)
                     {
-                        DoShake(0.5f);
-                        SoundEngine.PlaySound(GennedAssets.Sounds.NamelessDeity.SliceTelegraph with { Pitch = 0.6f, PitchVariance = 0.2f, Volume = 0.5f, MaxInstances = 0 }, Projectile.Center);
+                        BreakSoundBarrierParticle(1f);
+                        DoShake(0.7f);
+                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.StakeGraze with { Pitch = 0.6f, PitchVariance = 0.2f, Volume = 0.3f, MaxInstances = 0 }, Projectile.Center);
+                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.StakeImpale with { Pitch = 0.2f, PitchVariance = 0.2f, Volume = 0.6f, MaxInstances = 0 }, Projectile.Center);
                     }
                     
                     canHit = true;
                     float thrustProgress = Utils.GetLerpValue(0, HeavyThrustTime, Time - HeavyWindUp, true);
                     float windDown = Utils.GetLerpValue(0, HeavyWindDown, Time - HeavyWindUp - HeavyThrustTime, true);
 
-                    float thrustCurve = Utils.GetLerpValue(0, 0.2f, thrustProgress, true);
+                    float thrustCurve = Utils.GetLerpValue(0, 0.15f, thrustProgress, true);
                     float windDownCurve = MathF.Cbrt(windDown);
 
                     if (Main.myPlayer == Projectile.owner)
@@ -406,6 +411,8 @@ public class AvatarLonginusHeld : ModProjectile
                 break;
 
             case (int)AvatarSpearAttacks.RipOut:
+
+                Player.SetDummyItemTime(10);
 
                 const int PullTime = 80;
                 const int RipTime = 90;
@@ -476,8 +483,9 @@ public class AvatarLonginusHeld : ModProjectile
 
                 break;
 
-            case (int)AvatarSpearAttacks.Castigation:
             case (int)AvatarSpearAttacks.ThrowRupture:
+
+                Player.SetDummyItemTime(10);
 
                 const int ThrowWindUp = 30;
                 const int ThrowTime = 50;
@@ -502,11 +510,15 @@ public class AvatarLonginusHeld : ModProjectile
                 }
                 else if (Time < ThrowWindUp + ThrowTime)
                 {
-                    if (Time == ThrowWindUp)
+                    if (Time == ThrowWindUp + 1)
                     {
                         Projectile.Center = Player.MountedCenter;
-                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.RiftOpen with { Pitch = 0.5f, PitchVariance = 0.2f, Volume = 0.5f, MaxInstances = 0 }, Projectile.Center);
+                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.StakeGraze with { Pitch = -0.1f, PitchVariance = 0.2f, MaxInstances = 0 }, Projectile.Center);
+                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.RiftOpen with { Pitch = 1f, PitchVariance = 0.2f, Volume = 0.3f, MaxInstances = 0 }, Projectile.Center);
                     }
+
+                    if (Time == ThrowWindUp + 2)
+                        BreakSoundBarrierParticle(-0.5f);
 
                     Projectile.extraUpdates = 10;
 
@@ -523,6 +535,14 @@ public class AvatarLonginusHeld : ModProjectile
                         Time = ThrowWindUp + ThrowTime;
                         HitTimer = TPTime + 10;
                         Projectile.velocity *= -0.5f;
+
+                        Player.SetImmuneTimeForAllTypes(30);
+
+                        if (Player.GetModPlayer<AvatarSpearHeatPlayer>().ConsumeHeat(0.2f, false))
+                        {
+                            AttackState = (int)AvatarSpearAttacks.Rupture;
+                            Time = 0;
+                        }
                     }
                 }
                 else
@@ -531,21 +551,18 @@ public class AvatarLonginusHeld : ModProjectile
                     Projectile.velocity *= 0.9f;
 
                     if (Main.myPlayer == Projectile.owner)
-                        Main.SetCameraLerp(0.1f, 20);
+                        Main.SetCameraLerp(0.1f, 10);
 
                     canHit = true;
                     throwMode = true;
-
-                    bool inWall = Collision.SolidCollision(Projectile.Center - new Vector2(60) + Projectile.velocity.SafeNormalize(Vector2.Zero) * 20, 120, 120);
                     
-                    if (!inWall)
+                    if (!Collision.SolidCollision(Projectile.Center - new Vector2(20) + Projectile.velocity.SafeNormalize(Vector2.Zero) * 20, 40, 40))
                         Player.Center = Vector2.Lerp(Player.Center, Projectile.Center, 0.3f);
                     else
                         Projectile.Center = Vector2.Lerp(Projectile.Center, Player.MountedCenter, MathF.Pow(Utils.GetLerpValue(0, TPTime, Time - ThrowWindUp - ThrowTime, true), 5f) * 0.1f);
                 }
 
                 Player.velocity *= 0.95f;
-                Player.SetImmuneTimeForAllTypes(30);
 
                 Time++;
 
@@ -556,6 +573,30 @@ public class AvatarLonginusHeld : ModProjectile
                 }
 
                 break;
+
+            case (int)AvatarSpearAttacks.Rupture:
+
+                Projectile.velocity *= 0.9f;
+                throwMode = true;
+
+                if (attackedNPC > -1 && attackedNPC < Main.npc.Length)
+                {
+                    if (Main.npc[attackedNPC].active && Main.npc[attackedNPC].life > 2)
+                        Projectile.Center = Main.npc[attackedNPC].Center + JavelinOffset;
+                    else
+                        Time = PullTime;
+                }
+
+                if (Time > AvatarSpearRupture.FlickerTime + AvatarSpearRupture.ExplosionTime)
+                {
+                    AttackState = (int)AvatarSpearAttacks.Idle;
+                    Time = 0;
+                }
+
+                Time++;
+
+                break;
+
         }
 
         if (!throwMode)
@@ -605,7 +646,7 @@ public class AvatarLonginusHeld : ModProjectile
     {
         if (canHit)
         {
-            Vector2 offset = new Vector2(250 * Projectile.scale * (IsEmpowered ? 1.2f : 1f), 0).RotatedBy(Projectile.rotation);
+            Vector2 offset = new Vector2(200 * Projectile.scale * (IsEmpowered ? 1.5f : 1f), 0).RotatedBy(Projectile.rotation);
             float _ = 0;
             return Collision.CheckAABBvLineCollision(targetHitbox.Location.ToVector2(), targetHitbox.Size(), Projectile.Center - offset / 2, Projectile.Center + offset, 100f, ref _);
         }    
@@ -621,10 +662,28 @@ public class AvatarLonginusHeld : ModProjectile
                 shakeStrengthDissipationIncrement: 0.7f - strength * 0.1f);
     }
 
+    private void BreakSoundBarrierParticle(float speed)
+    {
+        Vector2 soundBarrierVelocity = Projectile.velocity.SafeNormalize(Vector2.Zero) * speed;
+        Vector2 soundBarrierPosition = Projectile.Center + new Vector2(100, 0).RotatedBy(Projectile.rotation);
+
+        SoundBarrierParticle particle = SoundBarrierParticle.pool.RequestParticle();
+        particle.Prepare(soundBarrierPosition, -soundBarrierVelocity * 30f + Player.velocity, Projectile.rotation, Color.DarkRed with { A = 200 }, 0.5f);
+        SoundBarrierParticle largerParticle = SoundBarrierParticle.pool.RequestParticle();
+        largerParticle.Prepare(soundBarrierPosition, -soundBarrierVelocity * 50f + Player.velocity, Projectile.rotation, Color.DarkRed with { A = 200 }, 1f);
+
+        ParticleEngine.ShaderParticles.Add(particle);
+        ParticleEngine.ShaderParticles.Add(largerParticle);
+
+    }
+
     public int attackedNPC;
 
     public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
     {
+        if (IsEmpowered)
+            modifiers.FinalDamage *= 1.33f;
+
         if (AttackState == (int)AvatarSpearAttacks.ThrowRupture)
             modifiers.FinalDamage /= 3;
     }
@@ -633,12 +692,13 @@ public class AvatarLonginusHeld : ModProjectile
     {
         OnHitEffects(target.Center, target.velocity, target.CanBeChasedBy(this));
 
-        if (AttackState == (int)AvatarSpearAttacks.ThrowRupture)
+        int ruptureType = ModContent.ProjectileType<AvatarSpearRupture>();
+        if (AttackState == (int)AvatarSpearAttacks.ThrowRupture && Player.ownedProjectileCounts[ruptureType] < 1)
         {
             if (Player.GetModPlayer<AvatarSpearHeatPlayer>().ConsumeHeat(0.2f))
             {
                 Vector2 bombVelocity = Player.DirectionTo(target.Center).SafeNormalize(Vector2.Zero) * 20;
-                Projectile.NewProjectile(Projectile.GetSource_FromThis(), Player.MountedCenter, bombVelocity, ProjectileID.BloodArrow, Projectile.damage * 2, 0.5f, Player.whoAmI, ai1: target.whoAmI + 1);
+                Projectile.NewProjectile(Projectile.GetSource_FromThis(), Player.MountedCenter, bombVelocity, ruptureType, Projectile.damage * 2, 0.5f, Player.whoAmI, ai1: target.whoAmI + 1);
             }
         }
 
@@ -699,7 +759,7 @@ public class AvatarLonginusHeld : ModProjectile
             Vector2 lightningPos = targetPosition + Main.rand.NextVector2Circular(24, 24);
 
             HeatLightning particle = HeatLightning.pool.RequestParticle();
-            particle.Prepare(lightningPos, targetVelocity + Main.rand.NextVector2Circular(10, 10), Main.rand.NextFloat(-2f, 2f), 10 + i * 3, Main.rand.NextFloat(0.5f, 1f));
+            particle.Prepare(lightningPos, targetVelocity + Main.rand.NextVector2Circular(10, 10), Main.rand.NextFloat(-1f, 1f), 10 + i * 4, Main.rand.NextFloat(0.5f, 1.5f));
             ParticleEngine.Particles.Add(particle);
         }
     }
@@ -727,8 +787,8 @@ public class AvatarLonginusHeld : ModProjectile
         float scale = (IsEmpowered ? 0.9f : 1f) * Projectile.scale;
         int direction = Projectile.spriteDirection;
         SpriteEffects flipEffect = direction > 0 ? 0 : SpriteEffects.FlipVertically;
-        int gripDistance = 70;
-        Vector2 origin = new Vector2(frame.Width / 2 - gripDistance, frame.Height / 2 + (gripDistance + 2) * Player.gravDir * direction);
+        int gripDistance = IsEmpowered ? 30 : 60;
+        Vector2 origin = new Vector2(frame.Width / 2 - gripDistance, frame.Height / 2 + (gripDistance - 4) * Player.gravDir * direction);
         Vector2 spearHeadPosition = Projectile.Center + new Vector2(90 * Projectile.scale, 0).RotatedBy(Projectile.rotation);
 
         float glowAmt = (IsEmpowered ? 0.5f : 0.3f) + MathF.Cbrt(Math.Clamp(HitTimer / 5f, 0f, 1f)) * 0.5f;

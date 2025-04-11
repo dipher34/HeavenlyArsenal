@@ -11,6 +11,7 @@ public class ParticleEngine : ILoadable
     /// Renders over dusts.
     /// </summary>
     public static ParticleRenderer Particles = new ParticleRenderer();
+    public static ParticleRenderer ShaderParticles = new ParticleRenderer();
 
     public void Load(Mod mod)
     {
@@ -21,12 +22,19 @@ public class ParticleEngine : ILoadable
     private void UpdateParticles(On_Main.orig_UpdateParticleSystems orig, Main self)
     {
         orig(self);
+        ShaderParticles.Update();
         Particles.Update();
     }
 
     private void DrawParticles(On_Main.orig_DrawDust orig, Main self)
     {
         orig(self);
+
+        Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.Transform);
+        ShaderParticles.Settings.AnchorPosition = -Main.screenPosition;
+        ShaderParticles.Draw(Main.spriteBatch);
+        Main.spriteBatch.End();
+
         Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.Transform);
         Particles.Settings.AnchorPosition = -Main.screenPosition;
         Particles.Draw(Main.spriteBatch);
