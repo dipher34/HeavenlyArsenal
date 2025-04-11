@@ -584,6 +584,8 @@ public class AvatarLonginusHeld : ModProjectile
                     else
                         Time = AvatarSpearRupture.FlickerTime + AvatarSpearRupture.ExplosionTime;
                 }
+                else
+                    Time = AvatarSpearRupture.FlickerTime + AvatarSpearRupture.ExplosionTime;
 
                 if (Time > AvatarSpearRupture.FlickerTime + AvatarSpearRupture.ExplosionTime)
                 {

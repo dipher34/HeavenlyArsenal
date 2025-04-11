@@ -65,6 +65,7 @@ public class AvatarSpearRupture : ModProjectile
                 NPC target = Main.npc[Target];
                 if (!target.active && target.life < 3)
                 {
+                    Projectile.Center = target.Center;
                     Time = FlickerTime;
                     return;
                 }
