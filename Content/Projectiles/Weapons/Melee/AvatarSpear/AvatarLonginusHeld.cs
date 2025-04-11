@@ -95,6 +95,7 @@ public class AvatarLonginusHeld : ModProjectile
             return;
         }
 
+        Projectile.damage = (int)Player.GetTotalDamage(DamageClass.Melee).ApplyTo(Player.HeldItem.damage);
         Player.heldProj = Projectile.whoAmI;
 
         throwMode = false;
@@ -112,8 +113,6 @@ public class AvatarLonginusHeld : ModProjectile
                 Projectile.netUpdate = true;
             }
         }
-        //float motionBob = Player.velocity.X * 0.02f - Player.velocity.Y * 0.015f * Player.direction;
-        //Projectile.rotation = Utils.AngleLerp(Projectile.rotation, Player.fullRotation - MathHelper.PiOver2 + 1f * Player.direction + motionBob, 0.1f);
 
         switch (AttackState)
         {
@@ -787,7 +786,7 @@ public class AvatarLonginusHeld : ModProjectile
         Rectangle frame = texture.Frame(1, 2, 0, IsEmpowered ? 1 : 0);
         Texture2D glow = AssetDirectory.Textures.BigGlowball.Value;
 
-        float scale = (IsEmpowered ? 0.9f : 1f) * Projectile.scale;
+        float scale = Projectile.scale;
         int direction = Projectile.spriteDirection;
         SpriteEffects flipEffect = direction > 0 ? 0 : SpriteEffects.FlipVertically;
         int gripDistance = IsEmpowered ? 30 : 60;

@@ -31,15 +31,17 @@ public class AvatarSpearRupture : ModProjectile
     {
         Projectile.width = 64;
         Projectile.height = 64;
-        Projectile.ignoreWater = true;
-        Projectile.DamageType = DamageClass.Melee;
         Projectile.penetrate = -1;
-        Projectile.extraUpdates = 2;
-        Projectile.tileCollide = false;
         Projectile.timeLeft = 2000;
+        Projectile.ignoreWater = true;
+        Projectile.tileCollide = false;
+        Projectile.DamageType = DamageClass.Melee;
+        Projectile.friendly = true;
+        Projectile.hostile = false;
         Projectile.hide = true;
-        Projectile.usesIDStaticNPCImmunity = true;
-        Projectile.idStaticNPCHitCooldown = 2;
+        Projectile.extraUpdates = 2;
+        Projectile.usesLocalNPCImmunity = true;
+        Projectile.localNPCHitCooldown = 15;
         Projectile.noEnchantmentVisuals = true;
     }
 
@@ -55,7 +57,6 @@ public class AvatarSpearRupture : ModProjectile
     public override void AI()
     {
         Projectile.velocity = Vector2.Zero;
-
         if (Time < FlickerTime)
         {
             if (Target > -1 && !Player.dead)
