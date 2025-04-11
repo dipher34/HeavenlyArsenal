@@ -84,6 +84,9 @@ public class AvatarLonginusHeld : ModProjectile
         Castigation
     }
 
+    public const float RuptureCost = 0.2f;
+    public const float CastigationCost = 0.55f;
+
     public override void AI()
     {
         Projectile.extraUpdates = 3;
@@ -547,18 +550,14 @@ public class AvatarLonginusHeld : ModProjectile
 
                 if (HitTimer > 0)
                 {
+                    throwMode = true;
+                    HitTimer = TPTime + 10;
+
                     if (Time < ThrowTime + ThrowWindUp)
                     {
                         Time = ThrowWindUp + ThrowTime;
-                        HitTimer = TPTime + 10;
                         Projectile.velocity *= -0.5f;
                         Player.SetImmuneTimeForAllTypes(30);
-                    }
-
-                    if (Player.GetModPlayer<AvatarSpearHeatPlayer>().ConsumeHeat(0.2f, false))
-                    {
-                        AttackState = (int)AvatarSpearAttacks.Rupture;
-                        Time = 0;
                     }
                 }
 
@@ -577,15 +576,16 @@ public class AvatarLonginusHeld : ModProjectile
                 Projectile.velocity *= 0.9f;
                 throwMode = true;
 
-                if (attackedNPC > -1 && attackedNPC < Main.npc.Length)
+                bool validNPC = attackedNPC > -1 && attackedNPC < Main.npc.Length;
+                if (validNPC)
                 {
                     if (Main.npc[attackedNPC].active && Main.npc[attackedNPC].life > 2)
                         Projectile.Center = Main.npc[attackedNPC].Center + JavelinOffset;
                     else
-                        Time = PullTime;
+                        Time = AvatarSpearRupture.FlickerTime + AvatarSpearRupture.ExplosionTime;
                 }
 
-                if (Time > AvatarSpearRupture.FlickerTime + AvatarSpearRupture.ExplosionTime)
+                if (!validNPC || Time > AvatarSpearRupture.FlickerTime + AvatarSpearRupture.ExplosionTime)
                 {
                     AttackState = (int)AvatarSpearAttacks.Idle;
                     Time = 0;
@@ -697,8 +697,11 @@ public class AvatarLonginusHeld : ModProjectile
         int ruptureType = ModContent.ProjectileType<AvatarSpearRupture>();
         if (AttackState == (int)AvatarSpearAttacks.ThrowRupture && Player.ownedProjectileCounts[ruptureType] < 1)
         {
-            if (Player.GetModPlayer<AvatarSpearHeatPlayer>().ConsumeHeat(0.2f))
+            if (Player.GetModPlayer<AvatarSpearHeatPlayer>().ConsumeHeat(RuptureCost))
             {
+                AttackState = (int)AvatarSpearAttacks.Rupture;
+                Time = 0;
+
                 Vector2 bombVelocity = Player.DirectionTo(target.Center).SafeNormalize(Vector2.Zero) * 20;
                 Projectile.NewProjectile(Projectile.GetSource_FromThis(), Player.MountedCenter, bombVelocity, ruptureType, Projectile.damage * 2, 0.5f, Player.whoAmI, ai1: target.whoAmI + 1);
             }

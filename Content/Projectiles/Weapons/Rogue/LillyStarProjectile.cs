@@ -140,21 +140,18 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
 
     public override void OnSpawn(IEntitySource source)
     {
-        Projectile.ai[0] = 0; //TIME
         //Main.NewText($"StarSpawned", Color.CadetBlue);
         float lilyGlowIntensity = InverseLerp(0f, LilyStars_ChargeUpDuration * 0.53f, Projectile.ai[0]) * LilyStars_MaxLilyBrightnessIntensity;
         LilyGlowIntensityBoost = MathF.Max(LilyGlowIntensityBoost, lilyGlowIntensity);
         Projectile.position = Main.MouseWorld;
 
-        DangleTopOffset = Main.rand.NextVector2CircularEdge(500, 200);
-        Projectile.localAI[0] = DangleTopOffset.X;
-        Projectile.localAI[1] = DangleTopOffset.Y;
-    
+        DangleTopOffset = Main.rand.NextVector2CircularEdge(500, 200);    
     }
 
     public override void SendExtraAI(BinaryWriter writer)
     {
         writer.Write(Time);
+        writer.WriteVector2(DangleTopOffset);
         writer.Write(DangleVerticalOffset);
         writer.Write((byte)DanglingFromTop.ToInt());
     }
@@ -162,6 +159,7 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
     public override void ReceiveExtraAI(BinaryReader reader)
     {
         Time = reader.ReadSingle();
+        DangleTopOffset = reader.ReadVector2();
         DangleVerticalOffset = reader.ReadSingle();
         DanglingFromTop = reader.ReadByte() != 0;
     }
@@ -185,8 +183,6 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
                 }
             }
         }
-      
-
        
         Projectile.frame = Projectile.identity % Main.projFrames[Type];
         Projectile.Opacity = InverseLerp(45f, 90f, Time);
@@ -209,11 +205,10 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
             float ropeLength = MathHelper.Lerp(840f, 990f, (Projectile.identity / 14f) % 1f);
             
             float verticalOffset = Utils.Remap(Time, 0f, 30f, -1750f, -ropeLength * 1.32f - DangleVerticalOffset);
-            Vector2 dangleTop = (Main.MouseWorld + new Vector2(Projectile.localAI[0], Projectile.localAI[1]+40f) 
-                + new Vector2(0, verticalOffset) );
+            Vector2 dangleTop = Main.MouseWorld + DangleTopOffset + new Vector2(0, verticalOffset);
           
             DanglingRope ??= new VerletSimulatedRope(dangleTop, Vector2.Zero, 50, ropeLength);
-            DanglingRope.Update(dangleTop, Utils.Remap(Owner.velocity.Y, 0f, -12f, 0.5f, -0.1f));
+            DanglingRope.Update(dangleTop, 2f);//Utils.Remap(Owner.velocity.Y, 0f, -12f, 0.5f, -0.1f));
             //Main.NewText($"RopeTop: {dangleTop}. Projectile ID: {Projectile.identity}", Color.AntiqueWhite);
             
             Projectile.Center = DanglingRope.EndPosition;
@@ -294,6 +289,9 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
     Texture2D WhitePixel = GennedAssets.Textures.GreyscaleTextures.WhitePixel;
     public override bool PreDraw(ref Color lightColor)
     {
+        if (DanglingRope == null)
+            return false;
+
         // Draw the ribbon.
         DanglingRope.DrawProjectionScuffed(WhitePixel, Vector2.UnitY * 20f - Main.screenPosition, Projectile.identity % 2 == 0, _ => Color.DarkRed * Projectile.Opacity, RopeWidthFunction, lengthStretch: 0.707f);
        
@@ -327,8 +325,8 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
     public void DrawSubtractive(SpriteBatch spriteBatch)
     {
         Vector2 drawPosition = Projectile.Center - Main.screenPosition;
-        spriteBatch.Draw(BloomCircleSmall, drawPosition, null, Color.White * Projectile.Opacity * Saturate(Projectile.scale) * 0.8f, 0f, BloomCircleSmall.Size() * 0.5f, Projectile.scale * 3f, 0, 0f);
-        spriteBatch.Draw(BloomCircleSmall, drawPosition, null, Color.White * Projectile.Opacity * Saturate(Projectile.scale) * 0.54f, 0f, BloomCircleSmall.Size() * 0.5f, Projectile.scale * 4f, 0, 0f);
+        spriteBatch.Draw(BloomCircleSmall, drawPosition, null, Color.White * Projectile.Opacity * Saturate(Projectile.scale) * 0.8f, 0f, BloomCircleSmall.Size() * 0.5f, Projectile.scale * 2f, 0, 0f);
+        spriteBatch.Draw(BloomCircleSmall, drawPosition, null, Color.White * Projectile.Opacity * Saturate(Projectile.scale) * 0.54f, 0f, BloomCircleSmall.Size() * 0.5f, Projectile.scale * 3f, 0, 0f);
     }
 
     public override bool? CanDamage() => !DanglingFromTop;
