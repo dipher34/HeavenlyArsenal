@@ -37,6 +37,7 @@ using NoxusBoss.Core.Graphics.RenderTargets;
 using HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.FusionRifleProj;
 using Terraria.GameContent;
 using HeavenlyArsenal.Common.UI;
+using HeavenlyArsenal.Common.Graphics;
 
 
 namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj

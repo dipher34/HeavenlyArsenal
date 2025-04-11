@@ -4,6 +4,7 @@ using CalamityMod.Enums;
 using CalamityMod.Particles;
 using CalamityMod.Projectiles.Rogue;
 using HeavenlyArsenal.ArsenalPlayer;
+using HeavenlyArsenal.Common.Graphics;
 using HeavenlyArsenal.Common.utils;
 using HeavenlyArsenal.Content.Items.Weapons.Summon.AntishadowAssassin;
 using HeavenlyArsenal.Content.Particles;
