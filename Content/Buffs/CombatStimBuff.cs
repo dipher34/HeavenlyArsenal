@@ -85,6 +85,7 @@ namespace HeavenlyArsenal.Content.Buffs
             }
             */
             /*
+             TODO: Make this only apply if config option is turned on
             if (!GeneralScreenEffectSystem.ChromaticAberration.Active)
                 GeneralScreenEffectSystem.ChromaticAberration.Start(player.Center, 0.75f, 0);
             */

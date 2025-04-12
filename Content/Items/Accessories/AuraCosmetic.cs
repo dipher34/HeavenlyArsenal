@@ -1,6 +1,7 @@
 ﻿using CalamityMod.Graphics.Renderers;
 using CalamityMod.Items;
 using CalamityMod.Rarities;
+using Luminance.Common.Utilities;
 using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -39,7 +40,8 @@ namespace HeavenlyArsenal.Content.Items.Accessories
     {
         public override Position GetDefaultPosition() => new BeforeParent(PlayerDrawLayers.HeadBack);
 
-        public override bool GetDefaultVisibility(PlayerDrawSet drawInfo) => true;//drawInfo.drawPlayer.head == EquipLoader.GetEquipSlot(Mod, nameof(AuraCosmetic), EquipType.Head);
+        public override bool GetDefaultVisibility(PlayerDrawSet drawInfo) => drawInfo.drawPlayer.head == EquipLoader.GetEquipSlot(Mod, nameof(AuraCosmetic), EquipType.Face);
+        //ggrrrr
 
         public override bool IsHeadLayer => true;
 
@@ -51,12 +53,31 @@ namespace HeavenlyArsenal.Content.Items.Accessories
 
             Vector2 drawPos = Main.screenPosition - new Vector2(drawInfo.drawPlayer.headPosition.X - 30f, drawInfo.drawPlayer.headPosition.Y);
 
-            float VisualScale = 1f;
+            float VisualScale = 0.1f;
             Texture2D innerRiftTexture = AssetDirectory.Textures.VoidLake.Value;
 
 
             Main.EntitySpriteDraw(glow, drawPos, glow.Frame(), Color.Red with { A = 200 }, drawInfo.drawPlayer.headRotation, glow.Size() * 0.5f, new Vector2(0.12f, 0.25f) * VisualScale, 0, 0);
-            Main.spriteBatch.Draw(innerRiftTexture, drawPos, null, Color.White, drawInfo.drawPlayer.headRotation + MathHelper.Pi, innerRiftTexture.Size() * 0.5f, new Vector2(0.2f, 0.4f) * VisualScale, 0, 0);
+            Main.EntitySpriteDraw(texture, drawPos, null, Color.White, drawInfo.drawPlayer.headRotation, innerRiftTexture.Size() * 0.5f, new Vector2(0.2f, 0.4f) * VisualScale, 0, 0);
+            
+            Texture2D ChromaticSpires = GennedAssets.Textures.GreyscaleTextures.ChromaticSpires;
+
+            float spireScale = 0.1f;
+            float spireOpacity = drawInfo.drawPlayer.opacityForAnimation;
+            Vector2 drawPosition = (drawInfo.drawPlayer.Center+new Vector2(0,-20f)) - Main.screenPosition ;
+            //Main.NewText($"drawpos: {drawPosition}, head pos: {drawInfo.drawPlayer.headPosition}");
+            float rotation = drawInfo.drawPlayer.headRotation + MathHelper.ToRadians(-45);
+
+            Main.spriteBatch.Draw(ChromaticSpires, drawPosition, null, (Color.Violet with { A = 0 }) * spireOpacity, rotation+ MathHelper.PiOver4, ChromaticSpires.Size() * 0.5f, spireScale, 0, 0f);
+            Main.spriteBatch.Draw(ChromaticSpires, drawPosition, null, (Color.Violet with { A = 0 }) * spireOpacity, (rotation+MathHelper.ToRadians(180)) + MathHelper.PiOver4, ChromaticSpires.Size() * 0.5f, spireScale, 0, 0f);
+            /*
+            Main.spriteBatch.PrepareForShaders();
+            //new Texture Placeholder = GennedAssets.Textures.Extra.Code;
+            ManagedShader postProcessingShader = ShaderManager.GetShader("HeavenlyArsenal.FusionRifleClothPostProcessingShader");
+            postProcessingShader.TrySetParameter("textureSize", 300);
+            postProcessingShader.TrySetParameter("edgeColor", new Color(208, 37, 40).ToVector4());
+            postProcessingShader.SetTexture(GennedAssets.Textures.SecondPhaseForm.Beads3, 0, SamplerState.LinearWrap);
+            postProcessingShader.Apply();
             /*
             Main.spriteBatch.End();
             Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.AnisotropicWrap, DepthStencilState.None, Main.Rasterizer, null, Main.Transform);

@@ -28,6 +28,20 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Rogue;
 
 public class LillyStarProjectile : ModProjectile, IDrawSubtractive
 {
+    public bool CreatedByStealthStrike
+    {
+        get;
+        set;
+    }
+
+
+    public bool WasTarget
+    {
+        get;
+        set;
+    }
+    public bool StealthStrikeEffects => Projectile.Calamity().stealthStrike || CreatedByStealthStrike;
+
     public float LilyGlowIntensityBoost
     {
         get;
@@ -129,10 +143,12 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
         Projectile.hostile = false;
         Projectile.penetrate = -1;
         Projectile.DamageType = ModContent.GetInstance<RogueDamageClass>();
-        Projectile.timeLeft = 400;
+        //Projectile.timeLeft = 900;
         Projectile.aiStyle = 0;
 
-        
+        Projectile.usesLocalNPCImmunity = true;
+        //Projectile.localNPCHitCooldown = -1; // 1 hit per npc max
+        Projectile.localNPCHitCooldown = 1; // 20 ticks before the same npc can be hit again
     }
 
     
@@ -170,7 +186,7 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
         // Find the nearest targetable enemy near the cursor.
         NPC target = null;
         float maxTargetDistance = 1000f; // Maximum search radius around the cursor
-        Vector2 cursorPosition = Main.MouseWorld;
+        Vector2 cursorPosition = Vector2.Lerp(Projectile.Center,Main.MouseWorld, 0.5f);
         foreach (NPC npc in Main.npc)
         {
             if (npc.CanBeChasedBy(this, false))
@@ -186,7 +202,7 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
        
         Projectile.frame = Projectile.identity % Main.projFrames[Type];
         Projectile.Opacity = InverseLerp(45f, 90f, Time);
-        Projectile.scale = Projectile.Opacity * (MathHelper.Lerp(0.6f, 0.9f, Cos01(MathHelper.TwoPi * Time / 10f + Projectile.identity * 0.3f)) + (Time - 120f) * 0.006f);
+        Projectile.scale = Projectile.Opacity * (MathHelper.Lerp(0.6f, 0.9f, Cos01(MathHelper.TwoPi / 10f + Projectile.identity * 0.3f)) );
         Projectile.Opacity *= FadeOutInterpolant;
         Projectile.scale += (1f - FadeOutInterpolant) * 2f;
 
@@ -196,13 +212,14 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
         Projectile.scale *= MathF.Pow(pulseInterpolant, 0.1f);
 
 
+       
 
         // Dangle phase: first 200 frames.
         if (Time < 200f || target == null)
         {
        
             float hoverOffsetFactor = MathHelper.Lerp(0.69f, 1.3f, (Projectile.identity / 13f) % 1f);
-            float ropeLength = MathHelper.Lerp(840f, 990f, (Projectile.identity / 14f) % 1f);
+            float ropeLength = MathHelper.Lerp(840f, 990f, (Projectile.identity / 14f) % 2f);
             
             float verticalOffset = Utils.Remap(Time, 0f, 30f, -1750f, -ropeLength * 1.32f - DangleVerticalOffset);
             Vector2 dangleTop = Main.MouseWorld + DangleTopOffset + new Vector2(0, verticalOffset);
@@ -216,6 +233,7 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
         }
         else 
         {// After dangle phase, detach and begin homing
+            //todo: if no target, remain dangling and maybe just phase out
             if (target != null)
             {
                 DanglingFromTop = false;
@@ -228,7 +246,7 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
                 //Projectile.velocity = Projectile.velocity.SafeNormalize(Vector2.Zero) * newSpeed;
                 //DangleVerticalOffset += 6f;
                 //DangleVerticalOffset *= 1.2f;
-                Main.NewText($"Projectile damage: {Projectile.damage}. Projectile ID: {Projectile.identity}", Color.AntiqueWhite);
+                //Main.NewText($"was target: {WasTarget},Projectile damage: {Projectile.damage}. Projectile ID: {Projectile.identity}, timeLeft: {Projectile.timeLeft}", Color.AntiqueWhite);
 
             }
             else
@@ -239,28 +257,28 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
 
             if (!HasDetached && target != null && !Projectile.WithinRange(target.Center, 210f))
             {
+                WasTarget = true;
                 HasDetached = true;
                 Projectile.netUpdate = true;
             }
-
+            if(target == null&& !WasTarget)
+            {
+                DanglingFromTop = true;
+            }
             
             if ((HasDetached || Time >= 240f)
                 && (target == null || (!Projectile.WithinRange(target.Center, 400f) && Time >= 180f))
                 && Main.rand.NextBool(10))
-            {
-                StrongBloom bloom = new StrongBloom(Projectile.Center, Vector2.Zero, Color.Wheat, 2f, 27);
-                bloom.Spawn();
-                bloom = new StrongBloom(Projectile.Center, Vector2.Zero, Color.Lerp(Color.Red, Color.Violet, Main.rand.NextFloat(0.7f)) * 0.6f, 3.5f, 40);
-                bloom.Spawn();
-                Projectile.Kill();
-            }
+                {
+                
+                }
         }
 
         
         if (Projectile.soundDelay <= 0)
         {
             if (Time >= 60)
-                SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.DisgustingStarBeat with { Volume = 1.3f, MaxInstances = 32 }, Projectile.Center);
+                SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.DisgustingStarBeat with { MaxInstances = 12, PitchVariance = 0.5f }, Projectile.Center);
             BeatDelay = Utils.Clamp(BeatDelay - 19, 26, 120);
             Projectile.soundDelay = BeatDelay;
         }
@@ -281,6 +299,7 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
     public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
     {
         target.AddBuff(BuffID.OnFire, 300);
+        target.takenDamageMultiplier = 40;
         Projectile.Kill();
     }
 
@@ -347,11 +366,15 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
 
     public override void OnKill(int timeLeft)
     {
-        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.DisgustingStarExplode with { Volume = 1.2f, MaxInstances = 10 }, Projectile.Center);
+
+
+        //TODO: make it so that it has an aoe
+        
+        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.DisgustingStarExplode with { Volume = 1.2f, MaxInstances = 10, PitchVariance = 0.5f }, Projectile.Center);
 
         // Explode into a bunch of gore.
         BloodMetaball metaball = ModContent.GetInstance<BloodMetaball>();
-        for (int i = 0; i < 50; i++)
+        for (int i = 0; i < 30; i++)
         {
             Vector2 bloodSpawnPosition = Projectile.Center + Main.rand.NextVector2Circular(10f, 10f);
             Vector2 bloodVelocity = Main.rand.NextVector2Circular(23.5f, 8f) - Vector2.UnitY * 9f;
@@ -368,7 +391,7 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
         bloom.Spawn();
 
         // Create a bunch of stars.
-        for (int i = 0; i < 15; i++)
+        for (int i = 0; i < 7; i++)
         {
             int starPoints = Main.rand.Next(3, 9);
             float starScaleInterpolant = Main.rand.NextFloat();

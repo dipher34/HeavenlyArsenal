@@ -33,7 +33,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
         public int AvatarRifleCounter = 7;
 
         public float CessationHeat = 0;
-
+        //todo: clean this up, its ugly
         public bool CessationHeld;
         public bool HasReducedDashFirstFrame { get; private set; }
 

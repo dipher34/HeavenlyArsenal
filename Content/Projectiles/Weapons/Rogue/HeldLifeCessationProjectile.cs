@@ -19,6 +19,11 @@ using Luminance.Core.Sounds;
 
 
 using System.Runtime.InteropServices;
+using System.Timers;
+using CalamityMod.Items.Weapons.Magic;
+using Microsoft.Xna.Framework.Input;
+using HeavenlyArsenal.Content.Buffs;
+using CalamityMod.Buffs.DamageOverTime;
 
 
 namespace HeavenlyArsenal.Content.Projectiles.Weapons.Rogue;
@@ -35,7 +40,7 @@ class HeldLifeCessationProjectile : ModProjectile
    
     public const float maxHeat = 1;
 
-    public float heatIncrement = 0.005f;
+    public float heatIncrement = 0.015f;
 
    
 
@@ -56,8 +61,8 @@ class HeldLifeCessationProjectile : ModProjectile
         set;
     }
 
-    public ref float Time => ref Projectile.ai[2];
-    public ref float Size => ref Projectile.ai[1];
+    public ref float Time => ref Projectile.ai[0];
+    
     public bool IsAbsorbingHeat
     {
         get;
@@ -65,8 +70,10 @@ class HeldLifeCessationProjectile : ModProjectile
     }
 
     private Dust[] heatDusts;
-    private const int HeatDustCount = 20; // How many dust particles do we want?
+    private  int HeatDustCount = 123; // How many dust particles do we want?
 
+
+    
     public override void SetStaticDefaults()
     {
        
@@ -82,8 +89,10 @@ class HeldLifeCessationProjectile : ModProjectile
         Projectile.ignoreWater = true;
         Projectile.tileCollide = false;
         Projectile.timeLeft = 2;
+        Projectile.usesLocalNPCImmunity = true;
+        Projectile.localNPCHitCooldown = 5;
     }
-    public Vector2 SpiderLilyPosition => (Main.MouseWorld + new Vector2(0,40f))+ Main.rand.NextVector2CircularEdge(50, 50);//Player.Center - Vector2.UnitY * 1f * LilyScale * 140f;
+    public Vector2 SpiderLilyPosition => (Main.MouseWorld + new Vector2(0,40f))+ Main.rand.NextVector2CircularEdge(2600/2f, 2600/2f);//Player.Center - Vector2.UnitY * 1f * LilyScale * 140f;
 
     public static readonly SoundStyle HeatReleaseLoopStart = GennedAssets.Sounds.Avatar.UniversalAnnihilationCharge;
     public static readonly SoundStyle HeatReleaseLoop = GennedAssets.Sounds.Avatar.UniversalAnnihilationLoop;
@@ -93,8 +102,7 @@ class HeldLifeCessationProjectile : ModProjectile
     {
         Projectile.ai[0] = 0;
         
-        Projectile.ai[1] = 0; // Whether the projectile is in the process of firing
-        //Projectile.ai[3] = 0;//time
+      
     }
     public bool HasScreamed = false;
 
@@ -111,64 +119,31 @@ class HeldLifeCessationProjectile : ModProjectile
 
     public override void AI()
     {
-        if (Projectile.ai[2] % 100 == 0)
-        {
-            Projectile.frame++;
-            if (Projectile.frame > 2)
-            {
-                Projectile.frame = 0;
-            }
-        }
-        if (Time % 3 == 0)
-        {
-            
-        }
-        WeaponBar.DisplayBar(Color.SlateBlue, Color.Lerp(Color.DeepSkyBlue, Color.Crimson, Utils.GetLerpValue(0.3f, 0.8f, Main.LocalPlayer.GetModPlayer<HeavenlyArsenalPlayer>().CessationHeat, true)), Main.LocalPlayer.GetModPlayer<HeavenlyArsenalPlayer>().CessationHeat, 120, 1);
+        /// Creates the visual that indicates heat
+        /// 
+        WeaponBar.DisplayBar(Color.SlateBlue, Color.Lerp(Color.DeepSkyBlue, Color.Crimson, Utils.GetLerpValue(0.3f, 0.8f, Main.LocalPlayer.GetModPlayer<HeavenlyArsenalPlayer>().CessationHeat, true)), Main.LocalPlayer.GetModPlayer<HeavenlyArsenalPlayer>().CessationHeat, 120, 1, new Vector2(0, 0f));
 
-        Owner.GetModPlayer<HeavenlyArsenalPlayer>().CessationHeat = Heat;
-
+        ManipulatePlayerVariables();
+        
         Player player = Main.player[Projectile.owner];
+        /*
+        
         Vector2 toMouse = Main.MouseWorld - player.Center;
-
-        if (!Owner.active || Owner.dead || Owner.noItems || Owner.CCed)
-        {
-            Projectile.Kill();
-            return;
-        }
-
-        if (IsDisipateHeat)
-        {
-            AmbientLoop ??= LoopedSoundManager.CreateNew(HeatReleaseLoop, () => !Projectile.active);
-            UpdateLoopedSounds();
-        }
-
-        Projectile.ai[2] = MathF.Sqrt(Utils.GetLerpValue(0, 50, Time, true) * Utils.GetLerpValue(10, 30, Projectile.timeLeft, true));
-        Owner.ChangeDir(Projectile.velocity.X > 0 ? 1 : -1);
-        Owner.SetDummyItemTime(4);
-
+        
+        //this code is straight ass.
         Owner.heldProj = Projectile.whoAmI;
-        //Projectile.velocity = Vector2.Lerp(Projectile.velocity.SafeNormalize(Vector2.Zero), Owner.DirectionTo(Main.MouseWorld).SafeNormalize(Vector2.Zero), 0.08f) * Owner.HeldItem.shootSpeed;
-        Projectile.velocity = Vector2.Lerp(Projectile.velocity.SafeNormalize(Vector2.Zero), Owner.DirectionTo(Main.MouseWorld), 0.4f);
-        Projectile.Center = Owner.MountedCenter + Projectile.velocity.SafeNormalize(Vector2.Zero); // * 25 + new Vector2(0, Owner.gfxOffY) + Main.rand.NextVector2Circular(2, 2); //* Projectile.ai[2];
         Projectile.rotation = toMouse.ToRotation();
 
-        Main.NewText($"Velocity = {Projectile.velocity}", Color.AntiqueWhite);
-        
-       
-
-
-       
-        Owner.ChangeDir(Projectile.velocity.X > 0 ? 1 : -1);
+        Projectile.velocity = Vector2.Lerp(Projectile.velocity.SafeNormalize(Vector2.Zero), Owner.DirectionTo(Main.MouseWorld).SafeNormalize(Vector2.Zero), 0.1f);// * Owner.HeldItem.shootSpeed;
+        Projectile.Center = Owner.MountedCenter + Projectile.velocity.SafeNormalize(Projectile.velocity).RotatedBy(toMouse.ToRotation());// + new Vector2(0, Owner.gfxOffY); //+ Main.rand.NextVector2Circular(2, 2); //* Projecti
         Projectile.spriteDirection = Projectile.direction;
-        Owner.SetDummyItemTime(4);
+        ManipulatePlayerVariables();
 
-       
-        
-
-
-       
-
-
+        */
+        Owner.heldProj = Projectile.whoAmI;
+        Projectile.Center = Owner.MountedCenter + new Vector2(Owner.direction * 20f,13f);// + new Vector2(0, Owner.gfxOffY); //+ Main.rand.NextVector2Circular(2, 2); //* Projecti
+        Projectile.rotation = MathHelper.ToRadians(-90);
+        //TODO: make this shit less ass
 
         if (Heat > 0|| player.channel)
         {
@@ -200,11 +175,30 @@ class HeldLifeCessationProjectile : ModProjectile
             else
                 IsDisipateHeat = false;
         }
+        if (!Owner.active || Owner.dead || Owner.noItems || Owner.CCed)
+        {
+            Projectile.Kill();
+            return;
+        }
+        if (IsDisipateHeat)
+        {
+            AmbientLoop ??= LoopedSoundManager.CreateNew(HeatReleaseLoop, () => !Projectile.active);
+            UpdateLoopedSounds();
+        }
+
+        //Owner.SetDummyItemTime(4);
+        Time++;
         
 
-        Projectile.ai[0]++;
-        Main.NewText($"IsAbsorbingHeat: {IsAbsorbingHeat}, IsDisipateHeat: {IsDisipateHeat}", Color.CadetBlue);
+    }
 
+    public void ManipulatePlayerVariables()
+    {
+       //Owner.ChangeDir(Projectile.direction);
+        Owner.heldProj = Projectile.whoAmI;
+
+       // Owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, Projectile.Center.ToRotation() - MathHelper.PiOver2);
+       // Owner.SetCompositeArmBack(true, Player.CompositeArmStretchAmount.Full, Projectile.Center.ToRotation() - MathHelper.PiOver2);
 
     }
 
@@ -212,7 +206,7 @@ class HeldLifeCessationProjectile : ModProjectile
     public void AbsorbHeat()
     {
         // Increase and clamp heat.
-        Heat = MathHelper.Clamp(Heat + heatIncrement, minHeat, maxHeat);
+        Heat = MathHelper.Clamp(Heat + heatIncrement/10, minHeat, maxHeat);
 
         // Ensure our dust array is initialized.
         if (heatDusts == null || heatDusts.Length == 0)
@@ -223,7 +217,7 @@ class HeldLifeCessationProjectile : ModProjectile
 
         // Define a threshold distance: when dust is closer than this to the projectile center,
         // we consider it “absorbed” and create a new dust particle.
-        const float absorptionThreshold = 10f;
+        float absorptionThreshold = 10f;
 
         // Loop through each dust particle.
         for (int i = 0; i < HeatDustCount; i++)
@@ -248,8 +242,8 @@ class HeldLifeCessationProjectile : ModProjectile
                 }
 
                 // Otherwise, pull the dust toward the projectile.
-                Vector2 pullDirection = Projectile.Center - dust.position;
-                float pullSpeed = 2f;
+                Vector2 pullDirection = Owner.velocity + (Projectile.Center - dust.position);
+                float pullSpeed = 19f;
                 dust.velocity = pullDirection.SafeNormalize(Vector2.Zero) * pullSpeed;
             }
 
@@ -273,23 +267,27 @@ class HeldLifeCessationProjectile : ModProjectile
     /// <summary>
     /// Creates a single dust particle spawned within a cone in front of the projectile,
     /// respecting its current rotation.
+    ///  TODO: make it move with the player
     /// </summary>
     private Dust CreateConeHeatDust()
     {
         // Define the half-angle of the cone. Adjust this to widen or narrow the spread.
         float halfConeAngle = MathHelper.Pi / 8f;
-
+        Vector2 toMouse = Main.MouseWorld - Owner.Center;
         // Choose a random angle within the cone, centered around the projectile rotation.
-        float randomAngle = Projectile.rotation + Main.rand.NextFloat(-halfConeAngle, halfConeAngle);
+        float randomAngle = toMouse.ToRotation()+ Main.rand.NextFloat(-halfConeAngle, halfConeAngle);
 
         // Set minimum and maximum distance for the dust's spawn offset relative to the projectile.
-        float minDistance = 60f;
-        float maxDistance = 80f;
+        float minDistance = 200f;
+        float maxDistance = 400f;
+        
+
         float spawnDistance = Main.rand.NextFloat(minDistance, maxDistance);
 
         // Calculate the offset using the chosen angle.
         Vector2 offset = new Vector2(spawnDistance, 0).RotatedBy(randomAngle);
 
+       
         // Spawn the dust at the calculated offset.
         Dust dust = Dust.NewDustPerfect(
             Projectile.Center + offset,
@@ -303,12 +301,13 @@ class HeldLifeCessationProjectile : ModProjectile
         return dust;
     }
 
+    //remind m e to increase these, as its too powerful otherwise
 
     private float previousHeat = 0;
-    private float newRot;
-    private const float significantIncreaseThreshold = 0.1f; // Define the heat increase threshold for resetting HasScreamed.
-    private const float minimumHeatThreshold = 0.5f; // Define the minimum heat to enable screaming.
-    private const float lilyStarActivationInterval = 0.15f; // Interval for activating ReleaseLilyStars.
+    private float newRot; //delete later
+    private float significantIncreaseThreshold = 0.25f; // Define the heat increase threshold for resetting HasScreamed.
+    private float minimumHeatThreshold = 0.65f; // Define the minimum heat to enable screaming.
+    private float lilyStarActivationInterval = 0.15f; // Interval for activating ReleaseLilyStars.
 
  
     public void ReleaseHeat()
@@ -327,13 +326,63 @@ class HeldLifeCessationProjectile : ModProjectile
                     Scream();
                 }
             }
-           
 
-            Heat = MathHelper.Clamp(Heat-heatIncrement,minHeat,maxHeat);
+
+            // Heat = MathHelper.Clamp(Heat-(float)Math.Pow(heatIncrement,Heat-0.5f),minHeat,maxHeat);
+            //Heat = MathHelper.Lerp(MathHelper.Clamp(Heat, minHeat, maxHeat), Heat - heatIncrement,0.4f);
+
+            /*
+             In thermodynamics, entropy (S) is defined as the amount of heat (q) absorbed or emitted isothermally 
+            and reversibly divided by the absolute temperature (T). The formula for entropy change (ΔS) is given by:
+            ΔS = q_rev / T
+            Where:
+            ΔS is the change in entropy
+            q_rev is the reversible heat exchange
+            T is the absolute temperature in Kelvin
+
+            https://en.wikipedia.org/wiki/First_law_of_thermodynamics
+             */
+
+            // Highest possible temperature : 2 trillion kelvins
+            // Lowest possible temperature : 0 kelvins
+            //TODO: find a better damned calculation for heat loss
+
+            /*
+            heat = Q
+            'work' = w
+            u = internal energy
+            that heat supplied to the system is positive, 
+            but work done by the system is subtracted, a change in the internal energy, 
+            ΔU, is written
+            change in heat => P
             
 
+            P = Q - w
+            this results in a linear equation, unless work is somehow different- that it is:
+            https://en.wikipedia.org/wiki/Work_(thermodynamics)
+            now, we have to figure out how much work the rock is doing inorder to succ all the heat up
+            https://en.wikipedia.org/wiki/Work_(thermodynamics)#Gravitational_work
+
+
+            okay, lucille just reccomended i use laplacian mathematics
+            https://en.wikipedia.org/wiki/Laplace_operator#Diffusion
+
+            */
+
+            float diffusionRate = 0.005f;
+            float ambientHeat = 0.0f;
+
+            Heat = MathHelper.Clamp( Heat - (diffusionRate * (Heat - heatIncrement)),minHeat,maxHeat);
+            //Heat = 0;
+            if(Heat < 0.1)
+            {
+                Heat = 0;
+            }
+          //  Heat = (float)Math.Pow(Heat / 10,heatIncrement);
+            
+            //Main.NewText($"Heat: {Heat}");
             // Adjust activation logic for ReleaseLilyStars to every 0.15 heat
-            if (Heat % lilyStarActivationInterval < heatIncrement && Heat > 0.4)
+            if (Heat > minimumHeatThreshold && Time % 5 == 0)//(Heat % lilyStarActivationInterval < heatIncrement && Heat > 0.4)
             {
                 ReleaseLilyStars(Main.player[Projectile.owner]);
             }
@@ -364,13 +413,13 @@ class HeldLifeCessationProjectile : ModProjectile
         
         Vector2 sparklePos = Projectile.Center + new Vector2(6, 0).RotatedBy(Projectile.rotation);
         Texture2D sparkle = ModContent.Request<Texture2D>("HeavenlyArsenal/Assets/Textures/Extra/Sparkle").Value;
-        Color sparkleColor = new Color(255, 20, 0);//new GradientColor(SlimeUtils.GoozColors, 0.2f, 0.2f).ValueAt(Time + 10);
-        sparkleColor.A = 0;
+        Color sparkleColor = new Color(255, 20, 0,100);//new GradientColor(SlimeUtils.GoozColors, 0.2f, 0.2f).ValueAt(Time + 10);
+        
 
         Vector2 sparkleScaleX = new Vector2(1.5f, 1.33f) * Projectile.ai[2];
         Vector2 sparkleScaleY = new Vector2(1.5f, 1.33f) * Projectile.ai[2];
         Main.EntitySpriteDraw(sparkle, sparklePos - Main.screenPosition, sparkle.Frame(), Color.Black * 0.3f, 0f, sparkle.Size() * 0.5f, sparkleScaleX, 0, 0);
-        Main.EntitySpriteDraw(sparkle, sparklePos - Main.screenPosition, sparkle.Frame(), Color.Black * 0.3f, MathHelper.PiOver2, sparkle.Size() * 0.5f, sparkleScaleY, 0, 0);
+        //Main.EntitySpriteDraw(sparkle, sparklePos - Main.screenPosition, sparkle.Frame(), Color.Black * 0.3f, MathHelper.PiOver2, sparkle.Size() * 0.5f, sparkleScaleY, 0, 0);
         
     }
     
@@ -380,11 +429,15 @@ class HeldLifeCessationProjectile : ModProjectile
         Vector2 energySource =Projectile.Center;
         if (!HasScreamed)
         {
+            float screenShakeIntensity = InverseLerp(0f, 100 * 0.58f, 0).Squared() * 14.5f;
+            ScreenShakeSystem.SetUniversalRumble(screenShakeIntensity, MathHelper.TwoPi, null, 0.2f);
+
             SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.ExplosionTeleport);
             SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.LilyFireStart.WithVolumeScale(1).WithPitchOffset(1 - Heat));
             //Main.rand.NextFloat(-1,0)));
             ScreenShakeSystem.StartShake(28f, shakeStrengthDissipationIncrement: 0.4f);
             GeneralScreenEffectSystem.ChromaticAberration.Start(Player.Center, 3f, 90);
+            GeneralScreenEffectSystem.HighContrast.Start(Player.Center, 3, 33);
 
             if (Main.netMode != NetmodeID.MultiplayerClient)
                NewProjectileBetter(Projectile.GetSource_FromThis(), energySource, Vector2.Zero, ModContent.ProjectileType<DarkWave>(), 0, 0f);
@@ -395,11 +448,12 @@ class HeldLifeCessationProjectile : ModProjectile
     private void ReleaseLilyStars(Player player)
     {
         
-        int starCount = 3;
+        int starCount = 1;
         //TODO: make it better, dipshit
         for (int i = 0; i < starCount; i++)
         {
-            SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.DisgustingStarSummon with { Volume = 1.3f, MaxInstances = 32 } ) ;
+            Heat -= 0.005f;
+            SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.DisgustingStarSummon with { Volume = 0.3f, MaxInstances = 32, PitchVariance = 0.5f} ) ;
             
             // Fire the projectile
             Projectile.NewProjectile(
@@ -407,7 +461,7 @@ class HeldLifeCessationProjectile : ModProjectile
                 SpiderLilyPosition,
                 Vector2.Zero, // speed
                 ModContent.ProjectileType<LillyStarProjectile>(),
-                Projectile.damage * 3,
+                Projectile.damage,
                 Player.HeldItem.knockBack,
                 player.whoAmI
             );
@@ -422,8 +476,10 @@ class HeldLifeCessationProjectile : ModProjectile
     {
         if (IsAbsorbingHeat)
         {
-            Heat += 0.1f;
-
+            Heat += 0.0005f;
+            target.AddBuff(BuffID.Frostburn, 600, true);
+            target.AddBuff(ModContent.BuffType<BurningBlood>(),600,true);
+            //HeatDustCount = Math.Clamp(HeatDustCount + 1, 0, 400);
         }
 
         base.OnHitNPC(target, hit, damageDone);
@@ -437,7 +493,7 @@ class HeldLifeCessationProjectile : ModProjectile
         Vector2 drawPosition = Projectile.Center - Main.screenPosition;
 
         Rectangle frame = texture.Frame(1, 1, 0, 0);
-
+        /*
         Vector2 sparklePos = Projectile.Center + new Vector2(6, 0).RotatedBy(Projectile.rotation);
         Texture2D sparkle = ModContent.Request<Texture2D>("HeavenlyArsenal/Assets/Textures/Extra/Sparkle").Value;
         Color sparkleColor = new Color(255, 20, 0);//new GradientColor(SlimeUtils.GoozColors, 0.2f, 0.2f).ValueAt(Time + 10);
@@ -457,61 +513,111 @@ class HeldLifeCessationProjectile : ModProjectile
 
 
         }
+        */
+
 
 
         float rotation = Projectile.rotation+MathHelper.PiOver2;
-        SpriteEffects spriteEffects = Projectile.direction * Player.gravDir < 0 ? SpriteEffects.FlipVertically : 0;
-        Vector2 origin = new Vector2(frame.Width / 2, frame.Height * Projectile.direction * Player.gravDir);
+        SpriteEffects spriteEffects = Projectile.spriteDirection * Player.gravDir < 0 ? SpriteEffects.FlipVertically : 0;
+        Vector2 origin = new Vector2(frame.Width / 2, frame.Height * Player.gravDir);
 
         Main.EntitySpriteDraw(texture, Projectile.Center - Main.screenPosition, frame, lightColor, rotation, origin, Projectile.scale, spriteEffects, 0);
+        // this is making me annoyed just to look at it tbh
 
+        /*
         Texture2D LillyTexture = GennedAssets.Textures.SecondPhaseForm.SpiderLily;
-        
         Rectangle Lillyframe = LillyTexture.Frame(1, 3, 0, Projectile.frame);
 
         
-        Vector2 Lorigin = new Vector2(Lillyframe.Width/2, Lillyframe.Height*1.5f * Projectile.direction * Player.gravDir);
+        Vector2 Lorigin = new Vector2(Lillyframe.Width/2, Lillyframe.Height*1.5f  * Player.gravDir);
 
 
-        Main.EntitySpriteDraw(LillyTexture, Projectile.Center - Main.screenPosition, Lillyframe, lightColor, rotation, Lorigin, Projectile.scale*0.1f, spriteEffects, 0);
+
+
+
+        /*
+         * 
+   public void Render_Stage1()
+         {
+        Texture2D bulb = GennedAssets.Textures.SeedlingStage1.Bulb;
+        Texture2D bulbGlowmask = GennedAssets.Textures.SeedlingStage1.BulbGlow;
+
+        Vector2 bulbPosition = new Vector2(Main.instance.GraphicsDevice.Viewport.Width * 0.5f, Main.instance.GraphicsDevice.Viewport.Height + 2f);
+
+        // Add a touch of wind to the bulb.
+        float wind = AperiodicSin(Main.GlobalTimeWrappedHourly * 0.56f + Anchor.X + Anchor.Y) * 0.033f + Main.windSpeedCurrent * 0.17f;
+
+        // Draw the bulb. This is done before the upper stem is rendered to ensure that it draws behind it.
+        float LillySquish = Cos(Main.GlobalTimeWrappedHourly * 4.5f + Anchor.X + Anchor.Y) * 0.011f;
+        Vector2 LillyScale = new Vector2(1f - LillySquish, 1f + LillySquish);
+        Color glowmaskColor = new Color(2, 0, 156);
+        ManagedShader shader = ShaderManager.GetShader("NoxusBoss.GenesisGlowmaskShader");
+        shader.SetTexture(bulbGlowmask, 1);
+        shader.Apply();
+        Main.spriteBatch.Draw(bulb, bulbPosition, null, glowmaskColor, wind, bulb.Size() * new Vector2(0.5f, 1f), LillyScale, 0, 0f);
+    }
+        //anchor is point in world questiomark? should be able to just put it to the same place
+        //so the ublb itself is stationary,then the shader is drawn over it, i think? hmm no
+        glow is just the lines on it
+
+
+         */
+
+        float wind = AperiodicSin(Main.GlobalTimeWrappedHourly * 0.56f + Projectile.Center.X + Projectile.Center.Y) *
+            //clamps rotation kinda
+            0.033f
+            + Main.windSpeedCurrent * 0.17f ;
+
+        Texture2D LillyTexture = GennedAssets.Textures.SecondPhaseForm.SpiderLily;
+        Rectangle Lillyframe = LillyTexture.Frame(1, 3, 0, (int)(Main.GlobalTimeWrappedHourly * 10.1f) % 3);
+
+        Vector2 Lorigin = new Vector2(Lillyframe.Width / 2, Lillyframe.Height  * Player.gravDir);
+        //me sucking the joy from my life:
+        float LillySquish = MathF.Cos(Main.GlobalTimeWrappedHourly * 10.5f + Projectile.Center.X + Projectile.Center.Y) * 1f;
+        //im sure there will be no repercussions there
+        //Vector2 LillyScale = new Vector2(1f - LillySquish, 1f + LillySquish);
+        float LillyScale = 0.14f;
+        // Main.EntitySpriteDraw(LillyTexture, Projectile.Center - Main.screenPosition, Lillyframe, lightColor, rotation, Lorigin, Projectile.scale*0.1f, spriteEffects, 0);
+
+
+        Vector2 LillyPos = new Vector2(Projectile.Center.X, Projectile.Center.Y);
+
 
         if (Heat == maxHeat)
         {
             HeatFullSparkle();
 
         }
+        
+        Color glowmaskColor = new Color(2, 0, 156);
 
+
+        //Main.spriteBatch.Draw(LillyTexture, LillyPos- Main.screenPosition, null, lightColor, wind,LillyTexture.Size() * new Vector2(0.5f, 1f), LillyScale, 0, 0f);
+        
+        Main.EntitySpriteDraw(LillyTexture, LillyPos - Main.screenPosition, Lillyframe, lightColor, wind, Lorigin, LillyScale, spriteEffects, 0f);
+        
 
         return false;
     }
 
 
-
-    public override bool? Colliding(Rectangle projHitbox, Microsoft.Xna.Framework.Rectangle targetHitbox)
+   
+    public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
     {
-        return targetHitbox.IntersectsConeFastInaccurate(Projectile.Center, 400, Projectile.rotation+MathHelper.PiOver2, MathHelper.Pi / 8f);
+        //Main.NewText($"Mouse rot: {Main.MouseWorld.ToRotation()},  Projecitle rotation: {Projectile.rotation}, Projectile velocity to rotation: {Projectile.velocity.ToRotation()}");
+        Vector2 toMouse = Main.MouseWorld - Owner.Center;
+        return targetHitbox.IntersectsConeFastInaccurate(Projectile.Center,
+            //distance
+            500,
+            //angle to be pointed to
+            toMouse.ToRotation(),
+            //cone size
+            MathHelper.Pi / 7f);
+      
     }
 
 
-
-    public override bool? CanDamage()
-    {
-        /*
-        if (IsAbsorbingHeat && !IsDisipateHeat)
-        {
-            return true;
-        }
-        else if (IsDisipateHeat)
-        {
-            return false;
-        }
-        else
-        {
-            return false;
-        }
-    } 
-
-        */
-        return false;
-    }
+    
+    public override bool? CanDamage() => Owner.controlUseItem&&!IsDisipateHeat;
+  
 }

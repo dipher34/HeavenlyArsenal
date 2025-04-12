@@ -28,7 +28,8 @@ class LifeAndCessation : ModItem
 
         
         Item.DamageType = ModContent.GetInstance<RogueDamageClass>();
-        Item.damage = 50;
+        Item.damage = 190;
+        Item.crit = -3;
         Item.knockBack = 2f;
         Item.useTime = 5;
         Item.useAnimation = 5;
@@ -50,6 +51,19 @@ class LifeAndCessation : ModItem
 
     }
 
+    private bool HoldingBowl(Player player) => player.ownedProjectileCounts[Item.shoot] > 0;
+
+    public override void HoldItem(Player player)
+    {
+        if (player.whoAmI == Main.myPlayer)
+        {
+            if (!HoldingBowl(player))
+            {
+                Projectile.NewProjectileDirect(player.GetSource_ItemUse(Item), player.Center, Vector2.Zero, Item.shoot, Item.damage, Item.knockBack, player.whoAmI);
+                //spear.rotation = -MathHelper.PiOver2 + 1f * player.direction;
+            }
+        }
+    }
     public override bool CanUseItem(Player player) => player.ownedProjectileCounts[ModContent.ProjectileType<HeldLifeCessationProjectile>()] <= 0;
 
     public override void PostDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale)
@@ -66,9 +80,5 @@ class LifeAndCessation : ModItem
         spriteBatch.Draw(barCharge, position + new Vector2(0, 35) * scale, chargeFrame, barColor, 0, barCharge.Size() * 0.5f, scale * 1.2f, 0, 0);
     }
 
-    public override void HoldItem(Player player)
-    {
-        
-        player.GetModPlayer<HeavenlyArsenalPlayer>().CessationHeld = true;
-    }
+   
 }

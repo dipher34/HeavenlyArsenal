@@ -105,8 +105,6 @@ namespace HeavenlyArsenal.Common.Scenes
             ModContent.ItemType<DevWing>(), 1
               
             ));
-            
-
             //rock to cessation
             tradeDefinitions.Add(new TradeDefinition(
                //item to trade
