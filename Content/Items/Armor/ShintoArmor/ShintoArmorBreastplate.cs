@@ -242,7 +242,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                 player.cWaist = player.cBody;
 
                 player.front = EquipLoader.GetEquipSlot(Mod, Name, EquipType.Front);
-                player.front = player.cFront;
+                player.cFront = player.cBody;
             }
         }
 
@@ -283,6 +283,23 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 
         }
     }
-   
+    public class ShintoArmorBreastplate_DrawLayer : PlayerDrawLayer
+    {
+
+        public override Position GetDefaultPosition() => new BeforeParent(PlayerDrawLayers.FrontAccFront);
+
+        public override bool GetDefaultVisibility(PlayerDrawSet drawInfo) => drawInfo.drawPlayer.body == EquipLoader.GetEquipSlot(Mod, nameof(ShintoArmorBreastplate), EquipType.Body);
+
+        public override bool IsHeadLayer => false;
+
+
+
+        protected override void Draw(ref PlayerDrawSet drawInfo)
+        {
+
+
+
+        }
+    }
 
 }
