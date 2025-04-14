@@ -380,6 +380,11 @@ Mods: {
 				DisplayName: Debug Affront To God Summon
 				Tooltip: ""
 			}
+
+			TaxidermyBook: {
+				DisplayName: Taxidermy Book
+				Tooltip: ""
+			}
 		}
 
 		Projectiles: {

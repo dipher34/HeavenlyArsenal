@@ -17,7 +17,7 @@ namespace HeavenlyArsenal.Content.Projectiles
             Projectile.friendly = true;
             Projectile.hostile = false;
             Projectile.penetrate = 1;
-            Projectile.timeLeft = 6000; // Lifetime in ticks
+            Projectile.timeLeft = 60; // Lifetime in ticks
                                       // Additional settings as needed
         }
 
@@ -88,5 +88,11 @@ namespace HeavenlyArsenal.Content.Projectiles
         public const float DistanceFromTarget = 160;
     }
     
-
+    public class VoidCrestInterceptorGlobalProjectile : GlobalProjectile
+    {
+        public override bool PreAI(Projectile projectile)
+        {
+            return false;
+        }
+    }
 }

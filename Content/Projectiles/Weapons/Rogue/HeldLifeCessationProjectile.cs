@@ -69,7 +69,7 @@ class HeldLifeCessationProjectile : ModProjectile
     }
     //draws the dust vfx on attack cone
     private Dust[] heatDusts;
-    private  int HeatDustCount = 123; // How many dust particles do we want?
+    private  int HeatDustCount = 500; // How many dust particles do we want?
 
 
     
@@ -216,9 +216,9 @@ class HeldLifeCessationProjectile : ModProjectile
     //todo: make it update properly with the Player's velocity
     public void AbsorbHeat()
     {
-        
+
         // Increase and clamp heat.
-        Heat = MathHelper.Clamp(Heat + heatIncrement/10, minHeat, maxHeat);
+        Heat = MathHelper.Clamp(Heat + heatIncrement / 10, minHeat, maxHeat);
 
         // Ensure our dust array is initialized.
         if (heatDusts == null || heatDusts.Length == 0)
@@ -230,7 +230,7 @@ class HeldLifeCessationProjectile : ModProjectile
         // Define a threshold distance: when dust is closer than this to the projectile center,
         // we consider it “absorbed” and create a new dust particle.
         float absorptionThreshold = 29f;
-        Vector2 offset = new Vector2(Projectile.Center.X, Projectile.Center.Y-10);
+        Vector2 offset = new Vector2(Projectile.Center.X, Projectile.Center.Y - 10);
         // Loop through each dust particle.
         for (int i = 0; i < HeatDustCount; i++)
         {
@@ -254,9 +254,15 @@ class HeldLifeCessationProjectile : ModProjectile
                 }
 
                 // Otherwise, pull the dust toward the projectile.
-                Vector2 pullDirection = Owner.velocity + (offset - dust.position);
+                // Otherwise, pull the dust toward the projectile.
+                Vector2 pullDirection = offset - dust.position;
+
+                // Apply player movement compensation — this helps the dust "keep up"
+                Vector2 movementCompensation = Owner.velocity * 0.9f; // Tune this multiplier
+
                 float pullSpeed = 19f;
-                dust.velocity = pullDirection.SafeNormalize(Vector2.Zero) * pullSpeed;
+                dust.velocity = pullDirection.SafeNormalize(Vector2.Zero) * pullSpeed + movementCompensation;
+
             }
 
             // Optional: tweak visual properties for a smooth effect.
@@ -287,19 +293,19 @@ class HeldLifeCessationProjectile : ModProjectile
         float halfConeAngle = MathHelper.Pi / 8f;
         Vector2 toMouse = Main.MouseWorld - Owner.Center;
         // Choose a random angle within the cone, centered around the projectile rotation.
-        float randomAngle = toMouse.ToRotation()+ Main.rand.NextFloat(-halfConeAngle, halfConeAngle);
+        float randomAngle = toMouse.ToRotation() + Main.rand.NextFloat(-halfConeAngle, halfConeAngle);
 
         // Set minimum and maximum distance for the dust's spawn offset relative to the projectile.
         float minDistance = 200f;
         float maxDistance = 400f;
-        
+
 
         float spawnDistance = Main.rand.NextFloat(minDistance, maxDistance);
 
         // Calculate the offset using the chosen angle.
         Vector2 offset = new Vector2(spawnDistance, 0).RotatedBy(randomAngle);
 
-       
+
         // Spawn the dust at the calculated offset.
         Dust dust = Dust.NewDustPerfect(
             Projectile.Center + offset,
@@ -312,6 +318,7 @@ class HeldLifeCessationProjectile : ModProjectile
         dust.noGravity = true;
         return dust;
     }
+
 
     //remind m e to increase these, as its too powerful otherwise
 
@@ -538,7 +545,7 @@ class HeldLifeCessationProjectile : ModProjectile
         if (IsAbsorbingHeat)
         {
             target.AddBuff(ModContent.BuffType<ColdBurn>(), 600, true);
-            Main.NewText($"I'm doing my part!");
+            CombatText.NewText(target.targetRect, Color.AntiqueWhite,1,true,true);
         }
         else
             target.AddBuff(ModContent.BuffType<HeatBurn>(), 600, true);

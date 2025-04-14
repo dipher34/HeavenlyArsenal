@@ -84,6 +84,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
         {
             if (SetActive)
             {
+                
                 //Main.NewText($"Barrier: {barrier}, TimeSinceLastHit: {timeSinceLastHit}", Color.AntiqueWhite);
                 Player.buffImmune[BuffID.Silenced] = true;
                 Player.buffImmune[BuffID.Cursed] = true;

@@ -311,7 +311,7 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
 
     public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
     {
-        modifiers.FinalDamage *= 40;
+        modifiers.FinalDamage *= 13;
     }
 
     Texture2D ChromaticSpires = GennedAssets.Textures.GreyscaleTextures.ChromaticSpires;

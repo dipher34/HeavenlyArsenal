@@ -47,7 +47,7 @@ namespace HeavenlyArsenal.Content.Items.Accessories.Cosmetic
 
         protected override void Draw(ref PlayerDrawSet drawInfo)
         {
-            Texture2D texture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Items/Accessories/AuraCosmetic").Value;
+            Texture2D texture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Items/Accessories/Cosmetic/AuraCosmetic").Value;
 
             Texture2D glow = AssetDirectory.Textures.BigGlowball.Value;
 

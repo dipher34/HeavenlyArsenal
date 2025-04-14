@@ -59,6 +59,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             player.GetDamage(DamageClass.Generic) += 0.18f;
             player.maxMinions += 10;
             var modPlayer = player.Calamity();
+            modPlayer.GemTechSet = true;
         }
 
         

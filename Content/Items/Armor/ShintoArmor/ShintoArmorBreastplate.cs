@@ -246,6 +246,10 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             }
         }
 
+        public override bool PreDrawInWorld(SpriteBatch spriteBatch, Color lightColor, Color alphaColor, ref float rotation, ref float scale, int whoAmI)
+        {
+            return base.PreDrawInWorld(spriteBatch, lightColor, alphaColor, ref rotation, ref scale, whoAmI);
+        }
 
 
         public override void AddRecipes()

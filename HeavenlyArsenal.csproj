@@ -15,6 +15,8 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <Compile Remove="Common\utils\MusicKiller.cs" />
+	  <Compile Remove="Content\Items\Accessories\NDWings.cs" />
+	  <Compile Remove="Content\Items\Weapons\Rogue\LifeAndCessationGlobalNPC.cs" />
 	  <Compile Remove="Content\Projectiles\Misc\CosmicWatergun_proj.cs" />
 	</ItemGroup>
 	<ItemGroup>
@@ -35,6 +37,7 @@
 	  <Folder Include="Content\Items\Weapons\Ranged\NewFolder\" />
 	  <Folder Include="Content\Tiles\" />
 	  <Folder Include="Content\Projectiles\Weapons\Holdout\" />
+	  <Folder Include="Core\Autoloaders\SolynBooks\" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Reference Include="CalamityMod">

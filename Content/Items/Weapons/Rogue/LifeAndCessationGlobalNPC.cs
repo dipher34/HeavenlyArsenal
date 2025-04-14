@@ -10,7 +10,7 @@ using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
 
-namespace HeavenlyArsenal.Content.Items.Weapons.Magic.RocheLimit;
+namespace HeavenlyArsenal.Content.Items.Weapons.Rogue;
 
 public class LifeAndCessationGlobalNPC : GlobalNPC
 {
