@@ -52,6 +52,9 @@
 	  <Reference Include="NoxusBoss">
 	    <HintPath>ModReferences\NoxusBoss.dll</HintPath>
 	  </Reference>
+	  <Reference Include="SubworldLibrary">
+	    <HintPath>ModReferences\SubworldLibrary.dll</HintPath>
+	  </Reference>
 	</ItemGroup>
 
 	<!-- References -->

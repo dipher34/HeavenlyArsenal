@@ -415,14 +415,10 @@ Mods: {
 					"Nothing."
 					'''
 			}
-		}
 
-			}
-		}
-
-			}
-		}
-
+			ForgottenShrineTeleporter: {
+				DisplayName: Forgotten Shrine Teleporter [DEBUG]
+				Tooltip: ""
 			}
 		}
 
