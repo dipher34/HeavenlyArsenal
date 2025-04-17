@@ -896,7 +896,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.AvatarRifleProj
             ring.Y += point.Y * 24f;
 
             // Set the particle's final position relative to the anchor and mark it as fixed
-            point.Position = new Vector3(anchor, 0f) + ring;
+            point.position = new Vector3(anchor, 0f) + ring;
             point.IsFixed = true;
         }
 

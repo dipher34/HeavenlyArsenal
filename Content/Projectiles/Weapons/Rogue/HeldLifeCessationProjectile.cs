@@ -475,9 +475,9 @@ class HeldLifeCessationProjectile : ModProjectile
 
         float rot = 3 + Main.GlobalTimeWrappedHourly;
         Vector2 drawPosition = offset - Main.screenPosition;
-        Main.spriteBatch.Draw(ChromaticSpires, drawPosition, null, (Color.Crimson with { A = (byte)(100 * Heat) }) * spireOpacity, rot, ChromaticSpires.Size() * 0.5f, spireScale, 0, 0f);
-        Main.spriteBatch.Draw(ChromaticSpires, drawPosition, null, (Color.Crimson with { A = (byte)(100 * Heat) }) * spireOpacity, rot + MathHelper.PiOver2, ChromaticSpires.Size() * 0.5f, spireScale, 0, 0f);
-        Main.spriteBatch.Draw(ChromaticSpires, drawPosition, null, (Color.Crimson with { A = (byte)(100 * Heat) }) * spireOpacity, rot + MathHelper.PiOver4, ChromaticSpires.Size() * 0.5f, spireScale, 0, 0f);
+        Main.spriteBatch.Draw(ChromaticSpires, drawPosition, null, (Color.Crimson with { A = (byte)(10 * Heat) }) * spireOpacity, rot, ChromaticSpires.Size() * 0.5f, spireScale, 0, 0f);
+        Main.spriteBatch.Draw(ChromaticSpires, drawPosition, null, (Color.Crimson with { A = (byte)(10 * Heat) }) * spireOpacity, rot + MathHelper.PiOver2, ChromaticSpires.Size() * 0.5f, spireScale, 0, 0f);
+        Main.spriteBatch.Draw(ChromaticSpires, drawPosition, null, (Color.Crimson with { A = (byte)(10 * Heat) }) * spireOpacity, rot + MathHelper.PiOver4, ChromaticSpires.Size() * 0.5f, spireScale, 0, 0f);
 
 
 
@@ -546,11 +546,12 @@ class HeldLifeCessationProjectile : ModProjectile
     {
         if (IsAbsorbingHeat)
         {
-            target.AddBuff(ModContent.BuffType<ColdBurn>(), 600, true);
+            target.AddBuff(ModContent.BuffType<HeatBurnBuff>(), 600, true);
+            
             CombatText.NewText(target.targetRect, Color.AntiqueWhite,1,true,true);
         }
         else
-            target.AddBuff(ModContent.BuffType<HeatBurn>(), 600, true);
+            target.AddBuff(ModContent.BuffType<ColdBurnBuff>(), 600, false);
         if (IsAbsorbingHeat)
         {
             Heat += 0.005f;

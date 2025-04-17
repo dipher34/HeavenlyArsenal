@@ -24,8 +24,8 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         // Boosted by Cross Necklace.
         internal static readonly int ShadowVeilIFrames = 80;
         public static LocalizedText SetBonusText { get; private set; }
-
-		public override void SetStaticDefaults() {
+        public new string LocalizationCategory => "Items.Armor";
+        public override void SetStaticDefaults() {
 			// If your head equipment should draw hair while drawn, use one of the following:
 			//ArmorIDs.Head.Sets.DrawHead[Item.headSlot] = false; // Don't draw the head at all. Used by Space Creature Mask
 			ArmorIDs.Head.Sets.DrawHatHair[Item.headSlot] = true; // Draw hair as if a hat was covering the top. Used by Wizards Hat
@@ -52,7 +52,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         // UpdateArmorSet allows you to give set bonuses to the armor.
         public override void UpdateArmorSet(Player player)
         {
-            player.setBonus = Language.GetOrRegister(Mod.GetLocalizationKey("SetBonuses.Shogun")).Value;
+            player.setBonus = Language.GetOrRegister(Mod.GetLocalizationKey("ShintoArmorHelmetRogue.SetBonus")).Value;
             player.jumpSpeedBoost += 2f;
             player.GetModPlayer<ShintoArmorPlayer>().SetActive = true;
             player.GetDamage(DamageClass.Generic) += 0.18f;

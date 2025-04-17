@@ -1,23 +1,19 @@
-﻿using System;
-using CalamityMod;
-using CalamityMod.Dusts;
+﻿using CalamityMod;
 using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Graphics;
+using System;
 using Terraria;
 using Terraria.Audio;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
-using HeavenlyArsenal.ArsenalPlayer;
 using static Luminance.Common.Utilities.Utilities;
-using CalamityMod.CalPlayer;
-using Terraria.DataStructures;
 
-namespace HeavenlyArsenal.Projectiles.Misc
+namespace HeavenlyArsenal.Content.Items.Accessories.Vambrace
     
 {
-    public class  VambraceDash: ModProjectile, ILocalizedModType, IPixelatedPrimitiveRenderer
+    public class  VambraceDash: ModProjectile
     {
 
         public int Time
@@ -31,8 +27,6 @@ namespace HeavenlyArsenal.Projectiles.Misc
         public Player Owner => Main.player[Projectile.owner];
         private static float ExplosionRadius = 75f;
 
-
-        public PixelationPrimitiveLayer LayerToRenderTo => PixelationPrimitiveLayer.BeforeProjectiles;
         public override void SetStaticDefaults()
         {
             ProjectileID.Sets.TrailingMode[Projectile.type] = 2;
@@ -46,7 +40,7 @@ namespace HeavenlyArsenal.Projectiles.Misc
             Projectile.width = 75;
             Projectile.height = 75;
             Projectile.friendly = true;
-            Projectile.DamageType = AverageDamageClass.Default;
+            Projectile.DamageType = DamageClass.Default;
             Projectile.ignoreWater = true;
             Projectile.tileCollide = false;
             Projectile.penetrate = 1;
@@ -58,14 +52,12 @@ namespace HeavenlyArsenal.Projectiles.Misc
         public override void AI()
         {
             Player player = Main.player[Projectile.owner];
-            HeavenlyArsenalPlayer modPlayer = player.GetModPlayer<HeavenlyArsenalPlayer>();
+            ElectricVambracePlayer modPlayer = player.GetModPlayer<ElectricVambracePlayer>();
 
            
             Time++;
-            if ((Main.myPlayer == Projectile.owner) && modPlayer.isVambraceDashing)
+            if (Main.myPlayer == Projectile.owner && modPlayer.isVambraceDashing)
             {
-                //Console.WriteLine("VambraceDash!!!");
-                //Projectile.oldPos = new Vector2(3,3);
                 Projectile.timeLeft += 4;
                 Projectile.position = new Vector2(Owner.MountedCenter.X+player.velocity.X
                     -Projectile.width/2
@@ -92,7 +84,7 @@ namespace HeavenlyArsenal.Projectiles.Misc
             // Output the count to the in-game chat
             if (Main.netMode != NetmodeID.Server) // Ensure it's not a server-only environment
             {
-                Main.NewText($"Number of VambraceDash projectiles: {count}", Color.Cyan);
+                //Main.NewText($"Number of VambraceDash projectiles: {count}", Color.Cyan);
             }
         }
 
@@ -161,33 +153,6 @@ namespace HeavenlyArsenal.Projectiles.Misc
         }
 
 
-        public void RenderPixelatedPrimitives(SpriteBatch spriteBatch)
-        {
-            Texture2D BubblyNoise = ModContent.Request<Texture2D>("NoxusBoss/Assets/Textures/Extra/TrailStreaks/StreakMagma").Value;
-            Texture2D DendriticNoiseZoomedOut = ModContent.Request<Texture2D>("NoxusBoss/Assets/Textures/Extra/Noise/DendriticNoiseZoomedOut").Value;
-
-
-
-            Rectangle viewBox = Projectile.Hitbox;
-            Rectangle screenBox = new Rectangle((int)Main.screenPosition.X, (int)Main.screenPosition.Y, Main.screenWidth, Main.screenHeight);
-            viewBox.Inflate(540, 540);
-            if (!viewBox.Intersects(screenBox))
-                return;
-
-            float lifetimeRatio = Time / 240f;
-            float dissolveThreshold = InverseLerp(0.67f, 1f, lifetimeRatio) * 0.5f;
-
-            ManagedShader BloodShader = ShaderManager.GetShader("HeavenlyArsenal.VambraceDash_Shader");
-            BloodShader.TrySetParameter("localTime", Main.GlobalTimeWrappedHourly + Projectile.identity * 72.113f);
-            BloodShader.TrySetParameter("dissolveThreshold", dissolveThreshold);
-            BloodShader.TrySetParameter("accentColor", new Vector4(1.21f, 2.38f, 2.55f, 0f));
-            BloodShader.SetTexture(BubblyNoise, 1, SamplerState.LinearWrap);
-            BloodShader.SetTexture(DendriticNoiseZoomedOut, 2, SamplerState.LinearWrap);
-
-            
-
-            PrimitiveSettings settings = new PrimitiveSettings(ElectricWidth, BloodColorFunction, _ => Projectile.Size * 0.5f + Projectile.velocity.SafeNormalize(Vector2.Zero) * Projectile.width * 0.56f, Pixelate: true, Shader: BloodShader);
-            PrimitiveRenderer.RenderTrail(Projectile.oldPos, settings, 9);
-        }
+    
     }
 }

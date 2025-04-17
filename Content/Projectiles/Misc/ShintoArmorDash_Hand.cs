@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using CalamityMod.Items.Potions.Alcohol;
 using HeavenlyArsenal.ArsenalPlayer;
 using HeavenlyArsenal.Common.Utilities;
 using HeavenlyArsenal.Common.utils;
@@ -87,10 +88,17 @@ namespace HeavenlyArsenal.Content.Projectiles.Misc
             Projectile.rotation = Projectile.AngleFrom(Player.MountedCenter) - MathHelper.PiOver2;
             NPC target = Projectile.FindTargetWithinRange(320);
 
-            float trackSpeed = 0.05f;
-            Vector2 homePos = Player.MountedCenter - new Vector2(110, 0).RotatedBy(-MathHelper.PiOver2 - MathHelper.PiOver2 * Player.direction * Math.Min(count, 1) + (MathHelper.Pi / Math.Max(1f, count) * Index + MathHelper.PiOver2) * Player.direction)
-                - Player.velocity * 10 + new Vector2(MathF.Sin(Time * 0.05f + Index * 1.5f), MathF.Cos(Time * 0.05f + Index * 1.5f)) * 5f;
+            float trackSpeed = 0.6f;
+            float sideOffset = (Index == 0 ? -110f : 110f);
+            Vector2 jitter = new Vector2(
+                MathF.Sin(Time * 0.05f + Index * 4.5f),
+                MathF.Cos(Time * 0.05f + Index * 1.5f)
+            ) * 5f;
 
+            Vector2 homePos = Player.MountedCenter
+                            + new Vector2(sideOffset, 0f)
+                            - Player.velocity * 10f
+                            + jitter;
             if (target != null)
             {
                 Projectile.rotation = Player.AngleTo(target.Center) - MathHelper.PiOver2;
@@ -133,7 +141,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Misc
 
                         if (Projectile.Distance(homePos) < 30)
                         {
-                            //LIFESTEAL!!!!!!!!!
+                            //Projectile.owner;
                         }
 
                         if ((TimeInner > 120 || Projectile.Distance(target.Center) > 300) && Main.netMode != NetmodeID.MultiplayerClient)
@@ -175,7 +183,14 @@ namespace HeavenlyArsenal.Content.Projectiles.Misc
                 //tentacle.segments[0].pinned = false;
                 //tentacle.segments[^1].pinned = false;
             }
-
+            for(int i = 0; i < tentacle.segments.Length; i++)
+            {
+                if (Main.rand.NextBool(100))
+                {
+                    Dust blood = Dust.NewDustPerfect(tentacle.segments[i].position, DustID.CrimtaneWeapons, new Vector2(0, -3f), 10, Color.Crimson, 1);
+                    blood.noGravity = true;
+                }
+            }
             tentacle.segments[0].position = Projectile.Center;
             tentacle.segments[^1].position = Player.MountedCenter;
             tentacle.gravity = -Vector2.UnitX * Player.direction * 0.05f - Vector2.UnitY * 0.01f;

@@ -45,18 +45,12 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.FusionRifleProj
 
         public new string LocalizationCategory => "Projectiles.Ranged";
         public bool OwnerCanShoot => Owner.HasAmmo(Owner.ActiveItem()) && !Owner.noItems && !Owner.CCed;
-
-
-
         public float ChargeupInterpolant => Utils.GetLerpValue(FusionRifle.ShootDelay, FusionRifle.MaxChargeTime, ChargeTimer, true);
         public ref float CurrentChargingFrames => ref Projectile.ai[0];
         public ref float ChargeTimer => ref Projectile.ai[1];
-
         public ref float ShootDelay => ref Projectile.localAI[0];
-
         public override int AssociatedItemID => ModContent.ItemType<FusionRifle>();
         public override int IntendedProjectileType => ModContent.ProjectileType<FusionRifle_Projectile>();
-
         public float Time { get; private set; }
 
         public static float CurrentChargeTime = FusionRifle.MaxChargeTime; // Default to MaxChargeTime
@@ -309,10 +303,10 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.FusionRifleProj
             {
                 if (StateTimer <= 0)
                 {
-                    BurstCount--;
+                   
                     FireBurstProjectile();
-                    
-                    Main.NewText($"BurstCount: {BurstCount}, state: {CurrentState}", Color.AntiqueWhite);
+                    BurstCount--;
+                    //Main.NewText($"BurstCount: {BurstCount}, state: {CurrentState}", Color.AntiqueWhite);
                     StateTimer = 5; // Cycle between burst projectiles (adjust as needed)
                 }
                 else

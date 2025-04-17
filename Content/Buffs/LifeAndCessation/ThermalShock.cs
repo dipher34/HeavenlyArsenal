@@ -24,10 +24,10 @@ namespace HeavenlyArsenal.Content.Buffs
 
         public override void Update(NPC npc, ref int buffIndex)
         {
-            if (npc.HasBuff(ModContent.BuffType<ColdBurn>()) && npc.HasBuff(ModContent.BuffType<HeatBurn>()))
+            if (npc.HasBuff(ModContent.BuffType<ColdBurnBuff>()) && npc.HasBuff(ModContent.BuffType<HeatBurnBuff>()))
             {
-                npc.DelBuff(npc.FindBuffIndex(ModContent.BuffType<ColdBurn>()));
-                npc.DelBuff(npc.FindBuffIndex(ModContent.BuffType<HeatBurn>()));
+                npc.DelBuff(npc.FindBuffIndex(ModContent.BuffType<ColdBurnBuff>()));
+                npc.DelBuff(npc.FindBuffIndex(ModContent.BuffType<HeatBurnBuff>()));
                 
             }
             npc.takenDamageMultiplier = 1.75f;

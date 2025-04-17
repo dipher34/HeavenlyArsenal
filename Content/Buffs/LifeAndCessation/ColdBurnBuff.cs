@@ -9,9 +9,9 @@ using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Buffs.LifeAndCessation
 {
-    class ColdBurn : ModBuff
+    class ColdBurnBuff : ModBuff
     {
-        public override string Texture => "HeavenlyArsenal/Content/Buffs/AntishadowAssassinBuff";
+        //public override string Texture => "HeavenlyArsenal/Content/Buffs/AntishadowAssassinBuff";
         public override void SetStaticDefaults()
         {
             Main.debuff[Type] = true;
@@ -19,6 +19,7 @@ namespace HeavenlyArsenal.Content.Buffs.LifeAndCessation
             Main.buffNoSave[Type] = false;
             BuffID.Sets.LongerExpertDebuff[Type] = false;
         }
+        
         public override void Update(Player player, ref int buffIndex)
         {
             
@@ -27,9 +28,9 @@ namespace HeavenlyArsenal.Content.Buffs.LifeAndCessation
         public override void Update(NPC npc, ref int buffIndex)
         {
            // npc.coldDamage = true;
-            if(npc.HasBuff(ModContent.BuffType<HeatBurn>()))
+            if(npc.HasBuff(ModContent.BuffType<HeatBurnBuff>()))
             {
-                             npc.AddBuff(ModContent.BuffType<ThermalShock>(), 20);
+               npc.AddBuff(ModContent.BuffType<ThermalShock>(), 2000);
             }
            
         }

@@ -1,13 +1,15 @@
 ﻿
 using HeavenlyArsenal.common;
+using HeavenlyArsenal.Common.Graphics;
 using HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath;
+using HeavenlyArsenal.Content.Particles;
 using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
 using System;
 using Terraria;
-
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Player = Terraria.Player;
@@ -37,7 +39,7 @@ namespace HeavenlyArsenal.Content.Projectiles
         public override void AI()
         {
             
-            Main.NewText($"interceptor{Projectile.whoAmI}, Time: {Time}");
+            //Main.NewText($"interceptor{Projectile.whoAmI}, Time: {Time}");
             /*
 
             if (ProjToAttachTo > -1 && ProjToAttachTo < Main.ProjId)
@@ -55,7 +57,7 @@ namespace HeavenlyArsenal.Content.Projectiles
             if (Time == 0)
             {
                 Projectile.direction = Main.rand.NextBool().ToDirectionInt();
-                handCount = Main.rand.Next(2, 4);
+                handCount = 1;
                 shadowHands = new VoidLakeShadowHandData[3];
                 shadowHands[0] = new VoidLakeShadowHandData(0.2f * VisualScale * DistanceFromTarget);
                 shadowHands[1] = new VoidLakeShadowHandData(0.4f * VisualScale * DistanceFromTarget);
@@ -120,8 +122,15 @@ namespace HeavenlyArsenal.Content.Projectiles
             }
         
         }
-
         public const float DistanceFromTarget = 160;
+        public override void OnSpawn(IEntitySource source)
+        {
+            Rift darkParticle = Rift.pool.RequestParticle();
+            darkParticle.Prepare(Projectile.Center - Projectile.velocity, Projectile.velocity, Color.AntiqueWhite, new Vector2(1,1), Projectile.velocity.ToRotation(), 3, 3, 300);
+
+
+            ParticleEngine.Particles.Add(darkParticle);
+        }
         public override bool PreDraw(ref Color lightColor)
         {
             Texture2D glow = AssetDirectory.Textures.BigGlowball.Value;
@@ -190,6 +199,8 @@ namespace HeavenlyArsenal.Content.Projectiles
         
         public override bool PreAI(Projectile projectile)
         {
+            //todo: disable projectile AI when being locked on by the voidcrest
+
             return true ;
         }
     }

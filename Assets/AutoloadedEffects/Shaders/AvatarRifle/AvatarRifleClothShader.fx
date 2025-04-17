@@ -5,7 +5,7 @@ matrix transform;
 
 struct VertexShaderInput
 {
-    float4 Position : POSITION0;
+    float4 position : POSITION0;
     float4 Color : COLOR0;
     float2 TextureCoordinates : TEXCOORD0;
     float3 Normal : NORMAL0;
@@ -13,7 +13,7 @@ struct VertexShaderInput
 
 struct VertexShaderOutput
 {
-    float4 Position : SV_POSITION;
+    float4 position : SV_POSITION;
     float4 Color : COLOR0;
     float2 TextureCoordinates : TEXCOORD0;
     float3 Normal : TEXCOORD1;
@@ -31,8 +31,8 @@ VertexShaderOutput VertexShaderFunction(in VertexShaderInput input)
     VertexShaderOutput output = (VertexShaderOutput) 0;
     
     // Transform the input position by the transformation matrix
-    float4 pos = mul(input.Position, transform);
-    output.Position = pos; // Set the transformed position in the output
+    float4 pos = mul(input.position, transform);
+    output.position = pos; // Set the transformed position in the output
    
     // Pass through the color, texture coordinates, and normal from input to output
     output.Color = input.Color;

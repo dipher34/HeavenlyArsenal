@@ -21,7 +21,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 		public static readonly int MoveSpeedBonus = 5;
 
 		public override LocalizedText Tooltip => base.Tooltip.WithFormatArgs(MoveSpeedBonus);
-
+        public new string LocalizationCategory => "Items.Armor";
         public override void SetStaticDefaults()
         {
 
@@ -57,7 +57,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             //player.blackBelt = true;
             player.GetModPlayer<ShintoArmorPlayer>().VoidBeltEquipped = true;
             //ModContent.GetModPlayer<ShintoArmorPlayer>().ShadowVeil = true;
-            if (player.GetModPlayer<ShintoArmorPlayer>().empoweredDash== true)
+            if (player.GetModPlayer<ShintoArmorPlayer>().empoweredDash == true)
             {
                 modPlayer.DashID = AbyssDash.ID;
             }

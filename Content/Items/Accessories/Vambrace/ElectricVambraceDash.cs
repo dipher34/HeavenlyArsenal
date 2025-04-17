@@ -16,7 +16,7 @@ using Terraria;
 using Terraria.Audio;
 using Terraria.ModLoader;
 
-namespace HeavenlyArsenal.Content.Items.Accessories;
+namespace HeavenlyArsenal.Content.Items.Accessories.Vambrace;
 
 public class ElectricVambraceDash : PlayerDashEffect
 {

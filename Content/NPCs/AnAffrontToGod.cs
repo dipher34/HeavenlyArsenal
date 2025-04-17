@@ -1,4 +1,6 @@
-﻿using Luminance.Common.Utilities;
+﻿using CalamityMod.NPCs.CalamityAIs.CalamityBossAIs;
+using Luminance.Common.Utilities;
+using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
@@ -9,6 +11,7 @@ using NoxusBoss.Core.World.GameScenes.AvatarAppearances;
 using System;
 using Terraria;
 using Terraria.GameContent;
+using Terraria.GameContent.Bestiary;
 using Terraria.ID;
 using Terraria.ModLoader;
 using XPT.Core.Audio.MP3Sharp.Decoding.Decoders.LayerIII;
@@ -57,10 +60,12 @@ namespace HeavenlyArsenal.Content.NPCs
         {
             NPC.CloneDefaults(NPCID.KingSlime);
             NPC.damage = 104384;
-            NPC.lifeMax = 104934;
-            NPC.defense = 103;
+            NPC.lifeMax = 3349340;
+            NPC.defense = 603;
             NPC.value = 302933;
             NPC.knockBackResist = 0f;
+            NPC.width = 50;
+            NPC.height = 30;
             //NPC.aiStyle = -1;
         }
 
@@ -124,9 +129,34 @@ namespace HeavenlyArsenal.Content.NPCs
                 rightLegAnimationPhase -= MathHelper.TwoPi;
         }
 
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
+        {
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[]
+            {
+                BestiaryDatabaseNPCsPopulator.CommonTags.SpawnConditions.Times.NightTime,
+                new FlavorTextBestiaryInfoElement("Mods.CalamityMod.Bestiary.AstrumAureus")
+            });
+        }
+        public enum AATGState
+        {
+            Idle,
+            Walking,
+            Attacking,
+            Dead,
+
+
+            Scream
+        }
+
+
+        public override bool PreAI()
+        {
+            return true;
+        }
         public override void AI()
         {
-            //Main.NewText("NPC is active", Color.AntiqueWhite);
+            
+            //AstrumAureusAI.VanillaAstrumAureusAI(NPC, Mod);
         }
 
         public void RenderLegs(SpriteBatch spriteBatch)
@@ -202,7 +232,7 @@ namespace HeavenlyArsenal.Content.NPCs
         }
 
 
-
+        
 
         public void DrawSelf(Vector2 screenPos)
         {
@@ -228,21 +258,57 @@ namespace HeavenlyArsenal.Content.NPCs
             Main.spriteBatch.End();
             Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, TransformPerspective);
 
-            
-            AvatarRiftTargetContent.DrawRiftWithShader(NPC, screenPos, TransformPerspective, BackgroundProp, 0f, 10f, TargetIdentifierOverride);
+            ManagedShader riftShader = ShaderManager.GetShader("NoxusBoss.DarkPortalShader");
+            riftShader.TrySetParameter("time", Main.GlobalTimeWrappedHourly * 0.2f);
+            riftShader.TrySetParameter("baseCutoffRadius", 0.1f);
+            riftShader.TrySetParameter("swirlOutwardnessExponent", 0.42f);
+            riftShader.TrySetParameter("swirlOutwardnessFactor", 5f);
+            riftShader.TrySetParameter("vanishInterpolant", 1f);
+            riftShader.TrySetParameter("edgeColor", Color.Crimson);
+            riftShader.TrySetParameter("edgeColorBias", 0.15f);
+            riftShader.SetTexture(GennedAssets.Textures.Noise.WavyBlotchNoise, 1, SamplerState.AnisotropicWrap);
+            riftShader.SetTexture(GennedAssets.Textures.Noise.BurnNoise, 2, SamplerState.AnisotropicWrap);
+            riftShader.Apply();
 
            
+
         }
 
+        public override bool ModifyCollisionData(Rectangle victimHitbox, ref int immunityCooldownSlot, ref MultipliableFloat damageMultiplier, ref Rectangle npcHitbox)
+        {
+            return base.ModifyCollisionData(victimHitbox, ref immunityCooldownSlot, ref damageMultiplier, ref npcHitbox);
+        }
         public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
         {
-           // Main.NewText("PreDraw is running!", Color.LimeGreen);
-
+            // Main.NewText("PreDraw is running!", Color.LimeGreen);
+            DrawSelf(screenPos);
             Texture2D bodyTexture = TextureAssets.Npc[NPC.type].Value;
+            Texture2D Glow = GennedAssets.Textures.FirstPhaseForm.AvatarRift;
             Vector2 bodyOrigin = new Vector2(bodyTexture.Width / 2f, bodyTexture.Height / 2f);
             float scale = 0.4f;
-            spriteBatch.Draw(bodyTexture, NPC.Center - screenPos, null, drawColor, NPC.rotation, bodyOrigin, scale, SpriteEffects.None, 0f);
-            DrawSelf(screenPos);
+            
+     
+            Main.spriteBatch.Draw(Glow, NPC.Center - screenPos, null, drawColor, NPC.rotation, bodyOrigin, scale, SpriteEffects.None, 0f);
+            
+           // Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, TransformPerspective);
+
+            Main.spriteBatch.Draw(bodyTexture, NPC.Center - screenPos, null, drawColor, NPC.rotation, bodyOrigin, scale, SpriteEffects.None, 0f);
+
+            float wind = AperiodicSin(Main.GlobalTimeWrappedHourly * 0.56f + NPC.Center.X + NPC.Center.Y) *
+                //clamps rotation kinda
+                0.033f
+                + Main.windSpeedCurrent * 0.17f;
+
+            SpriteEffects spriteEffects = SpriteEffects.None;
+            Texture2D LillyTexture = GennedAssets.Textures.SecondPhaseForm.SpiderLily;
+            Rectangle Lillyframe = LillyTexture.Frame(1, 3, 0, (int)(Main.GlobalTimeWrappedHourly * 10.1f) % 3);
+            Vector2 Lorigin = new Vector2(Lillyframe.Width / 2, Lillyframe.Height + 54 * Math.Sign(NPC.gravity));
+            float LillySquish = MathF.Cos(Main.GlobalTimeWrappedHourly * 10.5f + NPC.Center.X +NPC.Center.Y) * 1f;
+            float LillyScale = 0.1f;
+            Vector2 LillyPos = NPC.Center;
+            Color glowmaskColor = new Color(2, 0, 156);
+            Main.NewText($"{LillyPos - Main.screenPosition}");
+            Main.EntitySpriteDraw(LillyTexture, LillyPos - Main.screenPosition, Lillyframe, drawColor, wind, Lorigin, LillyScale, spriteEffects, 0f);
             RenderLegs(spriteBatch);    
             return false;
         }

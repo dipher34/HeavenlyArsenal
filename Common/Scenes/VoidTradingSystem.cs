@@ -29,6 +29,9 @@ using HeavenlyArsenal.Content.Items.Weapons.Magic;
 
 using HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath;
 using HeavenlyArsenal.Content.Items.Accessories.Cosmetic;
+using NoxusBoss.Core.Autoloaders.SolynBooks;
+using CalamityMod.Items.Weapons.Rogue;
+using HeavenlyArsenal.Content.Items.Weapons.Magic.RocheLimit;
 
 namespace HeavenlyArsenal.Common.Scenes
 {
@@ -74,6 +77,10 @@ namespace HeavenlyArsenal.Common.Scenes
         // A list of all possible trade definitions.
         private List<TradeDefinition> tradeDefinitions = new List<TradeDefinition>();
 
+        /// <summary>
+        /// This waits until all items are loaded, as to prevent air from being given instead of items
+        /// </summary>
+        /// //TODO: Conditions such as bosses defeated
         public override void PostSetupContent()
         {
             //fun to Blood
@@ -167,16 +174,7 @@ namespace HeavenlyArsenal.Common.Scenes
               ModContent.ItemType<AvatarLonginus>(), 1
                ));
 
-            //omega blue to temp
-            tradeDefinitions.Add(new TradeDefinition(
-              //item to trade
-              ModContent.ItemType<OmegaBlueChestplate>(),
-              1000f,
-              ItemReturnType.None,
-              //Items to get back
-
-              ModContent.ItemType<TempBreastplate>(), 1
-               ));
+            
             //Rod to Flyrift
             tradeDefinitions.Add(new TradeDefinition(
                //item to trade
@@ -207,18 +205,49 @@ namespace HeavenlyArsenal.Common.Scenes
 
                ModContent.ItemType<VoidCrestOath>(), 1
                 ));
-            /*
+            
             //Book to Taxidermy
             tradeDefinitions.Add(new TradeDefinition(
                //item to trade
-               ModContent.ItemType>(),
+               (ItemID.Book),
                1000f,
                ItemReturnType.None,
                //Items to get back
 
-               ModContent.ItemType<Taxidermy>(), 1
+               SolynBookAutoloader.Books["TaxidermyBook"].Type, 1
                 ));
-            */
+
+            //Supernova to star
+            tradeDefinitions.Add(new TradeDefinition(
+               //item to trade
+               ModContent.ItemType<Supernova>(),
+               1000f,
+               ItemReturnType.None,
+               //Items to get back
+
+               ModContent.ItemType<RocheLimit>(), 1
+                ));
+
+            //Helmet to hat
+            tradeDefinitions.Add(new TradeDefinition(
+               //item to trade
+               ModContent.ItemType<ShintoArmorHelmetAll>(),
+               1000f,
+               ItemReturnType.None,
+               //Items to get back
+
+               ModContent.ItemType<ShintoArmorHelmetRogue>(), 1
+                ));
+            //Hat to helmet
+            tradeDefinitions.Add(new TradeDefinition(
+               //item to trade
+               ModContent.ItemType<ShintoArmorHelmetRogue>(),
+               1000f,
+               ItemReturnType.None,
+               //Items to get back
+
+               ModContent.ItemType<ShintoArmorHelmetAll>(), 1
+                ));
 
 
             TradeInputRegistry.RegisterTrades(tradeDefinitions);

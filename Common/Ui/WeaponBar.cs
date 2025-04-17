@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using HeavenlyArsenal;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Terraria;
@@ -11,11 +10,35 @@ namespace HeavenlyArsenal.Common.UI;
 public class WeaponBar : ModSystem
 {
     private static int showTime;
-    private static Color baseColor;
-    private static Color fillColor;
+    private static Color baseColor;   // Keep this as the default or most recent base color
+   private static Color fillColor;   // Keep this as the default or most recent fill color
+    private static Vector2 Baroffset; // Keep this as the default or most recent offset
+
     private static float fillPercent;
     private static int style;
-    private static Vector2 Baroffset;
+
+    // Internal struct for tracking individual bars
+    private class WeaponBarInfo
+    {
+        public Color BaseColor;
+        public Color FillColor;
+        public float FillPercent;
+        public int TimeLeft;
+        public int Style;
+        public Vector2 Offset;
+
+        public WeaponBarInfo(Color baseColor, Color fillColor, float fillPercent, int timeLeft, int style, Vector2 offset)
+        {
+            BaseColor = baseColor;
+            FillColor = fillColor;
+            FillPercent = fillPercent;
+            TimeLeft = timeLeft;
+            Style = style;
+            Offset = offset;
+        }
+    }
+
+    private static readonly List<WeaponBarInfo> ActiveBars = new();
 
     public static void DisplayBar(Color baseColor, Color fillColor, float percent, int showTime = 120, int style = 0, Vector2 BarOffset = default)
     {
@@ -25,48 +48,50 @@ public class WeaponBar : ModSystem
         WeaponBar.fillPercent = percent;
         WeaponBar.style = style;
         WeaponBar.Baroffset = BarOffset;
+
+        ActiveBars.Add(new WeaponBarInfo(baseColor, fillColor, percent, showTime, style, BarOffset));
     }
 
     public override void UpdateUI(GameTime gameTime)
     {
+        for (int i = ActiveBars.Count - 1; i >= 0; i--)
+        {
+            ActiveBars[i].TimeLeft--;
+            if (ActiveBars[i].TimeLeft <= 0)
+                ActiveBars.RemoveAt(i);
+        }
+
         if (showTime > 0)
         {
             showTime--;
-        }
-
-        if (showTime <= 0)
-        {
-            style = 0;
-            baseColor = Color.DimGray;
-            fillColor = Color.White;
         }
     }
 
     public override void ModifyInterfaceLayers(List<GameInterfaceLayer> layers)
     {
-        if (showTime > 0)
+        if (ActiveBars.Count > 0)
         {
             int mouseTextIndex = layers.FindIndex(layer => layer.Name.Equals("Vanilla: Entity Health Bars"));
             if (mouseTextIndex != -1)
             {
                 layers.Insert(mouseTextIndex, new LegacyGameInterfaceLayer(
-                    "HuntOfTheOldGod: Weapon Charge Bars",
+                    "HeavenlyArsenal: Weapon Charge Bars",
                     delegate
                     {
-                        if (showTime > 0)
+                        foreach (var barInfo in ActiveBars)
                         {
-                            float fade = Utils.GetLerpValue(0, 30, showTime, true);
+                            float fade = Utils.GetLerpValue(0, 30, barInfo.TimeLeft, true);
 
-                            Texture2D bar = AssetDirectory.Textures.Bars.Bar[style].Value;
-                            Texture2D barCharge = AssetDirectory.Textures.Bars.BarFill[style].Value;
+                            Texture2D bar = AssetDirectory.Textures.Bars.Bar[barInfo.Style].Value;
+                            Texture2D barCharge = AssetDirectory.Textures.Bars.BarFill[barInfo.Style].Value;
 
-                            int fillAmount = (fillPercent > 0.99f) ? barCharge.Width : (int)(barCharge.Width * fillPercent);
+                            int fillAmount = (barInfo.FillPercent > 0.99f) ? barCharge.Width : (int)(barCharge.Width * barInfo.FillPercent);
                             Rectangle fillFrame = new Rectangle(0, 0, fillAmount, barCharge.Height);
-                            Vector2 position = ((Main.LocalPlayer.Center - Main.screenPosition) + Baroffset) - new Vector2(barCharge.Width / 2f, 48f / Main.UIScale);
 
-                            float fadeOut = Utils.GetLerpValue(0, 30, showTime, true);
-                            Main.spriteBatch.Draw(bar, position, bar.Frame(), baseColor * fadeOut, 0, Vector2.Zero, 1f, 0, 0);
-                            Main.spriteBatch.Draw(barCharge, position, fillFrame, fillColor * fadeOut, 0, Vector2.Zero, 1f, 0, 0);
+                            Vector2 position = ((Main.LocalPlayer.Center - Main.screenPosition) + barInfo.Offset) - new Vector2(barCharge.Width / 2f, 48f / Main.UIScale);
+
+                            Main.spriteBatch.Draw(bar, position, bar.Frame(), barInfo.BaseColor * fade, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
+                            Main.spriteBatch.Draw(barCharge, position, fillFrame, barInfo.FillColor * fade, 0f, Vector2.Zero, 1f, SpriteEffects.None, 0f);
                         }
 
                         return true;

@@ -8,14 +8,14 @@ matrix uWorldViewProjection;
 
 struct VertexShaderInput
 {
-    float4 Position : POSITION0;
+    float4 position : POSITION0;
     float4 Color : COLOR0;
     float3 TextureCoordinates : TEXCOORD0;
 };
 
 struct VertexShaderOutput
 {
-    float4 Position : SV_POSITION;
+    float4 position : SV_POSITION;
     float4 Color : COLOR0;
     float3 TextureCoordinates : TEXCOORD0;
 };
@@ -23,8 +23,8 @@ struct VertexShaderOutput
 VertexShaderOutput VertexShaderFunction(in VertexShaderInput input)
 {
     VertexShaderOutput output = (VertexShaderOutput) 0;
-    float4 pos = mul(input.Position, uWorldViewProjection);
-    output.Position = pos;
+    float4 pos = mul(input.position, uWorldViewProjection);
+    output.position = pos;
     
     output.Color = input.Color;
     output.TextureCoordinates = input.TextureCoordinates;

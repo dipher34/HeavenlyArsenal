@@ -54,8 +54,11 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 
         public static Texture2D tex = ModContent.Request<Texture2D>("CalamityMod/Items/Accessories/TheSpongeShield").Value;
         public static Texture2D NoiseTex = GennedAssets.Textures.Noise.TurbulentNoise;
+        public static Texture2D GFB = GennedAssets.Textures.Extra.Ogscule;
         public override LocalizedText Tooltip => base.Tooltip.WithFormatArgs(MaxManaIncrease, MaxMinionIncrease);
 
+
+        public new string LocalizationCategory => "Items.Armor";
         public override void SetStaticDefaults()
         {
             var equipSlot = EquipLoader.GetEquipSlot(Mod, Name, EquipType.Body);
@@ -172,7 +175,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                     float rotation = 0f;
                     //Texture2D ShieldNoise = AssetDirectory.Textures.VoidLake.Value;
                     Texture2D glow = GennedAssets.Textures.Noise.MoltenNoise.Value;
-
+                    Texture2D ogg = GennedAssets.Textures.Extra.Ogscule;
                     Main.spriteBatch.End();
 
                    
@@ -180,8 +183,12 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                     // Fetch shield noise overlay texture (this is the polygon texture fed to the shader)
                     Vector2 pos = player.MountedCenter + player.gfxOffY * Vector2.UnitY - Main.screenPosition;
 
-                    
-                    Main.EntitySpriteDraw(glow, pos, null, Color.AntiqueWhite, rotation, glow.Size() / 2f, 0.1f, 0, 0);
+                    if (Main.remixWorld)
+                    {
+                        Main.EntitySpriteDraw(ogg, pos, null, Color.AntiqueWhite, rotation, ogg.Size() / 2f, 0.05f, 0, 0);
+                    }
+                    else 
+                        Main.EntitySpriteDraw(glow, pos, null, Color.AntiqueWhite, rotation, glow.Size() / 2f, 0.1f, 0, 0);
                     
                     
                     Main.spriteBatch.End();

@@ -10,6 +10,8 @@ using HeavenlyArsenal.Common.Scenes;
 using CalamityMod.Particles;
 using NoxusBoss.Core.Utilities;
 using System.Collections.Generic;
+using Luminance.Core.Graphics;
+using NoxusBoss.Assets;
 
 namespace HeavenlyArsenal.Core.Globals
 {
@@ -21,32 +23,50 @@ namespace HeavenlyArsenal.Core.Globals
             if (!VoidTradingSystem.TradeInputRegistry.InputItemTypes.Contains(item.type)|| !AvatarUniverseExplorationSystem.InAvatarUniverse)
                 return true;
 
-           
+
             Player player = Main.LocalPlayer;
 
-            
+            //TODO: Fade out the further away you are from the rift
+
+            float FadeInterp= 0;
+
+
+
+
+            Main.spriteBatch.End();
+            Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.AnisotropicWrap, DepthStencilState.None, Main.Rasterizer, null, Main.UIScaleMatrix);
             player.GetValueRef<int>(AvatarUniverseExplorationSky.TimeInUniverseVariableName).Value = 0;
-          
-
-            // Retrieve the item texture and its frame.
             Texture2D itemTexture = TextureAssets.Item[item.type].Value;
-            Rectangle itemFrame = (Main.itemAnimations[item.type] == null)
-                                    ? itemTexture.Frame()
-                                    : Main.itemAnimations[item.type].GetFrame(itemTexture);
+            Rectangle itemFrame = (Main.itemAnimations[item.type] == null)? itemTexture.Frame(): Main.itemAnimations[item.type].GetFrame(itemTexture);
 
-            float currentPower = 0f;
-            // Calculate the center point where to draw the particle effect.
-            Vector2 particleDrawCenter = position + new Vector2(1f, 6f);
+            Vector2 particleDrawCenter = position + new Vector2(0f, 10f);
+            Texture2D glow = AssetDirectory.Textures.BigGlowball.Value;
+            
+            Main.EntitySpriteDraw(glow, particleDrawCenter- Main.screenPosition, glow.Frame(), Color.Red with { A = 200 }, 0, glow.Size() * 0.5f, new Vector2(0.12f, 0.25f), 0, 0);
+            Texture2D innerRiftTexture = AssetDirectory.Textures.VoidLake.Value;
+            Color edgeColor = new Color(1f, 0.06f, 0.06f);
+            float timeOffset = (Main.myPlayer * 2.5552343f + item.type * 0.05f);
 
-            // Set the particle interpolation speed using a lerp between two values.
-            //EnchantmentEnergyParticles.InterpolationSpeed = MathHelper.Lerp(0.035f, 0.1f, currentPower);
-            //EnchantmentEnergyParticles.DrawSet(particleDrawCenter + Main.screenPosition);
+            ManagedShader riftShader = ShaderManager.GetShader("NoxusBoss.DarkPortalShader");
+            riftShader.TrySetParameter("time", Main.GlobalTimeWrappedHourly * 0.2f + timeOffset);
+            riftShader.TrySetParameter("baseCutoffRadius", 0.24f);
+            riftShader.TrySetParameter("swirlOutwardnessExponent", 0.2f);
+            riftShader.TrySetParameter("swirlOutwardnessFactor", 3f);
+            riftShader.TrySetParameter("vanishInterpolant", 0.01f +FadeInterp);
+            riftShader.TrySetParameter("edgeColor", edgeColor.ToVector4());
+            riftShader.TrySetParameter("edgeColorBias", 0.1f);
+            riftShader.SetTexture(GennedAssets.Textures.Noise.WavyBlotchNoise, 1, SamplerState.AnisotropicWrap);
+            riftShader.SetTexture(GennedAssets.Textures.Noise.BurnNoise, 2, SamplerState.AnisotropicWrap);
+            riftShader.Apply();
 
-            Texture2D a = ModContent.Request<Texture2D>("HeavenlyArsenal/Assets/Textures/UI/Cooldowns/BarrierCooldown_Icon").Value;
-            // Draw the actual item.
+            Main.spriteBatch.Draw(innerRiftTexture, particleDrawCenter, null, Color.White, 0 + MathHelper.Pi, innerRiftTexture.Size() * 0.5f, new Vector2(0.1f, 0.05f), 0, 0);
+
+            Main.spriteBatch.End();
+
+            Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.UIScaleMatrix);
+
             spriteBatch.Draw(itemTexture, position, itemFrame, drawColor, 0f, origin, scale, SpriteEffects.None, 0f);
-            spriteBatch.Draw(a, particleDrawCenter, itemFrame, drawColor, 0f, origin, scale, SpriteEffects.None, 0f);
-            // Return false to skip the default drawing (since we handled it).
+         
             return false;
         }
 

@@ -17,7 +17,10 @@ using CalamityMod.Particles;
 namespace HeavenlyArsenal.Content.Projectiles.Weapons.Summon
 {
     public class TheBlackBell_Projectile : ModProjectile
-    {
+    {   
+        
+        //todo: REWORK THIS TRASH !!
+
         private Rope rope; // Instance of the Rope
         private const int segmentCount = 20; // Number of rope segments
         private const float segmentLength = 7f; // Length of each rope segment

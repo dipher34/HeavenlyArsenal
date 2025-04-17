@@ -37,19 +37,19 @@ Mods: {
 				Description: you are addicted to stims
 			}
 
-			ColdBurn: {
-				DisplayName: Cold Burn
-				Description: Mods.HeavenlyArsenal.Buffs.ColdBurn.Description
-			}
-
-			HeatBurn: {
-				DisplayName: Heat Burn
-				Description: Mods.HeavenlyArsenal.Buffs.HeatBurn.Description
-			}
-
 			ThermalShock: {
 				DisplayName: Thermal Shock
-				Description: Mods.HeavenlyArsenal.Buffs.ThermalShock.Description
+				Description: your form is becom,ing unstable
+			}
+
+			ColdBurnBuff: {
+				DisplayName: Cold Burn Buff
+				Description: Mods.HeavenlyArsenal.Buffs.ColdBurnBuff.Description
+			}
+
+			HeatBurnBuff: {
+				DisplayName: Heat Burn Buff
+				Description: Mods.HeavenlyArsenal.Buffs.HeatBurnBuff.Description
 			}
 		}
 
@@ -167,9 +167,9 @@ Mods: {
 					DisplayName: Vambrace of Otonilou
 					Tooltip:
 						'''
-						You gain 15% damage reduction while dashing
+						You gain 20% damage reduction while dashing
 						20% increased dash velocity
-						Delay after dashing is reduced by 33%
+						Delay after dashing is reduced by 38%
 						Enemies you dash through are afflicted with Armor Crunch
 						Your dashes are empowered by the storm, Electrifying and chaining to nearby enemies
 
@@ -177,11 +177,13 @@ Mods: {
 				}
 
 				VoidCrestOath: {
-					DisplayName: Void Crest Oath
+					DisplayName: Kanmuri of the Red God
 					Tooltip:
 						'''
-						summons a [thing] to intercept and destroy enemy projectiles
-
+						summons a halo behind you that intercepts projectiles
+						each projectile intercepted burns an ofuda
+						when all ofudas are out, the halo sacrifices itself to destroy another projectile
+						ofudas replenish themsleves over time
 						'''
 				}
 			}
@@ -253,14 +255,93 @@ Mods: {
 				DisplayName: Life And Cessation
 				Tooltip:
 					'''
-					Hold out the stone to suck the heat from the surrounding areas
+					Hold out the lilly to suck the heat from the surrounding areas
 					After reaching half heat, release to summon lilly stars from above
 					Lilly stars home in on nearby enemies after a brief period.
 					'''
 			}
 
+			AncientCoin: {
+				DisplayName: Corroded Coin
+				Tooltip: it might be more rust than metal at this point
+				postCeaseless: ... maybe there's something you can do with this later?
+			}
+
+			ChaliceOfFun: {
+				DisplayName: Chalice Of Fun
+				Tooltip:
+					'''
+					DRINK THE CRYONIC MISTS
+
+					'''
+			}
+
+			DebugWeapon: {
+				DisplayName: Debug Weapon
+				Tooltip: ""
+			}
+
+			CombatStim: {
+				DisplayName: Expirmental Combat Stim
+				Tooltip:
+					'''
+					Don't worry — stims have zero addictive properties*!
+					\n
+					*study paid for by draedon.inc
+					Please stim responsibly.
+
+					'''
+			}
+
+			AuraCosmetic: {
+				DisplayName: Aura Cosmetic
+				Tooltip: light over mind
+			}
+
+			Armor: {
+				AwakenedBloodHelm: {
+					DisplayName: Awakened Blood Helm
+					Tooltip:
+						'''
+						vastly increased enemy aggro
+						increases attack speed by 18%
+
+						'''
+				}
+
+				AwakenedBloodplate: {
+					DisplayName: Awakened Bloodplate
+					Tooltip: ""
+				}
+
+				AwakenedBloodStrides: {
+					DisplayName: Awakened Blood Strides
+					Tooltip: ""
+				}
+			}
+
+			DebugAffrontToGodSummon: {
+				DisplayName: Forsaken Mask
+				Tooltip:
+					'''
+					Draws the attention of a very hungry pack of Cravatars when used
+
+					'''
+			}
+
+			TaxidermyBook: {
+				DisplayName: Taxidermy for dummies
+				ObtainmentHint: "[c/F79BC6:Creates with new players]"
+				Tooltip: Its a dusty guide to taxidermy.
+			}
+
+			GoodAppleSling: {
+				DisplayName: Good Apple Sling
+				Tooltip: ""
+			}
+
 			ShintoArmorBreastplate: {
-				DisplayName: Mantle of Dimming Radience
+				DisplayName: Mantle of Dimming Radiance
 				Tooltip:
 					'''
 					20% increased damage
@@ -289,7 +370,9 @@ Mods: {
 			ShintoArmorHelmetAll: {
 				SetBonus:
 					'''
-					100% increased summon damage and +10 max minions
+					not getting hit for a bit will manifest an antishadow barrier to shield you from harm
+
+					+10 max minions
 
 					'''
 				DisplayName: Visage of Silent Stars
@@ -316,14 +399,15 @@ Mods: {
 				DisplayName: Kasa of Silence
 				Tooltip:
 					'''
-					Press [KEY] to consume 25% of your maximum stealth to perform a mid-range teleport and render you momentarily invulnerable
-					If you dodge something while invulnerable, you instantly gain full stealth
-					Teleportation is disabled while Chaos State is active
+
 					Stealth generates 15% faster
 					50% increased damage
 					30% increased critical strike chance
 					15% increased attack speed
 					The inside is full of teeth
+					Press [KEY] to consume 25% of your maximum stealth to perform a mid-range teleport and render you momentarily invulnerable
+					If you dodge something while invulnerable, you instantly gain full stealth
+					Teleportation is disabled while Chaos State is active
 					'''
 				loretip:
 					'''
@@ -331,73 +415,10 @@ Mods: {
 					"Nothing."
 					'''
 			}
-
-			AncientCoin: {
-				DisplayName: Corroded Coin
-				Tooltip: it might be more rust than metal at this point
-				postCeaseless: ... maybe there's something you can do with this later?
-			}
-
-			ChaliceOfFun: {
-				DisplayName: Chalice Of Fun
-				Tooltip:
-					'''
-					the blood god is not pleased
-					yummers
-					yummers
-					yummers
-					DRINK DRINK DRINK DRINK DRINK DEEP FROM THE CHALICE
-
-					'''
-			}
-
-			DebugWeapon: {
-				DisplayName: Debug Weapon
-				Tooltip: ""
-			}
-
-			CombatStim: {
-				DisplayName: Expirmental Combat Stim
-				Tooltip:
-					'''
-					Don't worry — stims have zero addictive properties*!
-
-					*study paid for by draedon.inc
-					Please stim responsibly.
-
-					'''
-			}
-
-			AuraCosmetic: {
-				DisplayName: Aura Cosmetic
-				Tooltip: light over mind
-			}
-
-			Armor: {
-				TempBreastplate: {
-					DisplayName: Temp Breastplate
-					Tooltip: effects of omega blue armor while worn
-				}
-			}
-
-			DebugAffrontToGodSummon: {
-				DisplayName: Debug Affront To God Summon
-				Tooltip: crabvatar
-			}
-
-			TaxidermyBook: {
-				DisplayName: Taxidermy for dummies
-				ObtainmentHint: "[c/F79BC6:Creates with new players]"
-				Tooltip:
-					'''
-					Its a dusty guide to taxidermy.
-					'''
-			}
 		}
 
 		Projectiles: {
 			Incomplete_gunHoldout.DisplayName: You shouldn't be seeing this!
-			
 			ParasiteParadiseProjectile.DisplayName: Parasite Paradise Projectile
 			TheBlackBell_Projectile.DisplayName: The Black Bell Projectile
 			FusionRifleHoldout.DisplayName: Cold Fusion
@@ -447,9 +468,14 @@ Mods: {
 			AvatarSpearRupture.DisplayName: Avatar Spear Rupture
 			HeldLifeCessation_StealthStrike.DisplayName: Held Life Cessation_ Stealth Strike
 			VoidCrestInterceptorProjectile.DisplayName: Void Crest Interceptor Projectile
+			GoodAppleSlingHeld.DisplayName: Good Apple Sling Held
+			GoodAppleProj.DisplayName: Good Apple Proj
+			BloodNeedle.DisplayName: Blood Needle
+			VambraceDash.DisplayName: Vambrace Dash
+			VambraceDischarge.DisplayName: Vambrace Discharge
 		}
 
-		NPCs.AnAffrontToGod.DisplayName: An Affront To God
+		NPCs.AnAffrontToGod.DisplayName: Cravatar
 	}
 
 	Cooldowns: {

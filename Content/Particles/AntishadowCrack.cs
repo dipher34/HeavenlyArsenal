@@ -15,7 +15,7 @@ public class AntishadowCrack : BaseParticle
 {
     public static ParticlePool<AntishadowCrack> pool = new ParticlePool<AntishadowCrack>(500, GetNewParticle<AntishadowCrack>);
 
-    public Vector2 Position;
+    public Vector2 position;
     public Vector2 Velocity;
     public float Rotation;
     public int MaxTime;
@@ -31,7 +31,7 @@ public class AntishadowCrack : BaseParticle
 
     public void Prepare(Vector2 position, Vector2 velocity, float rotation, int lifeTime, Color color, Color glowColor, float scale)
     {
-        Position = position;
+        position = position;
         Velocity = velocity;
         Rotation = rotation;
         MaxTime = lifeTime;
@@ -53,7 +53,7 @@ public class AntishadowCrack : BaseParticle
 
     public override void Update(ref ParticleRendererSettings settings)
     {
-        Position += Velocity;
+        position += Velocity;
         Velocity += new Vector2(Main.rand.NextFloat(-0.1f, 0.1f), Main.rand.NextFloat(-0.1f, 0.1f));
         Velocity *= 1.1f;
 
@@ -86,7 +86,7 @@ public class AntishadowCrack : BaseParticle
 
         int rotation = 0;
         Main.spriteBatch.Draw(texture, position - Main.screenPosition, frame, drawColor, rotation + MathHelper.Pi / 3f * direction, frame.Size() * 0.5f, Scale * new Vector2(1f, 1f + TimeLeft * 0.05f) * 0.5f, flip, 0);
-        Main.NewText($"AntishadowCrack Drawn!{Position}", Color.AntiqueWhite);
+        Main.NewText($"AntishadowCrack Drawn!{position}", Color.AntiqueWhite);
         Main.pixelShader.CurrentTechnique.Passes[0].Apply();
 
 
@@ -102,8 +102,8 @@ public class AntishadowCrack : BaseParticle
         //Vector2 anchorPosition = new Vector2(frame.Width / 2, frame.Height);
 
         // Draw the particle with the adjusted scale
-        //spritebatch.Draw(texture, Position + settings.AnchorPosition, texture.Frame(), drawColor, Rotation, texture.Size() * 0.5f, new Vector2(widthScale, heightScale), (SpriteEffects)SpriteEffect, 0);
-        // spritebatch.Draw(texture, Position + settings.AnchorPosition, glowFrame, glowColor, Rotation + MathHelper.PiOver2, glowFrame.Size() * 0.5f, Scale, (SpriteEffects)SpriteEffect, 0);
+        //spritebatch.Draw(texture, position + settings.AnchorPosition, texture.Frame(), drawColor, Rotation, texture.Size() * 0.5f, new Vector2(widthScale, heightScale), (SpriteEffects)SpriteEffect, 0);
+        // spritebatch.Draw(texture, position + settings.AnchorPosition, glowFrame, glowColor, Rotation + MathHelper.PiOver2, glowFrame.Size() * 0.5f, Scale, (SpriteEffects)SpriteEffect, 0);
     }
 
 }

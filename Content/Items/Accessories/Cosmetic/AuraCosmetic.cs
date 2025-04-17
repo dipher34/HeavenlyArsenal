@@ -40,7 +40,7 @@ namespace HeavenlyArsenal.Content.Items.Accessories.Cosmetic
     {
         public override Position GetDefaultPosition() => new BeforeParent(PlayerDrawLayers.HeadBack);
 
-        public override bool GetDefaultVisibility(PlayerDrawSet drawInfo) => drawInfo.drawPlayer.head == EquipLoader.GetEquipSlot(Mod, nameof(AuraCosmetic), EquipType.Face);
+        public override bool GetDefaultVisibility(PlayerDrawSet drawInfo) => false;// drawInfo.drawPlayer.head == EquipLoader.GetEquipSlot(Mod, nameof(AuraCosmetic), EquipType.Face);
         //ggrrrr
 
         public override bool IsHeadLayer => true;

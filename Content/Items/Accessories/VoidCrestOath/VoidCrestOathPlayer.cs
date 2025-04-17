@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using HeavenlyArsenal.Content.Projectiles;
 using Microsoft.Xna.Framework;
+using static Luminance.Luminance;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -30,7 +32,6 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
 
         /// <summary>
         /// True if the conflicting accessory WarBannerOftheSun is equipped.
-        /// (Set by that accessory’s UpdateAccessory.)
         /// </summary>
         public bool warBannerOftheSunEquipped;
 
@@ -72,7 +73,7 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
         private float InterceptDistance = 300f;
 
         /// <summary>
-        /// Interceptor projectile type. Make sure to define this in your mod.
+        /// Interceptor projectile type. 
         /// </summary>
         private int interceptorType => ModContent.ProjectileType<VoidCrestInterceptorProjectile>();
 
@@ -81,6 +82,7 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
         /// </summary>
         public int TobeDestroyed
         {
+            //todo: output the proj so that i can handle the destroy logic in the interceptor because i hate everyone
             get;
             set;
         }
@@ -93,14 +95,18 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
         }
 
         public override void PostUpdate()
-        {
+        { 
+
+            trackedProjectileIndices.Clear();
             // If the conflicting accessory is equipped, skip all interception logic.
             if (warBannerOftheSunEquipped|| !voidCrestOathEquipped || NotVanity)
                 return;
             
 
             // Rebuild the tracking list each tick.
-            //trackedProjectileIndices.Clear();
+            
+            //shit implementation i know
+
             for (int i = 0; i < Main.maxProjectiles; i++)
             {
                 // Only consider projectiles that:
@@ -108,19 +114,13 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
                 //  • Are not friendly (not shot by player)
                 //  • Were not spawned by the player (owner check)
                 Projectile proj = Main.projectile[i];
-                if (proj.active&& proj.hostile && proj.owner != Player.whoAmI)
+                if (proj.active&& proj.hostile && proj.owner != Player.whoAmI )
                     continue;
+                float distance = Vector2.Distance(proj.Center, Player.Center);
 
-               
-                if (proj.hostile && proj.type != interceptorType && !proj.friendly && proj.owner != Player.whoAmI)//&& proj.owner != Player.whoAmI)
+                if (proj.hostile && proj.type != interceptorType && !proj.friendly && distance <= TrackingRadius) //&& proj.owner != Player.whoAmI)//&& proj.owner != Player.whoAmI)
                 {
-
-                    float distance = Vector2.Distance(proj.Center, Player.Center);
-                    Main.NewText($"{distance}, tracking is {TrackingRadius}");
-                    if (distance <= TrackingRadius)
-                    {
-                        trackedProjectileIndices.Add(i);
-                    }
+                    trackedProjectileIndices.Add(i);
                 }
             }
 
@@ -129,9 +129,15 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
                
             }
 
-
-            
+           // Main.NewText($"{trackedProjectileIndices}");
+            //SHUT UP
             bool interceptedSomethingThisTick = false;
+
+            //sort the tracked projectiles by distance to the player
+            trackedProjectileIndices.Sort((a, b) => Vector2.Distance(Main.projectile[a].Center, Player.Center).CompareTo(Vector2.Distance(Main.projectile[b].Center, Player.Center)));  
+            
+
+
             foreach (int index in trackedProjectileIndices.ToList())
             { 
 
@@ -141,23 +147,26 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
 
                 float distance = Vector2.Distance(proj.Center, Player.Center);
 
-                
+                //Main.NewText($"tracking:{proj.whoAmI}, count:{trackedProjectileIndices.Count}");
                 if (Main.myPlayer == Player.whoAmI)
                 {
                     try
                     {
 
                         //CombatText.NewText(Player.Hitbox, Color.Cyan, $"Tracking: {proj.Name} ({proj.type}) [{distance:F0}px]");
-                       Main.NewText($"Hostile projectiles in range: {trackedProjectileIndices.Count}", Color.Yellow);
-                        Main.NewText($"tracking:{proj.whoAmI}");
+                       //Main.NewText($"Hostile projectiles in range: {trackedProjectileIndices.Count}", Color.Yellow);
+                       
                     }
                     catch
                     {
                         // Fails silently to prevent crash
                     }
                 }
+                //The method you're looking for is Remove I think
+                //(But also you can't use that in a foreach since that modifies the state of the iteration in the middle of the loop) 
 
-                if (distance <= InterceptDistance && proj.type != interceptorType && !proj.friendly)
+
+                if (distance <= InterceptDistance && proj.type != interceptorType && !proj.friendly && proj.active)
                 {
                     if (InterceptCount >= InterceptCost)
                     {
@@ -179,12 +188,15 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
                         CreateInterceptVisualEffect(proj.Center);
                         InterceptCount -= InterceptCost;
                         Main.NewText($"Projectile {proj} killed");
-                        //proj.active = false;
+                        //todo: remove this projectile from the server 
                         proj.Kill();
                         interceptedSomethingThisTick = true;
+                        // :derp:
+                        
                     }
                     else
                     {
+                        
                         if (Main.myPlayer == Player.whoAmI)
                         {
                             Main.NewText("[VoidCrest] Not enough InterceptCount!", Color.OrangeRed);
@@ -222,12 +234,12 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
         {
             
             // Example using Terraria dust
-            for (int d = 0; d < 20; d++)
+            for (int d = 0; d < 1; d++)
             {
                 int dustIndex = Dust.NewDust(
                     position,
                     10, 10,
-                    DustID.MagicMirror,
+                    DustID.AncientLight,
                     Main.rand.NextFloat(-3f, 3f),
                     Main.rand.NextFloat(-3f, 3f),
                     100,

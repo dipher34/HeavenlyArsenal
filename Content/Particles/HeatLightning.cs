@@ -14,7 +14,7 @@ public class HeatLightning : BaseParticle
 {
     public static ParticlePool<HeatLightning> pool = new ParticlePool<HeatLightning>(500, GetNewParticle<HeatLightning>);
 
-    public Vector2 Position;
+    public Vector2 position;
     public Vector2 Velocity;
     public float Rotation;
     public int MaxTime;
@@ -27,7 +27,7 @@ public class HeatLightning : BaseParticle
 
     public void Prepare(Vector2 position, Vector2 velocity, float rotation, int lifeTime, float scale)
     {
-        Position = position;
+        position = position;
         Velocity = velocity;
         Rotation = velocity.ToRotation() + rotation;
         MaxTime = lifeTime;
@@ -46,7 +46,7 @@ public class HeatLightning : BaseParticle
 
     public override void Update(ref ParticleRendererSettings settings)
     {
-        Position += Velocity;
+        position += Velocity;
         Velocity *= 0.8f;
 
         if (Main.rand.NextBool(3))
@@ -76,7 +76,7 @@ public class HeatLightning : BaseParticle
         if (Flickering)
             drawColor = Color.Lerp(Color.LightGoldenrodYellow with { A = 0 }, Color.RoyalBlue with { A = 200 }, FlickerAmount);
 
-        Main.spriteBatch.Draw(glow, Position - Main.screenPosition, glow.Frame(), Color.DarkRed with { A = 30 } * 0.2f, Rotation, glow.Size() * 0.5f, Scale * (1f + progress * 0.5f) * 0.15f, flip, 0);
-        Main.spriteBatch.Draw(texture, Position - Main.screenPosition, frame, drawColor, Rotation, frame.Size() * 0.5f, Scale * new Vector2(1f, 1f + progress * FlickerAmount) * 0.5f, flip, 0);
+        Main.spriteBatch.Draw(glow, position - Main.screenPosition, glow.Frame(), Color.DarkRed with { A = 30 } * 0.2f, Rotation, glow.Size() * 0.5f, Scale * (1f + progress * 0.5f) * 0.15f, flip, 0);
+        Main.spriteBatch.Draw(texture, position - Main.screenPosition, frame, drawColor, Rotation, frame.Size() * 0.5f, Scale * new Vector2(1f, 1f + progress * FlickerAmount) * 0.5f, flip, 0);
     }
 }

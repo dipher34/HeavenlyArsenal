@@ -16,10 +16,10 @@ using Particle = CalamityMod.Particles.Particle;
 
 
 
-namespace HeavenlyArsenal.Projectiles.Misc
+namespace HeavenlyArsenal.Content.Items.Accessories.Vambrace
 
 {
-    public class VambraceDischarge : ModProjectile, ILocalizedModType, IPixelatedPrimitiveRenderer
+    public class VambraceDischarge : ModProjectile
     {
 
         public int Time
@@ -28,7 +28,7 @@ namespace HeavenlyArsenal.Projectiles.Misc
             set;
         }
 
-        public PixelationPrimitiveLayer LayerToRenderTo => PixelationPrimitiveLayer.BeforeProjectiles;
+      
         public new string LocalizationCategory => "Projectiles.Typeless";
         public override string Texture => "CalamityMod/Projectiles/InvisibleProj";
         public Player Owner => Main.player[Projectile.owner];
@@ -40,7 +40,7 @@ namespace HeavenlyArsenal.Projectiles.Misc
             Projectile.width = 150;
             Projectile.height = 150;
             Projectile.friendly = true;
-            Projectile.DamageType = DefaultDamageClass.Default;
+            Projectile.DamageType = DamageClass.Default;
             Projectile.ignoreWater = true;
             Projectile.tileCollide = false;
             Projectile.penetrate = -1;
@@ -105,39 +105,6 @@ namespace HeavenlyArsenal.Projectiles.Misc
             Main.spriteBatch.Draw(BloomCircleSmall, drawPosition, null, Projectile.GetAlpha(Color.Orange) with { A = 0 } * 0.4f, 0f, BloomCircleSmall.Size() * 0.5f, scaleFactor * 0.3f, 0, 0f);
             return false;
         }
-
-        public void RenderPixelatedPrimitives(SpriteBatch spriteBatch)
-        {
-            Texture2D BubblyNoise = ModContent.Request<Texture2D>("NoxusBoss/Assets/Textures/Extra/Noise/BubblyNoise").Value;
-            Texture2D DendriticNoiseZoomedOut = ModContent.Request<Texture2D>("NoxusBoss/Assets/Textures/Extra/Noise/DendriticNoiseZoomedOut").Value;
-
-
-
-            Rectangle viewBox = Projectile.Hitbox;
-            Rectangle screenBox = new Rectangle((int)Main.screenPosition.X, (int)Main.screenPosition.Y, Main.screenWidth, Main.screenHeight);
-            viewBox.Inflate(540, 540);
-            if (!viewBox.Intersects(screenBox))
-                return;
-
-            float lifetimeRatio = Time / 240f;
-            float dissolveThreshold = InverseLerp(0.67f, 1f, lifetimeRatio) * 0.5f;
-
-            ManagedShader BloodShader = ShaderManager.GetShader("HeavenlyArsenal.BloodBlobShader");
-            BloodShader.TrySetParameter("localTime", Main.GlobalTimeWrappedHourly + Projectile.identity * 72.113f);
-            BloodShader.TrySetParameter("dissolveThreshold", dissolveThreshold);
-            BloodShader.TrySetParameter("accentColor", new Vector4(0.6f, 0.02f, -0.1f, 0f));
-            BloodShader.SetTexture(BubblyNoise, 1, SamplerState.LinearWrap);
-            BloodShader.SetTexture(DendriticNoiseZoomedOut, 2, SamplerState.LinearWrap);
-
-            Console.WriteLine("VambraceDischarge!");
-
-            PrimitiveSettings settings = new PrimitiveSettings(BloodWidthFunction, BloodColorFunction, _ => Projectile.Size * 0.5f + Projectile.velocity.SafeNormalize(Vector2.Zero) * Projectile.width * 0.56f, Pixelate: true, Shader: BloodShader);
-            PrimitiveRenderer.RenderTrail(Projectile.oldPos, settings, 9);
-        }
-
-
-
-
 
     }
 }

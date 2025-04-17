@@ -82,31 +82,16 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.FusionRifleProj
 
             AIType = ProjectileID.Bullet;
             Projectile.idStaticNPCHitCooldown = 8;
+            
            
         }
         public override void AI()
         {
          
-           Projectile.aiStyle = 0;
-
-            // Lighting.AddLight(Projectile.position, 0.2f, 0.2f, 0.6f);
-            // Lighting.Brightness(1, 1);
-            Terraria.Dust.NewDustPerfect(Projectile.Left, DustID.AncientLight, Vector2.Zero,150,Color.AntiqueWhite,1);
-            //Terraria.Dust.NewDustPerfect(Projectile.position,
-                //+ new Vector2(Projectile.velocity.X, 0f), 
-             //   DustID.AncientLight, Projectile.velocity, 150, default, 1f);   //spawns dust behind it, this is a spectral light blue dust
-
+          
             Projectile.rotation = Projectile.velocity.ToRotation() + MathHelper.PiOver2;
             Projectile.velocity *= 1.01f;
 
-
-            //if (++Projectile.frameCounter >= 1)
-            //{
-             //   Projectile.frameCounter = 0;
-              //  // Or more compactly Projectile.frame = ++Projectile.frame % Main.projFrames[Projectile.type];
-               // if (++Projectile.frame >= Main.projFrames[Projectile.type])
-               //     Projectile.frame = 0;   
-           // }
 
 
 
@@ -129,8 +114,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.FusionRifleProj
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
-            target.AddBuff(ModContent.BuffType<MiracleBlight>(), // Adding Poisoned to target
-                 600); // for 5 seconds (60 ticks = 1 second)
+            target.AddBuff(ModContent.BuffType<MiracleBlight>(), 600);
         }
 
 

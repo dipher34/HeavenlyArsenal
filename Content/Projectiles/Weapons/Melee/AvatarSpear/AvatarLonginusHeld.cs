@@ -451,7 +451,8 @@ public class AvatarLonginusHeld : ModProjectile
                     {
                         DoShake(1.5f);
                         SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.ArmJutOut with { Pitch = -0.1f, MaxInstances = 0 }, Projectile.Center);
-
+                        //i didnt write this lmao
+                        //thanks blockaroz
                         // MANKIND IS DEAD
                         // BLOOD IS FUEL
                         // HELL IS FULL
