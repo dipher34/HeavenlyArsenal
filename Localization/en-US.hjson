@@ -388,16 +388,12 @@ Mods: {
 			TaxidermyBook: {
 				DisplayName: Taxidermy for dummies
 				ObtainmentHint: "[c/F79BC6:Creates with new players]"
-				Tooltip:
-					'''
-					Its a dusty guide to taxidermy.
-					'''
+				Tooltip: Its a dusty guide to taxidermy.
 			}
 		}
 
 		Projectiles: {
 			Incomplete_gunHoldout.DisplayName: You shouldn't be seeing this!
-			
 			ParasiteParadiseProjectile.DisplayName: Parasite Paradise Projectile
 			TheBlackBell_Projectile.DisplayName: The Black Bell Projectile
 			FusionRifleHoldout.DisplayName: Cold Fusion
