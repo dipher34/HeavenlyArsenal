@@ -35,7 +35,7 @@ public class ForgottenShrineBackground : Background
         base.Update();
 
         ManagedScreenFilter fogShader = ShaderManager.GetFilter("NoxusBoss.AvatarUniverseRedFogShader");
-        fogShader.TrySetParameter("intensity", Opacity);
+        fogShader.TrySetParameter("intensity", Opacity * 0.7f);
         fogShader.TrySetParameter("fogDensityExponent", 5.6f);
         fogShader.TrySetParameter("fogColor", new Vector4(1f, 0f, 0.15f, 0f));
         fogShader.SetTexture(GennedAssets.Textures.Noise.PerlinNoise, 1, SamplerState.LinearWrap);
