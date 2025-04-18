@@ -51,4 +51,12 @@ public class ForgottenShrineWater : ModWaterStyle
             }
         });
     }
+
+    public override void LightColorMultiplier(ref float r, ref float g, ref float b)
+    {
+        float brightness = 1.1f;
+        r = brightness;
+        g = brightness;
+        b = brightness;
+    }
 }
