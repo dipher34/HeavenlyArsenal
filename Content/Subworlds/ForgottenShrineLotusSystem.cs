@@ -18,7 +18,7 @@ public class ForgottenShrineLotusSystem : ModSystem
 {
     private static FastParticleSystem lotusParticleSystem;
 
-    private static int lotusCount => 2500;
+    private static int LotusCount => 2500;
 
     private static readonly Asset<Texture2D> redLotus = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Subworlds/RedLotus");
 
@@ -28,7 +28,7 @@ public class ForgottenShrineLotusSystem : ModSystem
         {
             Main.QueueMainThreadAction(() =>
             {
-                lotusParticleSystem = new FramedFastParticleSystem(2, lotusCount, PrepareLotusParticleRendering, UpdateLotusParticles);
+                lotusParticleSystem = new FramedFastParticleSystem(2, LotusCount, PrepareLotusParticleRendering, UpdateLotusParticles);
             });
         }
 
@@ -43,7 +43,7 @@ public class ForgottenShrineLotusSystem : ModSystem
         {
             int groundLevelY = Main.maxTilesY - ForgottenShrineGenerationConstants.GroundDepth;
             int waterLevelY = groundLevelY - ForgottenShrineGenerationConstants.WaterDepth;
-            for (int i = 0; i < lotusCount; i++)
+            for (int i = 0; i < LotusCount; i++)
             {
                 float lotusSize = Main.rand.NextFloat(3f, 8.25f);
                 float squish = Main.rand.NextFloat(1.1f, 1.5f);
