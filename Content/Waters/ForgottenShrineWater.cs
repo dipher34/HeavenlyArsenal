@@ -43,7 +43,7 @@ public class ForgottenShrineWater : ModWaterStyle
         {
             if (liquidType == LiquidID.Water && Main.liquidAlpha[Slot] > 0f)
             {
-                float opacity = MathHelper.Lerp(1f, 0.4f, Main.liquidAlpha[Slot]);
+                float opacity = MathHelper.Lerp(1f, 0.6f, Main.liquidAlpha[Slot]);
                 liquidColor.TopLeftColor *= opacity;
                 liquidColor.TopRightColor *= opacity;
                 liquidColor.BottomLeftColor *= opacity;
