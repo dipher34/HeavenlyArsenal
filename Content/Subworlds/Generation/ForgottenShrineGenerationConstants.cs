@@ -17,12 +17,12 @@ public static class ForgottenShrineGenerationConstants
     /// <summary>
     /// The height of beams for the bridge before the shrine.
     /// </summary>
-    public static int BridgeBeamHeight => 14;
+    public static int BridgeBeamHeight => 11;
 
     /// <summary>
     /// The width of arches on the bridge.
     /// </summary>
-    public static int BridgeArchWidth => 105;
+    public static int BridgeArchWidth => 145;
 
     /// <summary>
     /// The maximum height of arches on the bridge.
