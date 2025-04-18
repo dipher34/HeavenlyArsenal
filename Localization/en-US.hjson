@@ -420,7 +420,6 @@ Mods: {
 				DisplayName: Forgotten Shrine Teleporter [DEBUG]
 				Tooltip: ""
 			}
-
 		}
 
 		Projectiles: {
@@ -488,18 +487,19 @@ Mods: {
 			ForgottenShrineBiome: {
 				DisplayName: Forgotten Shrine
 				TownNPCDialogueName: the Forgotten Shrine
+			}
 		}
 
 		Keybinds: {
-			"Quick Dash.DisplayName": Quick  Dash
+			"Quick Dash.DisplayName": Quick Dash
 			"Toggle Haemsong Mode.DisplayName": Toggle  Haemsong  Mode
 		}
-	}
 
-	Cooldowns: {
-		AntiShield: {
-			BarrierCooldown: AntiShield Decay
-			BarrierRecharge: AntiShield Recharge
+		Cooldowns: {
+			AntiShield: {
+				BarrierCooldown: AntiShield Decay
+				BarrierRecharge: AntiShield Recharge
+			}
 		}
 	}
 }

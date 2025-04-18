@@ -16,6 +16,8 @@ namespace HeavenlyArsenal.Content.Subworlds;
 
 public class ForgottenShrineBackground : Background
 {
+    private static DeCasteljauCurve lanternPositionPath;
+
     private static DeCasteljauCurve lanternVelocityPath;
 
     private static ForgottenShrineSkyLanternParticleSystem lanternSystem;
@@ -23,6 +25,8 @@ public class ForgottenShrineBackground : Background
     private static readonly Vector2[] lanternPathOffsets = new Vector2[95];
 
     private static readonly Asset<Texture2D> skyColorGradient = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Subworlds/ShrineSkyColor");
+
+    private static readonly Asset<Texture2D> skyLantern = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Subworlds/SkyLantern");
 
     private static readonly Asset<Texture2D> scarletMoon = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Subworlds/TheScarletMoon");
 
@@ -34,7 +38,7 @@ public class ForgottenShrineBackground : Background
 
     public override void Load()
     {
-        Vector2[] velocities = new Vector2[lanternPathOffsets.Length - 1];
+        Vector2[] velocities = new Vector2[lanternPathOffsets.Length];
         for (int i = 0; i < lanternPathOffsets.Length; i++)
         {
             float completionRatio = i / (float)(lanternPathOffsets.Length - 1f);
@@ -45,25 +49,44 @@ public class ForgottenShrineBackground : Background
             lanternPathOffsets[i] = offset;
 
             if (i >= 1)
-                velocities[i] = (lanternPathOffsets[i] - lanternPathOffsets[i - 1]);
+                velocities[i] = lanternPathOffsets[i] - lanternPathOffsets[i - 1];
         }
 
+        lanternPositionPath = new DeCasteljauCurve(lanternPathOffsets);
         lanternVelocityPath = new DeCasteljauCurve(velocities);
 
         Main.QueueMainThreadAction(() =>
         {
-            lanternSystem = new ForgottenShrineSkyLanternParticleSystem(4096, PrepareLanternParticleRendering, UpdateLanternParticles);
+            lanternSystem = new ForgottenShrineSkyLanternParticleSystem(16384, PrepareLanternParticleRendering, UpdateLanternParticles);
         });
     }
 
     private static void PrepareLanternParticleRendering()
     {
+        Matrix projection = Matrix.CreateOrthographicOffCenter(0f, Main.screenWidth, Main.screenHeight, 0f, -400f, 400f);
 
+        Texture2D lantern = skyLantern.Value;
+        ManagedShader overlayShader = ShaderManager.GetShader("NoxusBoss.BasicPrimitiveOverlayShader");
+        overlayShader.TrySetParameter("uWorldViewProjection", projection);
+        overlayShader.SetTexture(lantern, 1, SamplerState.LinearClamp);
+        overlayShader.Apply();
     }
 
     private static void UpdateLanternParticles(ref FastParticle particle)
     {
+        int lifetime = 240;
+        float pathInterpolant = particle.ExtraData;
+        if (particle.Time >= lifetime)
+            particle.Active = false;
 
+        if (particle.Time / (float)lifetime >= 0.75f || pathInterpolant < 0.12f)
+            particle.Size *= 0.93f;
+
+        float spinSpeed = 0.000072f;
+        float moveSpeedInterpolant = LumUtils.Saturate(8f / particle.Size.X);
+        particle.ExtraData -= moveSpeedInterpolant * spinSpeed;
+        particle.Velocity = particle.Velocity.RotatedBy(spinSpeed * -15f);
+        particle.Rotation = particle.Velocity.ToRotation() - MathHelper.PiOver2;
     }
 
     public override void Render(Vector2 backgroundSize, float minDepth, float maxDepth)
@@ -71,6 +94,9 @@ public class ForgottenShrineBackground : Background
         RenderGradient();
         RenderMoon();
         RenderLanternBackglowPath();
+
+        Main.instance.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
+        lanternSystem.RenderAll();
     }
 
     private static void ResetSpriteBatch()
@@ -123,10 +149,15 @@ public class ForgottenShrineBackground : Background
         SkyManager.Instance["Ambience"].Deactivate();
         SkyManager.Instance["Party"].Deactivate();
 
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 45; i++)
         {
-
+            float pathInterpolant = Main.rand.NextFloat(0.05f, 1f);
+            float size = MathHelper.Lerp(2.5f, 11.5f, MathF.Pow(Main.rand.NextFloat(), 5f)) * Main.rand.NextFloat(0.4f, 1.2f);
+            Vector2 spawnPosition = MoonPosition + lanternPositionPath.Evaluate(pathInterpolant) * 1.5f + Main.rand.NextVector2Circular(210f, 210f);
+            Vector2 velocity = lanternVelocityPath.Evaluate(pathInterpolant) * -Main.rand.NextFloat(0.007f, 0.03f);
+            lanternSystem?.CreateNew(spawnPosition, velocity, Vector2.One * size, new Color(255, Main.rand.Next(40, 150), 33) * 0.75f, pathInterpolant);
         }
+        lanternSystem.UpdateAll();
 
         base.Update();
     }

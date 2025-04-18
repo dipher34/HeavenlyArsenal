@@ -10,24 +10,22 @@ using Vector2SIMD = System.Numerics.Vector2;
 namespace HeavenlyArsenal.Content.Subworlds;
 
 [Autoload(Side = ModSide.Client)]
-public class ForgottenShrineSkyLanternParticleSystem : FastParticleSystem
+public class ForgottenShrineSkyLanternParticleSystem(int maxParticles, Action renderPreparations, FastParticleSystem.ParticleUpdateAction extraUpdates = null) :
+    FastParticleSystem(maxParticles, renderPreparations, extraUpdates)
 {
-    public ForgottenShrineSkyLanternParticleSystem(int maxParticles, Action renderPreparations, ParticleUpdateAction extraUpdates = null) :
-        base(maxParticles, renderPreparations, extraUpdates)
-    { }
-
-    [UnsafeAccessor(UnsafeAccessorKind.Field, Name = "particles")]
-    private extern static ref FastParticle[] GetParticles(FastParticleSystem system);
-
     protected override void PopulateVertexBufferIndex(VertexPosition2DColorTexture[] vertices, int particleIndex)
     {
-        ref FastParticle particle = ref GetParticles(this)[particleIndex];
+        ref FastParticle particle = ref particles[particleIndex];
 
-        Color color = particle.Active ? particle.Color : Color.Transparent;
+        float fadeIn = LumUtils.InverseLerp(0f, 36f, particle.Time);
+        Color color = (particle.Active ? particle.Color : Color.Transparent) * fadeIn;
         Vector2SIMD center = Unsafe.As<Vector2, Vector2SIMD>(ref particle.Position);
-        Vector2SIMD size = Unsafe.As<Vector2, Vector2SIMD>(ref particle.Size);
-        MatrixSIMD particleRotationMatrix = MatrixSIMD.CreateRotationX(particle.Rotation * 1.1f) *
-                                            MatrixSIMD.CreateRotationY(particle.Rotation * 0.5f) *
+        Vector2SIMD size = Unsafe.As<Vector2, Vector2SIMD>(ref particle.Size) * fadeIn;
+
+        float rotationX = Math.Clamp(particle.Rotation * 1.1f, -0.3f, 0.3f);
+        float rotationY = Math.Clamp(particle.Rotation * 0.5f, -0.3f, 0.3f);
+        MatrixSIMD particleRotationMatrix = MatrixSIMD.CreateRotationX(rotationX) *
+                                            MatrixSIMD.CreateRotationY(rotationY) *
                                             MatrixSIMD.CreateRotationZ(particle.Rotation);
 
         Vector2SIMD topLeftPosition = center + Vector2SIMD.Transform(topLeftOffset * size, particleRotationMatrix);
@@ -35,7 +33,7 @@ public class ForgottenShrineSkyLanternParticleSystem : FastParticleSystem
         Vector2SIMD bottomLeftPosition = center + Vector2SIMD.Transform(bottomLeftOffset * size, particleRotationMatrix);
         Vector2SIMD bottomRightPosition = center + Vector2SIMD.Transform(bottomRightOffset * size, particleRotationMatrix);
 
-        int totalFrames = 4;
+        int totalFrames = 5;
         int frameY = particleIndex % totalFrames;
         float topY = frameY / (float)totalFrames;
         float bottomY = (frameY + 1f) / totalFrames;
