@@ -481,6 +481,13 @@ Mods: {
 		}
 
 		NPCs.AnAffrontToGod.DisplayName: Cravatar
+
+		Biomes: {
+			ForgottenShrineBiome: {
+				DisplayName: Forgotten Shrine
+				TownNPCDialogueName: the Forgotten Shrine
+			}
+		}
 	}
 
 	Cooldowns: {
