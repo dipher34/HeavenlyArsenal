@@ -1,0 +1,47 @@
+using HeavenlyArsenal.Content.Items.Armor.NewFolder;
+using Terraria;
+using Terraria.GameInput;
+using Terraria.ModLoader;
+
+namespace VectorMod.Systems
+{
+    public class HeavenlyArsenalKeybinds : ModPlayer
+    {
+        private int LearningExampleKeybindHeldTimer;
+        private int LearningExampleKeybindDoubleTapTimer;
+
+        public override void ProcessTriggers(TriggersSet triggersSet)
+        {
+            /*
+            if (KeybindSystem.DashBind.JustPressed)
+            {
+                Player.GetModPlayer<VectorModPlayer>().quickDash = true;
+            }
+            */
+            if (KeybindSystem.HaemsongBind.JustPressed)
+            {
+                var bloodArmorPlayer = Player.GetModPlayer<BloodArmorPlayer>();
+                bloodArmorPlayer.CurrentForm = bloodArmorPlayer.CurrentForm == BloodArmorForm.Offense
+                    ? BloodArmorForm.Defense
+                    : BloodArmorForm.Offense;
+            }
+           
+        }
+    }
+    }
+public class KeybindSystem : ModSystem
+{
+    public static ModKeybind DashBind { get; private set; }
+    public static ModKeybind HaemsongBind { get; private set; }
+    public override void Load()
+    {
+        // We localize keybinds by adding a Mods.{ModName}.Keybind.{KeybindName} entry to our localization files. The actual text displayed to English users is in en-US.hjson
+        DashBind = KeybindLoader.RegisterKeybind(Mod, "Quick Dash", "Mouse4");
+        HaemsongBind = KeybindLoader.RegisterKeybind(Mod, "Toggle Haemsong Mode", "F");
+    }
+    public override void Unload()
+    {
+        DashBind = null;
+        HaemsongBind = null;
+    }
+}

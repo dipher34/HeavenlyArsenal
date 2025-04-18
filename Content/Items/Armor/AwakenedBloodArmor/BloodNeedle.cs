@@ -41,7 +41,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         {
             if (Player.dead || !Player.active || Player.GetModPlayer<BloodArmorPlayer>().CurrentForm != BloodArmorForm.Offense)
             {
-               // Projectile.Kill();
+                Projectile.Kill();
                 return;
             }
             int count = Main.projectile.Count(n => n.active && n.type == Type && n.owner == Player.whoAmI && n.whoAmI != Projectile.whoAmI);
@@ -98,9 +98,9 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                 //tentacle.segments[0].pinned = false;
                 //tentacle.segments[^1].pinned = false;
             }
-            for (int i = 0; i < tentacle.segments.Length; i++)
+            for (int i = 0; i < tentacle.segments.Length-1; i++)
             {
-                if (Main.rand.NextBool(100))
+                if (Main.rand.NextBool(1))
                 {
                     Dust blood = Dust.NewDustPerfect(tentacle.segments[i].position, DustID.CrimtaneWeapons, new Vector2(0, -3f), 10, Color.Crimson, 1);
                     blood.noGravity = true;
@@ -108,7 +108,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                 }
                 if(i <= tentacle.segments.Length/2 && i > 3)
                 {
-                    tentacle.segments[i].velocity += new Vector2(13*Player.direction,6);
+                    tentacle.segments[i].velocity += new Vector2(13*Player.direction,50);
                 }
             }
             tentacle.segments[0].position = Projectile.Center;
@@ -152,7 +152,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
 
                     stretch = new Vector2(Projectile.scale * 0.6f, points[i].Distance(points[i - 1]) / (body.Height - 2f) * 1.2f);
                     Main.EntitySpriteDraw(body, points[i] - Main.screenPosition, body.Frame(), Color.White, rot, body.Size(), stretch, 0, 0);
-                   
+                    //Main.NewText($"drawing {i } at {points[i] - Main.screenPosition}");
                     //Main.EntitySpriteDraw(texture, points[i] - Main.screenPosition, tentacleGlowFrame, glowColor.MultiplyRGBA(Color.Lerp(light, Color.White, 1f - (float)i / points.Count)) * 1.5f, rot, tentacleFrame.Size() * new Vector2(0.5f, 0f), stretch, 0, 0);
 
                 }

@@ -420,6 +420,7 @@ Mods: {
 				DisplayName: Forgotten Shrine Teleporter [DEBUG]
 				Tooltip: ""
 			}
+
 		}
 
 		Projectiles: {
@@ -478,6 +479,7 @@ Mods: {
 			BloodNeedle.DisplayName: Blood Needle
 			VambraceDash.DisplayName: Vambrace Dash
 			VambraceDischarge.DisplayName: Vambrace Discharge
+			BloodHarpoon.DisplayName: Blood Harpoon
 		}
 
 		NPCs.AnAffrontToGod.DisplayName: Cravatar
@@ -486,7 +488,11 @@ Mods: {
 			ForgottenShrineBiome: {
 				DisplayName: Forgotten Shrine
 				TownNPCDialogueName: the Forgotten Shrine
-			}
+		}
+
+		Keybinds: {
+			"Quick Dash.DisplayName": Quick  Dash
+			"Toggle Haemsong Mode.DisplayName": Toggle  Haemsong  Mode
 		}
 	}
 
