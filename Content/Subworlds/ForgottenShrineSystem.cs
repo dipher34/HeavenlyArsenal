@@ -3,6 +3,7 @@ using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
+using NoxusBoss.Core.Graphics.LightingMask;
 using NoxusBoss.Core.Graphics.SpecificEffectManagers;
 using SubworldLibrary;
 using System.Reflection;
@@ -71,9 +72,10 @@ public class ForgottenShrineSystem : ModSystem
         mistShader.TrySetParameter("mistColor", new Color(84, 74, 154).ToVector4());
         mistShader.TrySetParameter("noiseAppearanceThreshold", 0.3f);
         mistShader.TrySetParameter("mistCoordinatesZoom", new Vector2(1f, 0.4f));
-        mistShader.TrySetParameter("mistHeight", 200f);
+        mistShader.TrySetParameter("mistHeight", 160f);
         mistShader.SetTexture(GennedAssets.Textures.Noise.PerlinNoise, 1, SamplerState.LinearWrap);
         mistShader.SetTexture(TileTargetManagers.LiquidTarget, 2, SamplerState.LinearClamp);
+        mistShader.SetTexture(LightingMaskTargetManager.LightTarget, 3, SamplerState.LinearClamp);
         mistShader.Activate();
 
         reflectionShader.TrySetParameter("targetSize", Main.ScreenSize.ToVector2());

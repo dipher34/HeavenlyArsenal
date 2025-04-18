@@ -1,6 +1,7 @@
 ﻿sampler baseTexture : register(s0);
 sampler noiseTexture : register(s1);
 sampler liquidTexture : register(s2);
+sampler lightTexture : register(s3);
 
 float globalTime;
 float noiseAppearanceThreshold;
@@ -39,10 +40,16 @@ float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD
     float2 worldStableCoords = (coords - 0.5) / zoom + 0.5 + screenPosition / targetSize;
     float2 liquidTextureCoords = (coords - 0.5) / zoom + 0.5 + screenOffset;
     
+    // Determine how much light is assigned to this pixel.
+    float light = tex2D(lightTexture, liquidTextureCoords);
+    
     // Determine how much mist should be present. Only pixels above liquid may receive mist.
     float distanceToLiquid = DistanceToLiquidPixel(liquidTextureCoords);
     float modulatedDistanceToLiquid = distanceToLiquid + cos(globalTime * 1.1 + worldStableCoords.x * 20) * 10;
     float mistInterpolant = smoothstep(0, 30, modulatedDistanceToLiquid) * smoothstep(mistHeight, mistHeight * 0.45, modulatedDistanceToLiquid);
+    
+    // Make mist dissipate if light is low.
+    mistInterpolant *= smoothstep(0, 0.5, pow(light, 1.6));
     
     // Do some standard noise calculations to determine the shape of the mist.
     float time = globalTime * 0.3;
