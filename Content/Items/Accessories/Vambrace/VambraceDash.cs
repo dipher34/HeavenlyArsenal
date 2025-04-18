@@ -44,7 +44,7 @@ namespace HeavenlyArsenal.Content.Items.Accessories.Vambrace
             Projectile.ignoreWater = true;
             Projectile.tileCollide = false;
             Projectile.penetrate = 1;
-            Projectile.timeLeft = 4;
+            Projectile.timeLeft = 30;
             Projectile.usesIDStaticNPCImmunity = true;
             Projectile.idStaticNPCHitCooldown = 22;
             
@@ -58,7 +58,7 @@ namespace HeavenlyArsenal.Content.Items.Accessories.Vambrace
             Time++;
             if (Main.myPlayer == Projectile.owner && modPlayer.isVambraceDashing)
             {
-                Projectile.timeLeft += 4;
+               
                 Projectile.position = new Vector2(Owner.MountedCenter.X+player.velocity.X
                     -Projectile.width/2
                     //+(Owner.direction)

@@ -1,10 +1,12 @@
 ﻿using CalamityMod;
 using CalamityMod.Buffs.Potions;
 using CalamityMod.Items.Armor.OmegaBlue;
+using CalamityMod.Particles;
 using CalamityMod.Projectiles.Typeless;
 using HeavenlyArsenal.Common.UI;
 using HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor;
 using Microsoft.Xna.Framework;
+using Steamworks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -44,7 +46,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.NewFolder
         private float clotDrainTimer = 0f;
 
         private float frenzyTimer = 0f;
-        private float CurrentBlood => bloodUnits.Sum(u => u.Amount);
+        public float CurrentBlood => bloodUnits.Sum(u => u.Amount);
         public float TotalResource => Math.Clamp(CurrentBlood + Clot, 0f, MaxResource);
         public override void Initialize()
         {
@@ -72,11 +74,13 @@ namespace HeavenlyArsenal.Content.Items.Armor.NewFolder
         {
             if (BloodArmorEquipped)
             {
+                /*
                 if (CalamityKeybinds.SpectralVeilHotKey.JustPressed)
                 {
                     CurrentForm = CurrentForm == BloodArmorForm.Offense ? BloodArmorForm.Defense : BloodArmorForm.Offense;
                     
                 }
+                */
                // Main.NewText($"Total: {TotalResource:F2} | Blood: {CurrentBlood:F2} | Clot: {Clot:F2} | frenzyTimer: {frenzyTimer:F2}| Frenzy: {Frenzy} | form : {CurrentForm}");
                 WeaponBar.DisplayBar(Color.AntiqueWhite, Color.Crimson, CurrentBlood, 120, 0, new Vector2(0,-30));
                 WeaponBar.DisplayBar(Color.Crimson, Color.AntiqueWhite, Clot, 120, 0, new Vector2(0, -20));
@@ -100,9 +104,10 @@ namespace HeavenlyArsenal.Content.Items.Armor.NewFolder
                 // ——— Offense Form & Frenzy ——— \\
                 if (CurrentForm == BloodArmorForm.Offense)
                 {
+                    Player.statDefense -= 50;
                     if (Player.ownedProjectileCounts[ModContent.ProjectileType<BloodNeedle>()] <= 2 && Main.myPlayer == Player.whoAmI)
                     {
-                        bool[] tentaclesPresent = new bool[6];
+                        bool[] tentaclesPresent = new bool[2];
                         foreach (Projectile projectile in Main.ActiveProjectiles)
                         {
                             if (projectile.type == ModContent.ProjectileType<BloodNeedle>() && projectile.owner == Main.myPlayer && projectile.ai[1] >= 0f && projectile.ai[1] < 6f)
@@ -143,16 +148,14 @@ namespace HeavenlyArsenal.Content.Items.Armor.NewFolder
                 if(CurrentForm == BloodArmorForm.Defense)
                 {
                     Player.moveSpeed *= 0.76f;
-                    Player.statDefense *= 2;
+                    Player.statDefense += 50;
                     clotDrainTimer += 1f / 60f;
+
                     if (Player.statLifeMax2 != Player.statLife)
                     {
                         if (clotDrainTimer >= ClotDrainInterval && Clot > 0f)
                         {
-                            Player.statLife += (int)(Player.statLifeMax2 * ClotHealingRate);
-                            Player.AddBuff(ModContent.BuffType<BloodfinBoost>(), 360, true, true);
-                            CombatText.NewText(Player.Hitbox, Color.Green, (int)(Player.statLifeMax2 * ClotHealingRate), true, false);
-                            Clot = Math.Max(Clot - 0.1f, 0f);
+                            EatClot();
                             clotDrainTimer = 0f;
                         }
                     }
@@ -168,7 +171,25 @@ namespace HeavenlyArsenal.Content.Items.Armor.NewFolder
                     Frenzy = false;
             }
             }
-        
+
+        public void EatClot()
+        {
+            Player.statLife += (int)(Player.statLifeMax2 * ClotHealingRate);
+            Player.AddBuff(ModContent.BuffType<BloodfinBoost>(), 360, true, true);
+            CombatText.NewText(Player.Hitbox, Color.Green, (int)(Player.statLifeMax2 * ClotHealingRate), true, false);
+            Clot = Math.Max(Clot - 0.1f, 0f);
+        }
+        public override void ArmorSetBonusActivated()
+        {
+            if (CurrentForm == BloodArmorForm.Offense)
+            {
+
+            }
+            else
+            {
+                Projectile.NewProjectile(Player.GetSource_FromThis(), Player.Center, Vector2.Zero, ModContent.ProjectileType<BloodHarpoon>(), 3000, 0f, Main.myPlayer);
+            }
+        }
 
         private void ApplyFrenzyEffects()
         {
@@ -207,24 +228,41 @@ namespace HeavenlyArsenal.Content.Items.Armor.NewFolder
             }
             if (BloodArmorEquipped && Frenzy)
             {
-                Dust.NewDust(Player.TopLeft, 30, 30, DustID.Torch, 0, 0, 100, default, 10);
+
+                if (Main.rand.NextBool(3))
+                {
+                    int dust = Dust.NewDust(Player.TopLeft - new Vector2(2f), Player.width + 4, Player.height + 4, Main.rand.NextBool(8) ? 296 : 5, Player.velocity.X * 0.4f, Player.velocity.Y * 0.4f, 100, default, 1.25f);
+                    Main.dust[dust].noGravity = true;
+                    Main.dust[dust].velocity *= 1.3f;
+                    Main.dust[dust].velocity.Y -= 0.5f;
+                    
+                }
+                if (Main.rand.NextBool(16))
+                {
+                    Particle Plus = new HealingPlus(Player.Center - new Vector2(4, 0), Main.rand.NextFloat(0.4f, 0.8f), new Vector2(0, Main.rand.NextFloat(-2f, -3.5f)) + Player.velocity, Color.Red, Color.DarkRed, Main.rand.Next(10, 15));
+                    GeneralParticleHandler.SpawnParticle(Plus);
+                }
             }
         }
         
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
+            AddBloodUnit();
+            base.OnHitNPC(target, hit, damageDone);
+        }
+
+        public void AddBloodUnit()
+        {
             if (BloodArmorEquipped && !Frenzy)
             {
                 // ——— Respect clot capacity when adding blood ———
                 float space = MaxResource - Clot - CurrentBlood;
-                float toAdd = Math.Min(0.01f, space);
+                float toAdd = Math.Min(0.005f, space);
                 if (toAdd > 0f)
                     bloodUnits.Add(new BloodUnit { Amount = toAdd, Age = 0f });
             }
-            base.OnHitNPC(target, hit, damageDone);
         }
-
         public override void ResetEffects()
         {
             if (!BloodArmorEquipped)

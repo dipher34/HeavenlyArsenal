@@ -417,15 +417,6 @@ Mods: {
 			}
 		}
 
-			}
-		}
-
-			}
-		}
-
-			}
-		}
-
 		Projectiles: {
 			Incomplete_gunHoldout.DisplayName: You shouldn't be seeing this!
 			ParasiteParadiseProjectile.DisplayName: Parasite Paradise Projectile
@@ -482,9 +473,15 @@ Mods: {
 			BloodNeedle.DisplayName: Blood Needle
 			VambraceDash.DisplayName: Vambrace Dash
 			VambraceDischarge.DisplayName: Vambrace Discharge
+			BloodHarpoon.DisplayName: Blood Harpoon
 		}
 
 		NPCs.AnAffrontToGod.DisplayName: Cravatar
+
+		Keybinds: {
+			"Quick Dash.DisplayName": Quick  Dash
+			"Toggle Haemsong Mode.DisplayName": Toggle  Haemsong  Mode
+		}
 	}
 
 	Cooldowns: {

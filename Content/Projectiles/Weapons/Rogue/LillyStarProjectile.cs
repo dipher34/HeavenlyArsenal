@@ -104,11 +104,7 @@ public class LillyStarProjectile : ModProjectile, IDrawSubtractive
         set => Projectile.localAI[2] = 1f - value.ToInt();  
     }
 
-    public bool HasFlownPastPlayer
-    {
-        get => Projectile.ai[2] == 1f;
-        set => Projectile.ai[2] = value.ToInt();
-    }
+ 
 
     public ref Player Owner => ref Main.player[Projectile.owner];
     public ref float Time => ref Projectile.ai[0];
