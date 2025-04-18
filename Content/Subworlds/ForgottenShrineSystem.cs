@@ -51,10 +51,20 @@ public class ForgottenShrineSystem : ModSystem
 
     public override void PreUpdateEntities()
     {
-        if (!SubworldSystem.IsActive<ForgottenShrineSubworld>())
-            return;
-
         ManagedScreenFilter mistShader = ShaderManager.GetFilter("HeavenlyArsenal.ForgottenShrineMistShader");
+        ManagedScreenFilter reflectionShader = ShaderManager.GetFilter("HeavenlyArsenal.ForgottenShrineWaterReflectionShader");
+        if (!SubworldSystem.IsActive<ForgottenShrineSubworld>())
+        {
+            for (int i = 0; i < 30; i++)
+            {
+                mistShader.Update();
+                reflectionShader.Update();
+            }
+            ModContent.GetInstance<ForgottenShrineBackground>().Opacity = 0f;
+
+            return;
+        }
+
         mistShader.TrySetParameter("targetSize", Main.ScreenSize.ToVector2());
         mistShader.TrySetParameter("oldScreenPosition", Main.screenPosition);
         mistShader.TrySetParameter("zoom", Main.GameViewMatrix.Zoom);
@@ -65,7 +75,6 @@ public class ForgottenShrineSystem : ModSystem
         mistShader.SetTexture(TileTargetManagers.LiquidTarget, 2, SamplerState.LinearClamp);
         mistShader.Activate();
 
-        ManagedScreenFilter reflectionShader = ShaderManager.GetFilter("HeavenlyArsenal.ForgottenShrineWaterReflectionShader");
         reflectionShader.TrySetParameter("targetSize", Main.ScreenSize.ToVector2());
         reflectionShader.TrySetParameter("oldScreenPosition", Main.screenPosition);
         reflectionShader.TrySetParameter("zoom", Main.GameViewMatrix.Zoom);
