@@ -57,7 +57,7 @@ public class ForgottenShrineBackground : Background
 
         Main.QueueMainThreadAction(() =>
         {
-            lanternSystem = new ForgottenShrineSkyLanternParticleSystem(16384, PrepareLanternParticleRendering, UpdateLanternParticles);
+            lanternSystem = new ForgottenShrineSkyLanternParticleSystem(8192, PrepareLanternParticleRendering, UpdateLanternParticles);
         });
     }
 
@@ -74,7 +74,7 @@ public class ForgottenShrineBackground : Background
 
     private static void UpdateLanternParticles(ref FastParticle particle)
     {
-        int lifetime = 240;
+        int lifetime = 200;
         float pathInterpolant = particle.ExtraData;
         if (particle.Time >= lifetime)
             particle.Active = false;
@@ -149,7 +149,7 @@ public class ForgottenShrineBackground : Background
         SkyManager.Instance["Ambience"].Deactivate();
         SkyManager.Instance["Party"].Deactivate();
 
-        for (int i = 0; i < 45; i++)
+        for (int i = 0; i < 40; i++)
         {
             float pathInterpolant = Main.rand.NextFloat(0.05f, 1f);
             float size = MathHelper.Lerp(2.5f, 11.5f, MathF.Pow(Main.rand.NextFloat(), 5f)) * Main.rand.NextFloat(0.4f, 1.2f);
