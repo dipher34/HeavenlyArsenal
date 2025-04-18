@@ -24,7 +24,8 @@ public class BridgePass : GenPass
             float archHeightInterpolant = MathF.Abs(MathF.Sin(MathHelper.Pi * x / bridgeWidth));
             int archHeight = (int)MathF.Round(archHeightInterpolant * ForgottenShrineGenerationConstants.BridgeArchHeight);
 
-            for (int dy = 0; dy < ForgottenShrineGenerationConstants.BridgeThickness; dy++)
+            int extraThickness = (int)Utils.Remap(archHeightInterpolant, 0.2f, 0f, 0f, ForgottenShrineGenerationConstants.BridgeThickness * 1.7f);
+            for (int dy = -extraThickness; dy < ForgottenShrineGenerationConstants.BridgeThickness; dy++)
             {
                 int archY = bridgeLowYPoint - archHeight - dy;
                 WorldGen.PlaceTile(x, archY, TileID.DynastyWood);
@@ -44,7 +45,9 @@ public class BridgePass : GenPass
         // sin(pi * x / width) = 1 / height
         // pi * x / width = arcsin(1 / height)
         // x = arcsin(1 / height) * width / pi
-        float intermediateArcsine = MathF.Asin(1f / ForgottenShrineGenerationConstants.BridgeArchHeight);
+
+        // For a bit of artistic preference, 0.6 will be used instead of 1 like in the original equation, making the beams a bit thinner.
+        float intermediateArcsine = MathF.Asin(0.6f / ForgottenShrineGenerationConstants.BridgeArchHeight);
         int beamWidth = (int)MathF.Round(intermediateArcsine * ForgottenShrineGenerationConstants.BridgeArchWidth / MathHelper.Pi);
         for (int dx = -beamWidth; dx <= beamWidth; dx++)
         {
