@@ -4,6 +4,8 @@ using CalamityMod.Items.Armor.OmegaBlue;
 using CalamityMod.Particles;
 using CalamityMod.Projectiles.Typeless;
 using HeavenlyArsenal.Common.UI;
+using HeavenlyArsenal.Content.Buffs;
+using HeavenlyArsenal.Content.Buffs.Stims;
 using HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor;
 using Microsoft.Xna.Framework;
 using Steamworks;
@@ -27,7 +29,11 @@ namespace HeavenlyArsenal.Content.Items.Armor.NewFolder
         public float Amount;
         public float Age; // seconds
     }
-
+    public class ClotUnit
+    {
+        public float Amount;
+        public float Age;
+    }
     public class BloodArmorPlayer : ModPlayer
     {
         public bool BloodArmorEquipped;
@@ -64,14 +70,16 @@ namespace HeavenlyArsenal.Content.Items.Armor.NewFolder
             {
                 if (CurrentForm != BloodArmorForm.Offense)
                 {
-                    
+
                 }
             }
-           
-            
+
+
         }
         public override void PostUpdateMiscEffects()
         {
+            //Main.NewText($"equipped: {BloodArmorEquipped} | Total: {TotalResource:F2} | Blood: {CurrentBlood:F2} | Clot: {Clot:F2} | frenzyTimer: {frenzyTimer:F2} | Frenzy: {Frenzy} | form : {CurrentForm}");
+
             if (BloodArmorEquipped)
             {
                 /*
@@ -81,8 +89,8 @@ namespace HeavenlyArsenal.Content.Items.Armor.NewFolder
                     
                 }
                 */
-               // Main.NewText($"Total: {TotalResource:F2} | Blood: {CurrentBlood:F2} | Clot: {Clot:F2} | frenzyTimer: {frenzyTimer:F2}| Frenzy: {Frenzy} | form : {CurrentForm}");
-                WeaponBar.DisplayBar(Color.AntiqueWhite, Color.Crimson, CurrentBlood, 120, 0, new Vector2(0,-30));
+                // Main.NewText($"Total: {TotalResource:F2} | Blood: {CurrentBlood:F2} | Clot: {Clot:F2} | frenzyTimer: {frenzyTimer:F2}| Frenzy: {Frenzy} | form : {CurrentForm}");
+                WeaponBar.DisplayBar(Color.AntiqueWhite, Color.Crimson, CurrentBlood, 120, 0, new Vector2(0, -30));
                 WeaponBar.DisplayBar(Color.Crimson, Color.AntiqueWhite, Clot, 120, 0, new Vector2(0, -20));
                 WeaponBar.DisplayBar(Color.HotPink, Color.Silver, TotalResource, 120, 1, new Vector2(0, -40));
                 // ——— Age & convert at most one unit per tick ——— \\
@@ -100,12 +108,12 @@ namespace HeavenlyArsenal.Content.Items.Armor.NewFolder
                         convertedThisTick = true;
                     }
                 }
-                
+
                 // ——— Offense Form & Frenzy ——— \\
                 if (CurrentForm == BloodArmorForm.Offense)
                 {
                     Player.statDefense -= 50;
-                    if (Player.ownedProjectileCounts[ModContent.ProjectileType<BloodNeedle>()] <= 2 && Main.myPlayer == Player.whoAmI)
+                    if (Player.ownedProjectileCounts[ModContent.ProjectileType<BloodNeedle>()] <= 1 && Main.myPlayer == Player.whoAmI)
                     {
                         bool[] tentaclesPresent = new bool[2];
                         foreach (Projectile projectile in Main.ActiveProjectiles)
@@ -136,17 +144,20 @@ namespace HeavenlyArsenal.Content.Items.Armor.NewFolder
                         Player.GetDamage<GenericDamageClass>() += damageUp;
                         Player.GetCritChance<GenericDamageClass>() += critUp;
                     }
-                    if (TotalResource >= MaxResource && CurrentBlood != 0 && !Frenzy)
+                    if (TotalResource >= MaxResource && CurrentBlood != 0 && !Frenzy && CurrentForm == BloodArmorForm.Offense)
                     {
                         Frenzy = true;
                         frenzyTimer = 1f + TotalResource * 9f;
                     }
-                    if (Frenzy)
+                    if (Frenzy) 
+                        { 
+                        Player.AddBuff(ModContent.BuffType<BloodArmorFrenzy>(), (int)frenzyTimer, true);
                         ApplyFrenzyEffects();
-                }
-                // ——— Defense Form ——— \\
-                if(CurrentForm == BloodArmorForm.Defense)
-                {
+                        }
+                    }
+                    // ——— Defense Form ——— \\
+                    if (CurrentForm == BloodArmorForm.Defense)
+                    {
                     Player.moveSpeed *= 0.76f;
                     Player.statDefense += 50;
                     clotDrainTimer += 1f / 60f;
@@ -170,7 +181,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.NewFolder
                 if (frenzyTimer <= 0f)
                     Frenzy = false;
             }
-            }
+        }
 
         public void EatClot()
         {
@@ -181,14 +192,18 @@ namespace HeavenlyArsenal.Content.Items.Armor.NewFolder
         }
         public override void ArmorSetBonusActivated()
         {
-            if (CurrentForm == BloodArmorForm.Offense)
+            if (BloodArmorEquipped)
             {
+                if (CurrentForm == BloodArmorForm.Offense)
+                {
 
+                }
+                else
+                {
+                    Projectile.NewProjectile(Player.GetSource_FromThis(), Player.Center, Vector2.Zero, ModContent.ProjectileType<BloodHarpoon>(), 3000, 0f, Main.myPlayer);
+                }
             }
-            else
-            {
-                Projectile.NewProjectile(Player.GetSource_FromThis(), Player.Center, Vector2.Zero, ModContent.ProjectileType<BloodHarpoon>(), 3000, 0f, Main.myPlayer);
-            }
+
         }
 
         private void ApplyFrenzyEffects()
@@ -235,24 +250,25 @@ namespace HeavenlyArsenal.Content.Items.Armor.NewFolder
                     Main.dust[dust].noGravity = true;
                     Main.dust[dust].velocity *= 1.3f;
                     Main.dust[dust].velocity.Y -= 0.5f;
-                    
+                   
+
                 }
-                if (Main.rand.NextBool(16))
+                if (Main.rand.NextBool(5))
                 {
-                    Particle Plus = new HealingPlus(Player.Center - new Vector2(4, 0), Main.rand.NextFloat(0.4f, 0.8f), new Vector2(0, Main.rand.NextFloat(-2f, -3.5f)) + Player.velocity, Color.Red, Color.DarkRed, Main.rand.Next(10, 15));
+                    Particle Plus = new HealingPlus(Player.Center - new Vector2(Main.rand.NextFloat(-16,16), 0), Main.rand.NextFloat(1.4f, 1.8f), new Vector2(0, Main.rand.NextFloat(-2f, -3.5f)) + Player.velocity, Color.Red, Color.DarkRed, Main.rand.Next(50));
                     GeneralParticleHandler.SpawnParticle(Plus);
                 }
             }
         }
-        
+
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
-            AddBloodUnit();
+            AddBloodUnit(0);
             base.OnHitNPC(target, hit, damageDone);
         }
 
-        public void AddBloodUnit()
+        public void AddBloodUnit(float age = 0f )
         {
             if (BloodArmorEquipped && !Frenzy)
             {
@@ -267,13 +283,14 @@ namespace HeavenlyArsenal.Content.Items.Armor.NewFolder
         {
             if (!BloodArmorEquipped)
             {
-               
+                /*
                 for (int i = bloodUnits.Count - 1; i >= 0; i--)
                 {
                     bloodUnits[i].Amount = Math.Max(bloodUnits[i].Amount - 0.05f, 0f);
                     if (bloodUnits[i].Amount <= 0f)
                         bloodUnits.RemoveAt(i);
                 }
+                */
             }
             BloodArmorEquipped = false;
         }

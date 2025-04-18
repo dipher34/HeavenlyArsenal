@@ -16,7 +16,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             Item.width = 18;
             Item.height = 18;
             Item.value = CalamityGlobalItem.RarityPureGreenBuyPrice;
-            Item.defense = 29;
+            Item.defense = 43;
             Item.rare = ModContent.RarityType<PureGreen>();
         }
         public override void SetStaticDefaults()

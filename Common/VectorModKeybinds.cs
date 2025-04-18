@@ -1,5 +1,8 @@
 using HeavenlyArsenal.Content.Items.Armor.NewFolder;
+using Microsoft.Xna.Framework.Audio;
+using NoxusBoss.Assets;
 using Terraria;
+using Terraria.Audio;
 using Terraria.GameInput;
 using Terraria.ModLoader;
 
@@ -18,9 +21,12 @@ namespace VectorMod.Systems
                 Player.GetModPlayer<VectorModPlayer>().quickDash = true;
             }
             */
-            if (KeybindSystem.HaemsongBind.JustPressed)
+
+            var bloodArmorPlayer = Player.GetModPlayer<BloodArmorPlayer>();
+            if (KeybindSystem.HaemsongBind.JustPressed && bloodArmorPlayer.BloodArmorEquipped)
             {
-                var bloodArmorPlayer = Player.GetModPlayer<BloodArmorPlayer>();
+                SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.ArmJutOut with {Volume = 0.2f, Pitch = -1f },Player.Center, null);
+                
                 bloodArmorPlayer.CurrentForm = bloodArmorPlayer.CurrentForm == BloodArmorForm.Offense
                     ? BloodArmorForm.Defense
                     : BloodArmorForm.Offense;

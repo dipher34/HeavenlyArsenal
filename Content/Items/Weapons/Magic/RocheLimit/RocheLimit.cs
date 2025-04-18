@@ -42,6 +42,8 @@ public class RocheLimit : ModItem
             if (item.type == NamelessDeityBoss.TreasureBagID)
                 loot.Add(ItemDropRule.Common(Type));
         };
+
+
     }
 
     public override void SetDefaults()

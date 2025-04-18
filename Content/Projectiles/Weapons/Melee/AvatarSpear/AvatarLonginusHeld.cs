@@ -406,7 +406,8 @@ public class AvatarLonginusHeld : ModProjectile
 
                     if (InUse)
                     {
-                        AttackState = (int)AvatarSpearAttacks.WhipSlash;
+                        //temporary bypass, was whipslash
+                        AttackState = (int)AvatarSpearAttacks.RapidStabs;
                         Time = 0;
                     }
                     else if (Time > HeavyWindUp + HeavyThrustTime - HeavyWindDown)
@@ -480,7 +481,8 @@ public class AvatarLonginusHeld : ModProjectile
                     HandleEmpowerment();
                     if (InUse)
                     {
-                        AttackState = (int)AvatarSpearAttacks.WhipSlash;
+                        //temporary bypass
+                        AttackState = (int)AvatarSpearAttacks.RapidStabs;
                         Time = 0;
                     }
                     else if (Time > PullTime + RipTime)
