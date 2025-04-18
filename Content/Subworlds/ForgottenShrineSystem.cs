@@ -1,5 +1,10 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Luminance.Core.Graphics;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using NoxusBoss.Assets;
+using NoxusBoss.Core.Graphics.SpecificEffectManagers;
 using SubworldLibrary;
+using Terraria;
 using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Subworlds;
@@ -10,6 +15,14 @@ public class ForgottenShrineSystem : ModSystem
     {
         if (!SubworldSystem.IsActive<ForgottenShrineSubworld>())
             return;
+
+        ManagedScreenFilter mistShader = ShaderManager.GetFilter("HeavenlyArsenal.ForgottenShrineMistShader");
+        mistShader.TrySetParameter("targetSize", Main.ScreenSize.ToVector2());
+        mistShader.TrySetParameter("oldScreenPosition", Main.screenPosition);
+        mistShader.TrySetParameter("zoom", Main.GameViewMatrix.Zoom);
+        mistShader.SetTexture(GennedAssets.Textures.Noise.PerlinNoise, 1, SamplerState.LinearWrap);
+        mistShader.SetTexture(TileTargetManagers.LiquidTarget, 2, SamplerState.LinearClamp);
+        mistShader.Activate();
 
         ModContent.GetInstance<ForgottenShrineBackground>().ShouldBeActive = true;
     }

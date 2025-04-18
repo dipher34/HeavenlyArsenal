@@ -16,7 +16,7 @@ public class ForgottenShrineWater : ModWaterStyle
 {
     public override int ChooseWaterfallStyle() => ModContent.Find<ModWaterfallStyle>("HeavenlyArsenal/ForgottenShrineWaterflow").Slot;
 
-    public override int GetSplashDust() => DustID.ShimmerSplash;
+    public override int GetSplashDust() => DustID.BloodWater;
 
     public override int GetDropletGore() => GoreID.WaterDripBlood;
 
