@@ -3,7 +3,9 @@ using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
+using NoxusBoss.Core.DataStructures;
 using NoxusBoss.Core.Graphics.BackgroundManagement;
+using NoxusBoss.Core.Graphics.FastParticleSystems;
 using ReLogic.Content;
 using System;
 using Terraria;
@@ -14,7 +16,11 @@ namespace HeavenlyArsenal.Content.Subworlds;
 
 public class ForgottenShrineBackground : Background
 {
-    private static readonly Vector2[] lanternPathOffsets = new Vector2[67];
+    private static DeCasteljauCurve lanternVelocityPath;
+
+    private static ForgottenShrineSkyLanternParticleSystem lanternSystem;
+
+    private static readonly Vector2[] lanternPathOffsets = new Vector2[95];
 
     private static readonly Asset<Texture2D> skyColorGradient = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Subworlds/ShrineSkyColor");
 
@@ -28,6 +34,7 @@ public class ForgottenShrineBackground : Background
 
     public override void Load()
     {
+        Vector2[] velocities = new Vector2[lanternPathOffsets.Length - 1];
         for (int i = 0; i < lanternPathOffsets.Length; i++)
         {
             float completionRatio = i / (float)(lanternPathOffsets.Length - 1f);
@@ -36,7 +43,27 @@ public class ForgottenShrineBackground : Background
             Vector2 offset = Vector2.UnitY.RotatedBy(angle) * radius;
 
             lanternPathOffsets[i] = offset;
+
+            if (i >= 1)
+                velocities[i] = (lanternPathOffsets[i] - lanternPathOffsets[i - 1]);
         }
+
+        lanternVelocityPath = new DeCasteljauCurve(velocities);
+
+        Main.QueueMainThreadAction(() =>
+        {
+            lanternSystem = new ForgottenShrineSkyLanternParticleSystem(4096, PrepareLanternParticleRendering, UpdateLanternParticles);
+        });
+    }
+
+    private static void PrepareLanternParticleRendering()
+    {
+
+    }
+
+    private static void UpdateLanternParticles(ref FastParticle particle)
+    {
+
     }
 
     public override void Render(Vector2 backgroundSize, float minDepth, float maxDepth)
@@ -95,6 +122,11 @@ public class ForgottenShrineBackground : Background
     {
         SkyManager.Instance["Ambience"].Deactivate();
         SkyManager.Instance["Party"].Deactivate();
+
+        for (int i = 0; i < 10; i++)
+        {
+
+        }
 
         base.Update();
     }
