@@ -19,6 +19,6 @@ public class ForgottenShrineSystem : ModSystem
         if (!SubworldSystem.IsActive<ForgottenShrineSubworld>())
             return;
 
-        tileColor = new Color(0.85f, 0.61f, 0.61f);
+        tileColor = new Color(0.6f, 0.4f, 0.4f);
     }
 }
