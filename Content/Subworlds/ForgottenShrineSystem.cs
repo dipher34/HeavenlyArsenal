@@ -65,6 +65,15 @@ public class ForgottenShrineSystem : ModSystem
         mistShader.SetTexture(TileTargetManagers.LiquidTarget, 2, SamplerState.LinearClamp);
         mistShader.Activate();
 
+        ManagedScreenFilter reflectionShader = ShaderManager.GetFilter("HeavenlyArsenal.ForgottenShrineWaterReflectionShader");
+        reflectionShader.TrySetParameter("targetSize", Main.ScreenSize.ToVector2());
+        reflectionShader.TrySetParameter("oldScreenPosition", Main.screenPosition);
+        reflectionShader.TrySetParameter("zoom", Main.GameViewMatrix.Zoom);
+        reflectionShader.TrySetParameter("reflectionStrength", 0.47f);
+        reflectionShader.TrySetParameter("reflectionMaxDepth", 146f);
+        reflectionShader.SetTexture(TileTargetManagers.LiquidTarget, 2, SamplerState.LinearClamp);
+        reflectionShader.Activate();
+
         ModContent.GetInstance<ForgottenShrineBackground>().ShouldBeActive = true;
     }
 
