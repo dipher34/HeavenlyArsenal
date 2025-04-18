@@ -5,14 +5,20 @@ using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
 using NoxusBoss.Core.Graphics.SpecificEffectManagers;
 using SubworldLibrary;
+using System.Reflection;
 using Terraria;
+using Terraria.GameContent.Shaders;
 using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Subworlds;
 
 public class ForgottenShrineSystem : ModSystem
 {
-    public override void OnModLoad() => On_Main.CalculateWaterStyle += ForceShrineWater;
+    public override void OnModLoad()
+    {
+        On_Main.CalculateWaterStyle += ForceShrineWater;
+        On_WaterShaderData.Apply += DisableIdleLiquidDistortion;
+    }
 
     // Not doing this results in beach water somehow having priority over shrine water in the outer parts of the subworld.
     private static int ForceShrineWater(On_Main.orig_CalculateWaterStyle orig, bool ignoreFountains)
@@ -21,6 +27,26 @@ public class ForgottenShrineSystem : ModSystem
             return ModContent.GetInstance<ForgottenShrineWater>().Slot;
 
         return orig(ignoreFountains);
+    }
+
+    private void DisableIdleLiquidDistortion(On_WaterShaderData.orig_Apply orig, WaterShaderData self)
+    {
+        orig(self);
+
+        if (SubworldSystem.IsActive<ForgottenShrineSubworld>())
+        {
+            Vector2 screenSize = Main.ScreenSize.ToVector2();
+            RenderTarget2D distortionTarget = (RenderTarget2D)typeof(WaterShaderData).GetField("_distortionTarget", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(self);
+            ManagedShader waterShader = ShaderManager.GetShader("HeavenlyArsenal.ShrineWaterShader");
+            waterShader.TrySetParameter("zoom", Main.GameViewMatrix.Zoom);
+            waterShader.TrySetParameter("screenOffset", (Main.screenPosition - Main.screenLastPosition) / screenSize);
+            waterShader.TrySetParameter("targetSize", screenSize);
+            waterShader.SetTexture(distortionTarget, 1);
+            waterShader.SetTexture(TileTargetManagers.LiquidTarget, 2, SamplerState.LinearClamp);
+            waterShader.Apply();
+
+            Main.graphics.GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
+        }
     }
 
     public override void PreUpdateEntities()
