@@ -180,8 +180,11 @@ public class ShrineRopeData
             if (ropeSegment.pinned)
                 continue;
 
-            float playerProximityInterpolant = LumUtils.InverseLerp(50f, 10f, Main.LocalPlayer.Distance(ropeSegment.position));
-            ropeSegment.position += Main.LocalPlayer.velocity * playerProximityInterpolant * 0.4f;
+            foreach (Player player in Main.ActivePlayers)
+            {
+                float playerProximityInterpolant = LumUtils.InverseLerp(50f, 10f, player.Distance(ropeSegment.position));
+                ropeSegment.position += player.velocity * playerProximityInterpolant * 0.4f;
+            }
         }
 
         WindTime = (WindTime + MathF.Abs(Main.windSpeedCurrent) * 0.11f) % (MathHelper.TwoPi * 5000f);

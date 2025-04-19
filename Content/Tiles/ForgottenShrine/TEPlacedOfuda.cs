@@ -64,9 +64,11 @@ public class TEPlacedOfuda : ModTileEntity, IClientSideTileEntityUpdater
             if (segment.pinned)
                 continue;
 
-            // TODO -- You know, I've just been using LocalPlayer for these sorts of things, but really such processes should loop over every player so they can apply forces individually.
-            float proximityInterpolant = LumUtils.InverseLerp(40f, 12f, Main.LocalPlayer.Distance(segment.position));
-            segment.position.X += Main.LocalPlayer.velocity.X * proximityInterpolant * 0.06f;
+            foreach (Player player in Main.ActivePlayers)
+            {
+                float playerProximityInterpolant = LumUtils.InverseLerp(40f, 12f, player.Distance(segment.position));
+                segment.position.X += player.velocity.X * playerProximityInterpolant * 0.06f;
+            }
         }
         rope.Update();
     }
