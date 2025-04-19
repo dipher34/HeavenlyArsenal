@@ -25,6 +25,16 @@ public static class ForgottenShrineGenerationConstants
     public static int BridgeArchWidth => 76;
 
     /// <summary>
+    /// The amount of horizontal coverage that ropes underneath the bridge have, in tile coordinates.
+    /// </summary>
+    public static int BridgeUndersideRopeWidth => (int)(BridgeArchWidth * 0.6f);
+
+    /// <summary>
+    /// The amount of vertical coverage that ropes beneath the bridge should have due to sag, in tile coordinates.
+    /// </summary>
+    public static int BridgeUndersideRopeSag => (int)(BridgeBeamHeight * 0.7f);
+
+    /// <summary>
     /// The maximum height of arches on the bridge.
     /// </summary>
     public static int BridgeArchHeight => 3;

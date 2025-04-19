@@ -1,5 +1,6 @@
 ﻿using HeavenlyArsenal.Common.utils;
 using Luminance.Assets;
+using Luminance.Common.Utilities;
 using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -33,6 +34,15 @@ public class ShrineRopeData
     }
 
     /// <summary>
+    /// The amount by which this rope should sag when completely at rest.
+    /// </summary>
+    public float Sag
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
     /// The starting position of the rope.
     /// </summary>
     public readonly Point Start;
@@ -60,27 +70,88 @@ public class ShrineRopeData
     public readonly Rope VerletRope;
 
     /// <summary>
-    /// The maximum length of ropes.
+    /// The maximum length of this rope.
     /// </summary>
-    public static float MaxLength => 700f;
+    public float MaxLength
+    {
+        get;
+        private set;
+    }
 
     /// <summary>
     /// The amount of gravity imposed on this rope.
     /// </summary>
     public static float Gravity => 0.65f;
 
-    public ShrineRopeData(Point start, Point end)
+    public ShrineRopeData(Point start, Point end, float sag)
     {
         Vector2 startVector = start.ToVector2();
         Vector2 endVector = end.ToVector2();
-
-        int segmentCOunt = 30;
-        VerletRope = new Rope(startVector, endVector, segmentCOunt, MaxLength / segmentCOunt, Vector2.UnitY * Gravity, 15);
-        for (int i = 0; i < 4; i++)
-            VerletRope.Settle();
+        Sag = sag;
 
         Start = start;
-        End = end;
+        this.end = end;
+
+        MaxLength = CalculateMaxLength();
+
+        int segmentCount = 30;
+        VerletRope = new Rope(startVector, endVector, segmentCount, MaxLength / segmentCount, Vector2.UnitY * Gravity, 15);
+        for (int i = 0; i < 4; i++)
+            VerletRope.Settle();
+    }
+
+    private float CalculateMaxLength()
+    {
+        float ropeSpan = Vector2.Distance(Start.ToVector2(), End.ToVector2());
+
+        // A rope at rest is defined via a catenary curve, which exists in the following mathematical form:
+        // y(x) = a * cosh(x / a)
+
+        // Furthermore, the length of a rope, given the horizontal width w for a rope, is defined as follows:
+        // L = 2a * sinh(w / 2a)
+
+        // In order to use the above equation, the value of a must be determined for the catenary that this rope will form.
+        // To do so, a numerical solution will need to be found based on the known width and sag values.
+
+        // Suppose the two supports are at equal height at distances -w/2 and w/2.
+        // From this, sag (which will be denoted with h) can be defined in the following way: h = y(w/2) - y(0)
+        // Reducing this results in the following equation:
+
+        // h = a(cosh(w / 2a) - 1)
+        // a(cosh(w / 2a) - 1) - h = 0
+        // This can be used to numerically find a.
+        float initialGuessA = Sag;
+        float a = (float)IterativelySearchForRoot(x =>
+        {
+            return x * (Math.Cosh(ropeSpan / x * 0.5) - 1D) - Sag;
+        }, initialGuessA, 9);
+
+        // Now that a is known, it's just a matter of plugging it back into the original equation to find L.
+        return MathF.Sinh(ropeSpan / a * 0.5f) * a * 2f;
+    }
+
+    /// <summary>
+    /// Searches for an approximate for a root of a given function.
+    /// </summary>
+    /// <param name="fx">The function to find the root for.</param>
+    /// <param name="initialGuess">The initial guess for what the root could be.</param>
+    /// <param name="iterations">The amount of iterations to perform. The higher this is, the more generally accurate the result will be.</param>
+    public static double IterativelySearchForRoot(Func<double, double> fx, double initialGuess, int iterations)
+    {
+        // This uses the Newton-Raphson method to iteratively get closer and closer to roots of a given function.
+        // The exactly formula is as follows:
+        // x = x - f(x) / f'(x)
+        // In most circumstances repeating the above equation will result in closer and closer approximations to a root.
+        // The exact reason as to why this intuitively works can be found at the following video:
+        // https://www.youtube.com/watch?v=-RdOwhmqP5s
+        double result = initialGuess;
+        for (int i = 0; i < iterations; i++)
+        {
+            double derivative = fx.ApproximateDerivative(result);
+            result -= fx(result) / derivative;
+        }
+
+        return result;
     }
 
     private void ClampToMaxLength(ref Vector2 end)
@@ -204,6 +275,8 @@ public class ShrineRopeData
         {
             ["Start"] = Start,
             ["End"] = End,
+            ["Sag"] = Sag,
+            ["MaxLength"] = MaxLength,
             ["RopePositions"] = VerletRope.segments.Select(p => p.position.ToPoint()).ToList()
         };
     }
@@ -213,7 +286,10 @@ public class ShrineRopeData
     /// </summary>
     public static ShrineRopeData Deserialize(TagCompound tag)
     {
-        ShrineRopeData rope = new ShrineRopeData(tag.Get<Point>("Start"), tag.Get<Point>("End"));
+        ShrineRopeData rope = new ShrineRopeData(tag.Get<Point>("Start"), tag.Get<Point>("End"), tag.GetFloat("Sag"))
+        {
+            MaxLength = tag.GetFloat("MaxLength")
+        };
         Vector2[] ropePositions = [.. tag.Get<Point[]>("RopePositions").Select(p => p.ToVector2())];
 
         rope.VerletRope.segments = new Rope.RopeSegment[ropePositions.Length];

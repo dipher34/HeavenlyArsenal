@@ -51,7 +51,7 @@ public class BridgePass : GenPass
         }
 
         // Adorn the bridge with ropes and create beams.
-        int innerRopeSpacing = (int)(bridgeWidth * 0.24f);
+        int innerRopeSpacing = (bridgeWidth - ForgottenShrineGenerationConstants.BridgeUndersideRopeWidth) / 2;
         int ropeY = bridgeLowYPoint - 2;
         for (int x = 0; x < Main.maxTilesX; x++)
         {
@@ -70,7 +70,7 @@ public class BridgePass : GenPass
                 start.Y -= 16;
                 end.Y -= 16;
 
-                ShrineRopeSystem.Register(new ShrineRopeData(start, end));
+                ShrineRopeSystem.Register(new ShrineRopeData(start, end, ForgottenShrineGenerationConstants.BridgeUndersideRopeSag * 16f));
             }
         }
 
