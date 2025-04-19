@@ -187,7 +187,7 @@ public class ShrineRopeData
 
             // Draw lanterns.
             sampleInterpolant = MathHelper.Lerp(0.1f, 0.8f, (i + 0.5f) / (float)(ornamentCount - 1f));
-            float lanternRotation = windForce;
+            float lanternRotation = LumUtils.AperiodicSin(WindTime * 0.23f + ornamentWorldPosition.X * 0.15f) * 0.45f;
             Vector2 lanternWorldPosition = positionCurve.Evaluate(sampleInterpolant);
             Vector2 lanternDrawPosition = lanternWorldPosition - Main.screenPosition;
             Vector2 lanternGlowDrawPosition = lanternDrawPosition + Vector2.UnitY.RotatedBy(lanternRotation) * 8f;
