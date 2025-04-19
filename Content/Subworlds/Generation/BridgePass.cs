@@ -23,7 +23,6 @@ public class BridgePass : GenPass
         int waterLevelY = groundLevelY - ForgottenShrineGenerationConstants.WaterDepth;
         int bridgeLowYPoint = waterLevelY - ForgottenShrineGenerationConstants.BridgeBeamHeight;
         int bridgeThickness = ForgottenShrineGenerationConstants.BridgeThickness;
-        ushort fenceID = (ushort)ModContent.TileType<CrimsonFence>();
 
         int[] placeFenceSpokeMap = new int[Main.maxTilesX];
         bool[] useDescendingFramesMap = new bool[Main.maxTilesX];
@@ -49,60 +48,14 @@ public class BridgePass : GenPass
 
             // Place base bridge tiles.
             int extraThickness = (int)Utils.Remap(archHeightInterpolant, 0.6f, 0f, 0f, bridgeThickness * 1.25f);
-            for (int dy = -extraThickness; dy < bridgeThickness; dy++)
-            {
-                int archY = bridgeLowYPoint - archHeight - dy;
-                int tileID = TileID.GrayBrick;
-                if (dy >= bridgeThickness - 2)
-                    tileID = TileID.RedDynastyShingles;
-                else if (dy >= bridgeThickness - 4)
-                    tileID = TileID.DynastyWood;
-
-                WorldGen.PlaceTile(x, archY, tileID);
-            }
+            int archStartingY = bridgeLowYPoint - archHeight;
+            PlaceBaseTiles(x, archStartingY, extraThickness);
 
             // Create walls underneath the bridge.
-            int wallHeight = (int)MathF.Round(MathHelper.Lerp(8f, 2f, MathF.Pow(archHeightInterpolant, 1.7f)));
-            for (int dy = -extraThickness - wallHeight; dy < bridgeThickness - 2; dy++)
-            {
-                int wallY = bridgeLowYPoint - archHeight - dy;
-                WorldGen.PlaceWall(x, wallY, WallID.LivingWood);
-                WorldGen.paintWall(x, wallY, PaintID.GrayPaint);
-            }
-
-            int fenceHeight = 4;
-            int fenceFrameX = 2;
-            int fenceXPosition = x % bridgeWidth;
-            if (fenceXPosition == bridgeWidth / 3 || fenceXPosition == bridgeWidth * 2 / 3)
-                fenceFrameX = 3;
-            if (fenceXPosition == bridgeWidth / 2)
-                fenceFrameX = 4;
-
-            if (placeFenceSpokeMap[x] >= 1)
-            {
-                fenceHeight += placeFenceSpokeMap[x];
-                fenceFrameX = useDescendingFramesMap[x] ? 0 : 1;
-            }
+            PlaceWalls(x, archHeightInterpolant, archStartingY, extraThickness);
 
             // Place fences atop the bridge.
-            for (int dy = 0; dy < fenceHeight; dy++)
-            {
-                int fenceY = bridgeLowYPoint - archHeight - bridgeThickness - dy;
-                Tile t = Main.tile[x, fenceY];
-                t.TileType = fenceID;
-                t.HasTile = true;
-                t.TileFrameX = (short)(fenceFrameX * 18);
-
-                int frameY = 2;
-                if (dy == fenceHeight - 1)
-                    frameY = 0;
-                if (dy == fenceHeight - 2)
-                    frameY = 1;
-                if (dy == 0)
-                    frameY = 3;
-
-                t.TileFrameY = (short)(frameY * 18);
-            }
+            PlaceFence(x, archStartingY, placeFenceSpokeMap, useDescendingFramesMap);
         }
 
         // Adorn the bridge with ropes and create beams.
@@ -139,6 +92,72 @@ public class BridgePass : GenPass
     {
         archHeightInterpolant = MathF.Abs(MathF.Sin(MathHelper.Pi * x / ForgottenShrineGenerationConstants.BridgeArchWidth));
         return (int)MathF.Round(archHeightInterpolant * ForgottenShrineGenerationConstants.BridgeArchHeight);
+    }
+
+    private static void PlaceBaseTiles(int x, int archStartingY, int extraThickness)
+    {
+        int bridgeThickness = ForgottenShrineGenerationConstants.BridgeThickness;
+        for (int dy = -extraThickness; dy < bridgeThickness; dy++)
+        {
+            int archY = archStartingY - dy;
+            int tileID = TileID.GrayBrick;
+            if (dy >= bridgeThickness - 2)
+                tileID = TileID.RedDynastyShingles;
+            else if (dy >= bridgeThickness - 4)
+                tileID = TileID.DynastyWood;
+
+            WorldGen.PlaceTile(x, archY, tileID);
+        }
+    }
+
+    private static void PlaceFence(int x, int archStartingY, int[] placeFenceSpokeMap, bool[] useDescendingFramesMap)
+    {
+        int bridgeWidth = ForgottenShrineGenerationConstants.BridgeArchWidth;
+        int bridgeThickness = ForgottenShrineGenerationConstants.BridgeThickness;
+        int fenceHeight = 4;
+        int fenceFrameX = 2;
+        int fenceXPosition = x % bridgeWidth;
+        if (fenceXPosition == bridgeWidth / 3 || fenceXPosition == bridgeWidth * 2 / 3)
+            fenceFrameX = 3;
+        if (fenceXPosition == bridgeWidth / 2)
+            fenceFrameX = 4;
+
+        if (placeFenceSpokeMap[x] >= 1)
+        {
+            fenceHeight += placeFenceSpokeMap[x];
+            fenceFrameX = useDescendingFramesMap[x] ? 0 : 1;
+        }
+
+        for (int dy = 0; dy < fenceHeight; dy++)
+        {
+            int fenceY = archStartingY - bridgeThickness - dy;
+            Tile t = Main.tile[x, fenceY];
+            t.TileType = (ushort)ModContent.TileType<CrimsonFence>();
+            t.HasTile = true;
+            t.TileFrameX = (short)(fenceFrameX * 18);
+
+            int frameY = 2;
+            if (dy == fenceHeight - 1)
+                frameY = 0;
+            if (dy == fenceHeight - 2)
+                frameY = 1;
+            if (dy == 0)
+                frameY = 3;
+
+            t.TileFrameY = (short)(frameY * 18);
+        }
+    }
+
+    private static void PlaceWalls(int x, float archHeightInterpolant, int archStartingY, int extraThickness)
+    {
+        int bridgeThickness = ForgottenShrineGenerationConstants.BridgeThickness;
+        int wallHeight = (int)MathF.Round(MathHelper.Lerp(8f, 2f, MathF.Pow(archHeightInterpolant, 1.7f)));
+        for (int dy = -extraThickness - wallHeight; dy < bridgeThickness - 2; dy++)
+        {
+            int wallY = archStartingY - dy;
+            WorldGen.PlaceWall(x, wallY, WallID.LivingWood);
+            WorldGen.paintWall(x, wallY, PaintID.GrayPaint);
+        }
     }
 
     private static void PlaceBeam(int groundLevelY, int startingX, int startingY)
