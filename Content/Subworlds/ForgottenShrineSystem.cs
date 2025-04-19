@@ -144,6 +144,7 @@ public class ForgottenShrineSystem : ModSystem
         if (!WasInSubworldLastFrame)
             return;
 
+        ModContent.GetInstance<ForgottenShrineBackground>().ShouldBeActive = true;
         Main.time = Main.nightLength * 0.71;
         Main.dayTime = false;
         Main.windSpeedCurrent = 0.23f;
@@ -184,8 +185,6 @@ public class ForgottenShrineSystem : ModSystem
         reflectionShader.TrySetParameter("reflectionMaxDepth", 146f);
         reflectionShader.SetTexture(TileTargetManagers.LiquidTarget, 2, SamplerState.LinearClamp);
         reflectionShader.Activate();
-
-        ModContent.GetInstance<ForgottenShrineBackground>().ShouldBeActive = true;
     }
 
     public override void ModifySunLightColor(ref Color tileColor, ref Color backgroundColor)
