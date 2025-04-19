@@ -61,7 +61,7 @@ float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD
     
     // Make reflections brighter in spots where it's already bright.
     float reflectionBrightness = dot(reflectedColor.rgb, float3(0.3, 0.6, 0.1));
-    reflectedColor *= 1 + smoothstep(0.5, 1, reflectionBrightness) * 0.75;
+    reflectedColor *= 1 + smoothstep(0.5, 1, reflectionBrightness) * 0.93;
     
     // Combine things together.
     return baseColor + reflectionInterpolant * reflectedColor * reflectionStrength * edgeOfScreenTaper;
