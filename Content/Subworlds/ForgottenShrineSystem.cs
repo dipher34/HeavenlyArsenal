@@ -183,6 +183,7 @@ public class ForgottenShrineSystem : ModSystem
         reflectionShader.TrySetParameter("zoom", Main.GameViewMatrix.Zoom);
         reflectionShader.TrySetParameter("reflectionStrength", 0.47f);
         reflectionShader.TrySetParameter("reflectionMaxDepth", 146f);
+        reflectionShader.TrySetParameter("reflectionWaviness", 0.0023f);
         reflectionShader.SetTexture(TileTargetManagers.LiquidTarget, 2, SamplerState.LinearClamp);
         reflectionShader.Activate();
     }
