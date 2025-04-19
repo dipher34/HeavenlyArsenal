@@ -22,7 +22,7 @@ public class ForgottenShrineBackground : Background
 
     private static FramedFastParticleSystem lanternSystem;
 
-    private static readonly Vector2[] lanternPathOffsets = new Vector2[95];
+    private static readonly Vector2[] lanternPathOffsets = new Vector2[65];
 
     private static readonly Asset<Texture2D> skyColorGradient = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Subworlds/ShrineSkyColor");
 
