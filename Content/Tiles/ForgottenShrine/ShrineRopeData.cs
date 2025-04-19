@@ -118,7 +118,7 @@ public class ShrineRopeData
         }
 
         WindTime = (WindTime + MathF.Abs(Main.windSpeedCurrent) * 0.11f) % (MathHelper.TwoPi * 5000f);
-        VerletSimulations.TileCollisionVerletSimulation(VerletRope.Rope, 0f, Vector2.UnitX * 0.9f, 20, Gravity);
+        VerletSimulations.TileCollisionVerletSimulation(VerletRope.Rope, 0f, Vector2.UnitX * 0.6f, 28, Gravity);
     }
 
     private void DrawProjectionButItActuallyWorks(VerletSimulatedRope rope, Texture2D projection, Vector2 drawOffset, bool flipHorizontally, Func<float, Color> colorFunction, int? projectionWidth = null, int? projectionHeight = null, float widthFactor = 1f, bool unscaledMatrix = false)

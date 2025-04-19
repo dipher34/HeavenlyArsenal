@@ -62,7 +62,7 @@ public class ForgottenShrineSystem : ModSystem
             Vector2 candleSpawnPosition = new Vector2(x, bridgeLowYPoint * 16f - 425f);
 
             SpiritCandleParticle candle = SpiritCandleParticle.Pool.RequestParticle();
-            candle.Prepare(candleSpawnPosition, Vector2.Zero, 0f, Color.White, Vector2.One * 0.5f);
+            candle.Prepare(candleSpawnPosition, Vector2.Zero, 0f, Color.White, Vector2.One * 0.35f);
 
             ParticleEngine.Particles.Add(candle);
 
