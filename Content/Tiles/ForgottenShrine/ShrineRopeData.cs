@@ -95,7 +95,10 @@ public class ShrineRopeData
         MaxLength = CalculateMaxLength();
 
         int segmentCount = 30;
-        VerletRope = new Rope(startVector, endVector, segmentCount, MaxLength / segmentCount, Vector2.UnitY * Gravity, 15);
+        VerletRope = new Rope(startVector, endVector, segmentCount, MaxLength / segmentCount, Vector2.UnitY * Gravity, 15)
+        {
+            tileCollide = true
+        };
         for (int i = 0; i < 4; i++)
             VerletRope.Settle();
     }
