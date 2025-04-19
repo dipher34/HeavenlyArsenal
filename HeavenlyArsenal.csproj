@@ -38,7 +38,6 @@
 	  <Folder Include="Assets\Textures\Backpacks\" />
 	  <Folder Include="Content\Items\Weapons\Ranged\NewFolder\" />
 	  <Folder Include="Content\NPCs\Hostile\BloodMoon\" />
-	  <Folder Include="Content\Tiles\" />
 	  <Folder Include="Content\Projectiles\Weapons\Holdout\" />
 	  <Folder Include="Core\Autoloaders\SolynBooks\" />
 	</ItemGroup>

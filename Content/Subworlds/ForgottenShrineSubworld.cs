@@ -27,13 +27,14 @@ public class ForgottenShrineSubworld : Subworld
 
     public override int Height => 524;
 
-    public override List<GenPass> Tasks => new List<GenPass>()
-    {
+    public override List<GenPass> Tasks =>
+    [
         new DefineWorldLinePass(),
         new CreateGroundPass(),
         new BridgePass(),
-        new SmoothenPass()
-    };
+        new CreateUnderwaterVegetationPass(),
+        new SmoothenPass(),
+    ];
 
     public override void OnEnter() => ParticleEngine.Clear();
 

@@ -33,4 +33,9 @@ public static class ForgottenShrineGenerationConstants
     /// The vertical thickness of the bridge.
     /// </summary>
     public static int BridgeThickness => 8;
+
+    /// <summary>
+    /// The amount of tree structures to generate underwater.
+    /// </summary>
+    public static int UnderwaterTreeCount => Main.maxTilesX / 67;
 }
