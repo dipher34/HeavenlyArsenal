@@ -501,5 +501,7 @@ Mods: {
 				BarrierRecharge: AntiShield Recharge
 			}
 		}
+
+		CellPhoneInfoOverrides.ForgottenShrineText: Quiet Stillness
 	}
 }

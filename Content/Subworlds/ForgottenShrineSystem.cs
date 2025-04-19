@@ -8,11 +8,13 @@ using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
 using NoxusBoss.Core.Graphics.LightingMask;
 using NoxusBoss.Core.Graphics.SpecificEffectManagers;
+using NoxusBoss.Core.Graphics.UI;
 using SubworldLibrary;
 using System;
 using System.Reflection;
 using Terraria;
 using Terraria.GameContent.Shaders;
+using Terraria.Localization;
 using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Subworlds;
@@ -38,6 +40,43 @@ public class ForgottenShrineSystem : ModSystem
         On_Main.CalculateWaterStyle += ForceShrineWater;
         On_WaterShaderData.Apply += DisableIdleLiquidDistortion;
         OnEnter += CreateCandles;
+
+        CellPhoneInfoModificationSystem.WeatherReplacementTextEvent += UseWeatherText;
+        CellPhoneInfoModificationSystem.MoonPhaseReplacementTextEvent += UseMoonNotFoundText;
+        CellPhoneInfoModificationSystem.PlayerXPositionReplacementTextEvent += UseParsecsPositionTextX;
+        CellPhoneInfoModificationSystem.PlayerYPositionReplacementTextEvent += UseParsecsPositionTextY;
+    }
+
+    private string UseWeatherText(string originalText)
+    {
+        if (WasInSubworldLastFrame)
+            return Language.GetTextValue("Mods.HeavenlyArsenal.CellPhoneInfoOverrides.ForgottenShrineText");
+
+        return null;
+    }
+
+    private string UseMoonNotFoundText(string originalText)
+    {
+        if (WasInSubworldLastFrame)
+            return Language.GetTextValue("GameUI.WaxingCrescent");
+
+        return null;
+    }
+
+    private string UseParsecsPositionTextX(string originalText)
+    {
+        if (WasInSubworldLastFrame)
+            return Language.GetText($"Mods.NoxusBoss.CellPhoneInfoOverrides.ParsecText").Format($"{7411267996481:n0}");
+
+        return null;
+    }
+
+    private string UseParsecsPositionTextY(string originalText)
+    {
+        if (WasInSubworldLastFrame)
+            return Language.GetText($"Mods.NoxusBoss.CellPhoneInfoOverrides.ParsecText").Format($"{7233858412997:n0}");
+
+        return null;
     }
 
     // Not doing this results in beach water somehow having priority over shrine water in the outer parts of the subworld.
@@ -99,6 +138,10 @@ public class ForgottenShrineSystem : ModSystem
             if (inSubworld)
                 OnEnter?.Invoke();
         }
+
+        Main.time = Main.rand.Next((int)Main.dayLength);
+        Main.dayTime = true;
+        Main.windSpeedCurrent = 0f;
     }
 
     public override void PostDrawTiles()
