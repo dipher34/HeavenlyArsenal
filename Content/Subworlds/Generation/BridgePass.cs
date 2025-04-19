@@ -67,8 +67,8 @@ public class BridgePass : GenPass
                 while (Framing.GetTileSafely(end.ToVector2()).HasTile)
                     end.Y += 16;
 
-                start.Y -= 16;
-                end.Y -= 16;
+                start.Y -= 11;
+                end.Y -= 11;
 
                 ShrineRopeSystem.Register(new ShrineRopeData(start, end, ForgottenShrineGenerationConstants.BridgeUndersideRopeSag * 16f));
             }
