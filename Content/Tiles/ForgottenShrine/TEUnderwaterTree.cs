@@ -61,8 +61,7 @@ public class TEUnderwaterTree : ModTileEntity
 
         Vector2 drawPosition = new Vector2(Position.X * 16 - Main.screenPosition.X, Position.Y * 16 - Main.screenPosition.Y + 18f);
         SpriteEffects direction = rng.NextBool() ? SpriteEffects.None : SpriteEffects.FlipHorizontally;
-        Color color = new Color(43, 11, 27);
-        Main.spriteBatch.Draw(texture, drawPosition, null, color, rotation - MathHelper.PiOver2, new Vector2(0.5f, 1f) * texture.Size(), treeScale, direction, 0f);
+        Main.spriteBatch.Draw(texture, drawPosition, null, Color.Black, rotation - MathHelper.PiOver2, new Vector2(0.5f, 1f) * texture.Size(), treeScale, direction, 0f);
     }
 
     // Sync the tile entity the moment it is place on the server.
