@@ -17,7 +17,6 @@ public class UnderwaterTree : ModTile
         Main.tileFrameImportant[Type] = true;
 
         // Prepare necessary setups to ensure that this tile is treated like grass.
-        Main.tileCut[Type] = true;
         TileID.Sets.ReplaceTileBreakUp[Type] = true;
         TileID.Sets.SwaysInWindBasic[Type] = true;
         TileMaterials.SetForTileId(Type, TileMaterials._materialsByName["Plant"]);
