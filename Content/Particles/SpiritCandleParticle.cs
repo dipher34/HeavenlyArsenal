@@ -82,6 +82,7 @@ public class SpiritCandleParticle : BaseParticle
         float horizontalSquish = MathF.Pow(squishWave * 0.5f + 0.5f, 2.3f) * 0.75f;
         float baseHorizontalSquish = horizontalSquish;
         horizontalSquish -= LumUtils.InverseLerp(0.4f, 0f, horizontalSquish) * 0.55f;
+        horizontalSquish *= 0.15f;
 
         Scale = new Vector2(1f + horizontalSquish, 1f - horizontalSquish) * BaseScale;
         Rotation = MathF.Sin(MathHelper.Pi * Time / squishRate) * 0.2f;
@@ -89,7 +90,7 @@ public class SpiritCandleParticle : BaseParticle
 
         if (baseHorizontalSquish <= 0.16f && Main.rand.NextBool())
         {
-            Vector2 fireSpawnPosition = Position - Vector2.UnitY.RotatedBy(Rotation) * Scale.Y * 84f;
+            Vector2 fireSpawnPosition = Position - Vector2.UnitY.RotatedBy(Rotation) * Scale.Y * 192f;
             Vector2 fireVelocity = Vector2.UnitY.RotatedBy(Rotation).RotatedByRandom(0.3f) * Main.rand.NextFloat(-4f, -2.4f);
             Dust ember = Dust.NewDustPerfect(fireSpawnPosition, 264, fireVelocity);
             ember.color = Color.Lerp(Color.Orange, Color.Red, Main.rand.NextFloat(0.65f));
@@ -107,7 +108,7 @@ public class SpiritCandleParticle : BaseParticle
         Color light = Lighting.GetColor(Position.ToTileCoordinates()) * lightExposureFactor;
         Main.spriteBatch.Draw(texture, Position + settings.AnchorPosition, texture.Frame(), Color.MultiplyRGB(light), Rotation, texture.Size() * new Vector2(0.5f, 1f), Scale, 0, 0);
 
-        Vector2 glowDrawPosition = Position + settings.AnchorPosition - Vector2.UnitY.RotatedBy(Rotation) * Scale.Y * 84f;
+        Vector2 glowDrawPosition = Position + settings.AnchorPosition - Vector2.UnitY.RotatedBy(Rotation) * Scale.Y * 192f;
         float glowFlicker = MathHelper.Lerp(0.9f, 1.1f, LumUtils.Cos01(Main.GlobalTimeWrappedHourly * 30f + Position.X * 0.01f)) * LumUtils.Saturate(Scale.Y * 2.7f);
         Texture2D glow = GennedAssets.Textures.GreyscaleTextures.BloomCirclePinpoint.Value;
         Vector2 glowOrigin = glow.Size() * 0.5f;
