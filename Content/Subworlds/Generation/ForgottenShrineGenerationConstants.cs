@@ -22,7 +22,7 @@ public static class ForgottenShrineGenerationConstants
     /// <summary>
     /// The width of arches on the bridge.
     /// </summary>
-    public static int BridgeArchWidth => 76;
+    public static int BridgeArchWidth => 75;
 
     /// <summary>
     /// The amount of horizontal coverage that ropes underneath the bridge have, in tile coordinates.
@@ -37,17 +37,17 @@ public static class ForgottenShrineGenerationConstants
     /// <summary>
     /// The maximum height of arches on the bridge.
     /// </summary>
-    public static int BridgeArchHeight => 3;
+    public static int BridgeArchHeight => 4;
 
     /// <summary>
     /// The vertical thickness of the bridge.
     /// </summary>
-    public static int BridgeThickness => 6;
+    public static int BridgeThickness => 5;
 
     /// <summary>
     /// The amount of tree structures to generate underwater.
     /// </summary>
-    public static int UnderwaterTreeCount => Main.maxTilesX / 67;
+    public static int UnderwaterTreeCount => Main.maxTilesX / 60;
 
     /// <summary>
     /// The amount of cattails to generate underwater.
@@ -57,10 +57,10 @@ public static class ForgottenShrineGenerationConstants
     /// <summary>
     /// The maximum height of cattails above the water line.
     /// </summary>
-    public static int MaxCattailHeight => 6;
+    public static int MaxCattailHeight => 7;
 
     /// <summary>
     /// The amount of lilypads to generate atop the water.
     /// </summary>
-    public static int LilypadCount => Main.maxTilesX / 21;
+    public static int LilypadCount => 0;
 }

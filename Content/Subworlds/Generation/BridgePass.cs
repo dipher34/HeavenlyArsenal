@@ -23,10 +23,30 @@ public class BridgePass : GenPass
         int waterLevelY = groundLevelY - ForgottenShrineGenerationConstants.WaterDepth;
         int bridgeLowYPoint = waterLevelY - ForgottenShrineGenerationConstants.BridgeBeamHeight;
         int bridgeThickness = ForgottenShrineGenerationConstants.BridgeThickness;
+        ushort fenceID = (ushort)ModContent.TileType<CrimsonFence>();
+
+        int[] placeFenceSpokeMap = new int[Main.maxTilesX];
+        bool[] useDescendingFramesMap = new bool[Main.maxTilesX];
+        for (int x = 1; x < Main.maxTilesX - 1; x++)
+        {
+            int previousHeight = CalculateArchHeight(x - 1, out _);
+            int archHeight = CalculateArchHeight(x, out _);
+            int nextArchHeight = CalculateArchHeight(x + 1, out _);
+            bool ascending = archHeight > previousHeight;
+            bool descending = archHeight > nextArchHeight;
+            if (ascending)
+                placeFenceSpokeMap[x] = archHeight - previousHeight;
+            if (descending)
+            {
+                placeFenceSpokeMap[x] = archHeight - nextArchHeight;
+                useDescendingFramesMap[x] = true;
+            }
+        }
+
         for (int x = 0; x < Main.maxTilesX; x++)
         {
-            float archHeightInterpolant = MathF.Abs(MathF.Sin(MathHelper.Pi * x / bridgeWidth));
-            int archHeight = (int)MathF.Round(archHeightInterpolant * ForgottenShrineGenerationConstants.BridgeArchHeight);
+            int archHeight = CalculateArchHeight(x, out float archHeightInterpolant);
+            int upcomingArchHeight = CalculateArchHeight(x + 1, out _);
 
             int extraThickness = (int)Utils.Remap(archHeightInterpolant, 0.6f, 0f, 0f, bridgeThickness * 1.25f);
             for (int dy = -extraThickness; dy < bridgeThickness; dy++)
@@ -47,6 +67,39 @@ public class BridgePass : GenPass
                 int wallY = bridgeLowYPoint - archHeight - dy;
                 WorldGen.PlaceWall(x, wallY, WallID.LivingWood);
                 WorldGen.paintWall(x, wallY, PaintID.GrayPaint);
+            }
+
+            int fenceHeight = 4;
+            int fenceFrameX = 2;
+            int fenceXPosition = x % bridgeWidth;
+            if (fenceXPosition == bridgeWidth / 3 || fenceXPosition == bridgeWidth * 2 / 3)
+                fenceFrameX = 3;
+            if (fenceXPosition == bridgeWidth / 2)
+                fenceFrameX = 4;
+
+            if (placeFenceSpokeMap[x] >= 1)
+            {
+                fenceHeight += placeFenceSpokeMap[x];
+                fenceFrameX = useDescendingFramesMap[x] ? 0 : 1;
+            }
+
+            for (int dy = 0; dy < fenceHeight; dy++)
+            {
+                int fenceY = bridgeLowYPoint - archHeight - bridgeThickness - dy;
+                Tile t = Main.tile[x, fenceY];
+                t.TileType = fenceID;
+                t.HasTile = true;
+                t.TileFrameX = (short)(fenceFrameX * 18);
+
+                int frameY = 2;
+                if (dy == fenceHeight - 1)
+                    frameY = 0;
+                if (dy == fenceHeight - 2)
+                    frameY = 1;
+                if (dy == 0)
+                    frameY = 3;
+
+                t.TileFrameY = (short)(frameY * 18);
             }
         }
 
@@ -75,8 +128,15 @@ public class BridgePass : GenPass
         }
 
         // Create lanterns beneath the bridge.
-        PlaceLanterns(ropeY, 4);
-        PlaceOfuda(ropeY, 6);
+        int decorationStartY = bridgeLowYPoint - bridgeThickness + 1;
+        PlaceLanterns(decorationStartY, 4);
+        PlaceOfuda(decorationStartY, 6);
+    }
+
+    private static int CalculateArchHeight(int x, out float archHeightInterpolant)
+    {
+        archHeightInterpolant = MathF.Abs(MathF.Sin(MathHelper.Pi * x / ForgottenShrineGenerationConstants.BridgeArchWidth));
+        return (int)MathF.Round(archHeightInterpolant * ForgottenShrineGenerationConstants.BridgeArchHeight);
     }
 
     private static void PlaceBeam(int groundLevelY, int startingX, int startingY)
@@ -119,7 +179,7 @@ public class BridgePass : GenPass
             for (int dx = -1; dx <= 1; dx++)
             {
                 Point lanternPoint = new Point(x + dx * spacing, startY);
-                while (Framing.GetTileSafely(lanternPoint.ToVector2()).HasTile)
+                while (Framing.GetTileSafely(lanternPoint).HasTile)
                     lanternPoint.Y++;
 
                 WorldGen.PlaceObject(lanternPoint.X, lanternPoint.Y, TileID.ChineseLanterns);
@@ -139,7 +199,7 @@ public class BridgePass : GenPass
                     continue;
 
                 Point ofudaPoint = new Point(x + dx * spacing, startY);
-                while (Framing.GetTileSafely(ofudaPoint.ToVector2()).HasTile)
+                while (Framing.GetTileSafely(ofudaPoint).HasTile)
                     ofudaPoint.Y++;
 
                 Main.tile[ofudaPoint.X, ofudaPoint.Y].TileType = (ushort)ofudaID;
