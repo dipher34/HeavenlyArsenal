@@ -3,7 +3,6 @@ using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Content.Tiles.TileEntities;
-using NoxusBoss.Core.Graphics.LightingMask;
 using ReLogic.Content;
 using Terraria;
 using Terraria.ID;
@@ -40,7 +39,7 @@ public class TEPlacedOfuda : ModTileEntity, IClientSideTileEntityUpdater
         return Place(i, j);
     }
 
-    private static float WidthFunction(float completionRatio) => LumUtils.InverseLerp(0f, 0.28f, completionRatio) * 10f;
+    private static float WidthFunction(float completionRatio) => LumUtils.InverseLerp(0f, 0.33f, completionRatio) * 10f;
 
     private static Color ColorFunction(float completionRatio) => Color.White;
 
@@ -85,21 +84,33 @@ public class TEPlacedOfuda : ModTileEntity, IClientSideTileEntityUpdater
 
         int ofudaVariant = ID % ofudaTextures.Length;
         Texture2D texture = ofudaTextures[ofudaVariant].Value;
-        RenderTrail(texture, false);
+        RenderTrail(texture);
     }
 
-    private void RenderTrail(Texture2D texture, bool pixelated)
+    private void RenderTrail(Texture2D texture)
     {
-        ManagedShader overlayShader = ShaderManager.GetShader("HeavenlyArsenal.LitPrimitiveTrailOverlayShader");
-        overlayShader.TrySetParameter("exposure", 1f);
-        overlayShader.TrySetParameter("screenSize", WotGUtils.ViewportSize);
-        overlayShader.TrySetParameter("zoom", Main.GameViewMatrix.Zoom);
-        overlayShader.TrySetParameter("pixelationLevels", new Vector2(75f, 37.5f));
-        overlayShader.SetTexture(texture, 1, SamplerState.LinearClamp);
-        overlayShader.SetTexture(LightingMaskTargetManager.LightTarget, 2);
+        PlacedOfudaRenderer.OfudaTarget.Request(240, 240, ID, () =>
+        {
+            ManagedShader overlayShader = ShaderManager.GetShader("HeavenlyArsenal.ShrineOfudaShader");
+            overlayShader.TrySetParameter("exposure", 1f);
+            overlayShader.TrySetParameter("screenSize", WotGUtils.ViewportSize);
+            overlayShader.TrySetParameter("zoom", Main.GameViewMatrix.Zoom);
+            overlayShader.TrySetParameter("pixelationLevels", new Vector2(75f, 37.5f));
+            overlayShader.SetTexture(texture, 1, SamplerState.AnisotropicClamp);
 
-        PrimitiveSettings settings = new PrimitiveSettings(WidthFunction, ColorFunction, Shader: overlayShader, Pixelate: pixelated);
-        PrimitiveRenderer.RenderTrail(rope.GetPoints(), settings, 30);
+            Vector2 offsetToRTCenter = -rope.segments[0].position + WotGUtils.ViewportSize * 0.5f + Main.screenPosition;
+            PrimitiveSettings settings = new PrimitiveSettings(WidthFunction, ColorFunction, Shader: overlayShader, OffsetFunction: _ => offsetToRTCenter, UseUnscaledMatrix: true, ProjectionAreaWidth: 240, ProjectionAreaHeight: 240);
+            PrimitiveRenderer.RenderTrail(rope.GetPoints(), settings, 30);
+        });
+        if (PlacedOfudaRenderer.OfudaTarget.TryGetTarget(ID, out RenderTarget2D? target) && target is not null)
+        {
+            ManagedShader pixelationShader = ShaderManager.GetShader("Luminance.PixelationShader");
+            pixelationShader.TrySetParameter("pixelationFactor", Vector2.One * 1.5f / target.Size());
+            pixelationShader.Apply();
+
+            Vector2 drawPosition = Position.ToWorldCoordinates() - Main.screenPosition - Vector2.One * 8f;
+            Main.spriteBatch.Draw(target, drawPosition, null, Color.White, 0f, target.Size() * 0.5f, 1f, 0, 0f);
+        }
     }
 
     // Sync the tile entity the moment it is place on the server.

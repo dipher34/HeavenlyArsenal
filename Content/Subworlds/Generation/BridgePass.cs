@@ -46,8 +46,8 @@ public class BridgePass : GenPass
         for (int x = 0; x < Main.maxTilesX; x++)
         {
             int archHeight = CalculateArchHeight(x, out float archHeightInterpolant);
-            int upcomingArchHeight = CalculateArchHeight(x + 1, out _);
 
+            // Place base bridge tiles.
             int extraThickness = (int)Utils.Remap(archHeightInterpolant, 0.6f, 0f, 0f, bridgeThickness * 1.25f);
             for (int dy = -extraThickness; dy < bridgeThickness; dy++)
             {
@@ -61,6 +61,7 @@ public class BridgePass : GenPass
                 WorldGen.PlaceTile(x, archY, tileID);
             }
 
+            // Create walls underneath the bridge.
             int wallHeight = (int)MathF.Round(MathHelper.Lerp(8f, 2f, MathF.Pow(archHeightInterpolant, 1.7f)));
             for (int dy = -extraThickness - wallHeight; dy < bridgeThickness - 2; dy++)
             {
@@ -83,6 +84,7 @@ public class BridgePass : GenPass
                 fenceFrameX = useDescendingFramesMap[x] ? 0 : 1;
             }
 
+            // Place fences atop the bridge.
             for (int dy = 0; dy < fenceHeight; dy++)
             {
                 int fenceY = bridgeLowYPoint - archHeight - bridgeThickness - dy;

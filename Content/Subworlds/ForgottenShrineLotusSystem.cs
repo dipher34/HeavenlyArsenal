@@ -46,7 +46,7 @@ public class ForgottenShrineLotusSystem : ModSystem
             int waterLevelY = groundLevelY - ForgottenShrineGenerationConstants.WaterDepth;
             for (int i = 0; i < LotusCount; i++)
             {
-                float lotusSize = Main.rand.NextFloat(3f, 8.25f);
+                float lotusSize = Main.rand.NextFloat(3f, 8.4f);
                 float squish = Main.rand.NextFloat(1.1f, 1.5f);
                 Vector2 lotusSpawnPosition = new Vector2(Main.rand.NextFloat(Main.maxTilesX * 16f), waterLevelY * 16f);
                 lotusParticleSystem.CreateNew(lotusSpawnPosition, Vector2.Zero, new Vector2(squish, 1f) * lotusSize, Color.Wheat);
