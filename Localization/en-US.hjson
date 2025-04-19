@@ -51,6 +51,11 @@ Mods: {
 				DisplayName: Heat Burn Buff
 				Description: Mods.HeavenlyArsenal.Buffs.HeatBurnBuff.Description
 			}
+
+			BloodArmorFrenzy: {
+				DisplayName: Blood Armor Frenzy
+				Description: Mods.HeavenlyArsenal.Buffs.BloodArmorFrenzy.Description
+			}
 		}
 
 		Items: {
@@ -311,7 +316,12 @@ Mods: {
 
 				AwakenedBloodplate: {
 					DisplayName: Awakened Bloodplate
-					Tooltip: ""
+					Tooltip:
+						'''
+						increases damage by 12%
+						increases crit chance by 8
+						prevents normal life regen
+						'''
 				}
 
 				AwakenedBloodStrides: {

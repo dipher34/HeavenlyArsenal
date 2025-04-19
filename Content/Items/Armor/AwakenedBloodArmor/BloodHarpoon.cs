@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
 using System;
+using System.Collections.Generic;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
@@ -33,6 +34,10 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         public float HarpoonDrainTime => 500f;
         public Vector2 HarpoonOffset => new Vector2(HarpoonOffsetX, HarpoonOffsetY);
 
+        public override void SetStaticDefaults()
+        {
+            base.SetStaticDefaults();
+        }
         public override void SetDefaults()
         {
             Projectile.width = Projectile.height = 64;
@@ -44,7 +49,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             Projectile.timeLeft = 1000;
             Projectile.penetrate = -1;
             Projectile.tileCollide = false;
-            Projectile.hide = true;
+            //Projectile.hide = true;
             Projectile.extraUpdates = 1;
         }
 
@@ -53,13 +58,19 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             HarpoonedNPC = -1;
             HarpoonState = 0;
             Time = 0;
-            SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.ArmJutOut with { MaxInstances = 0, PitchVariance = 0.5f, Volume = 0.4f });
+            SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.ArmJutOut with { MaxInstances = 0, PitchVariance = 15f, Volume = 0.4f });
         }
 
         public override void AI()
         {
             // Terminate if player invalid
             if (Player.dead || !Player.active || Player.GetModPlayer<BloodArmorPlayer>().CurrentForm != BloodArmorForm.Defense)
+            {
+                Projectile.Kill();
+                return;
+            }
+
+            if (Player.GetModPlayer<BloodArmorPlayer>().BloodArmorEquipped != true)
             {
                 Projectile.Kill();
                 return;
@@ -90,14 +101,14 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             HarpoonTendril.damping = Utils.GetLerpValue(20, 0, Player.velocity.Length(), true) * 0.05f;
             HarpoonTendril.Update();
 
-            // State logic
+            // THE WHITE WHALEEEE
             if (HarpoonState == 0)
             {
                 // Firing: shoot in the direction from player to mouse, not from projectile
                 Vector2 direction = Main.MouseWorld - Player.MountedCenter;
                 direction.Normalize();
                 Projectile.velocity = direction * HarpoonSpeed;
-
+                Projectile.rotation = Projectile.velocity.ToRotation();
                 // Retract immediately if max range reached without a hit
                 if (HarpoonedNPC < 0 && Vector2.Distance(Player.MountedCenter, Projectile.Center) >= HarpoonRange)
                 {
@@ -158,18 +169,48 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         public override bool PreDraw(ref Color lightColor)
         {
             
-            Texture2D head = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Items/Armor/AwakenedBloodArmor/BloodNeedle_Head").Value;
+            Texture2D head = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Items/Armor/AwakenedBloodArmor/BloodHarpoon").Value;
             Texture2D body = GennedAssets.Textures.GreyscaleTextures.WhitePixel.Value;
-            for (int i= 0; i < HarpoonTendril.segments.Length; i++)
+
+            List<Vector2> points = new List<Vector2>();
+            points.AddRange(HarpoonTendril.GetPoints());
+            points.Add(Player.MountedCenter);
+
+
+            for (int i = points.Count - 1; i > 0; i--)
             {
-                Vector2 drawPos = HarpoonTendril.segments[i].position - Main.screenPosition;
-                Main.EntitySpriteDraw(body, drawPos, head.Frame(), Color.White, Projectile.rotation, body.Size() * 0.5f, new Vector2(0.5f, 0.5f), 0, 0);
+                float rot = points[i].AngleTo(points[i - 1]); // MathHelper.PiOver2;
+                Vector2 stretch = new Vector2((1.1f - (float)i / points.Count ) * Projectile.scale, 
+                    i > points.Count - 2 ? points[i].Distance(points[i - 1]) 
+                    / (body.Height / 2f) : 1.1f);
+                // This line calculates the "stretch" of a segment of the HarpoonTendril (rope) being drawn. 
+                // It determines the scale and length of the segment based on its position in the list of points (i.e., how far along the HarpoonTendril it is).
+                // - The X component of the Vector2 (horizontal scale) decreases as the segment index (i) increases, making the HarpoonTendril taper toward the end.
+                // - The Y component (vertical stretch) is calculated differently for the last segment to ensure it stretches properly to connect to the next point.
+                //   Otherwise, it uses a default stretch value of 1.1f.
+                // This ensures the HarpoonTendril looks smooth and natural as it connects between points.
+                Vector2 drawPos = points[i] - Main.screenPosition;
+                Main.EntitySpriteDraw(body, drawPos, body.Frame(), Color.White, Projectile.rotation, body.Size() * 0.5f, new Vector2(0.5f, 0.5f), 0, 0);
                 
             }
             Main.EntitySpriteDraw(head, Projectile.Center - Main.screenPosition, head.Frame(), lightColor, Projectile.rotation, head.Size()*0.5f, Projectile.scale, SpriteEffects.None, 0);
-            //Main.EntitySpriteDraw(head, Projectile.Center - Main.screenPosition, head.Frame(), Color.White, Projectile.rotation, head.Size() * 0.5f, new Vector2(0.5f, 0.5f), 0, 0);
             return false;
         }
+        public override void EmitEnchantmentVisualsAt(Vector2 boxPosition, int boxWidth, int boxHeight)
+        {
+            base.EmitEnchantmentVisualsAt(boxPosition, boxWidth, boxHeight);
+        }
+
+        public override void OnKill(int timeLeft)
+        {
+            base.OnKill(timeLeft);
+        }
+
+        public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
+        {
+            base.ModifyHitNPC(target, ref modifiers);
+        }
+
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {

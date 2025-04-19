@@ -53,7 +53,7 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged.FusionRifleProj
         public override int IntendedProjectileType => ModContent.ProjectileType<FusionRifle_Projectile>();
         public float Time { get; private set; }
 
-        public static float CurrentChargeTime = FusionRifle.MaxChargeTime; // Default to MaxChargeTime
+        public static float CurrentChargeTime = 60;//FusionRifle.MaxChargeTime; // Default to MaxChargeTime
 
         public override void SetStaticDefaults()
         {
