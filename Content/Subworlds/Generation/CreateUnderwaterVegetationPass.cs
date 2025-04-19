@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework;
 using Terraria;
 using Terraria.DataStructures;
+using Terraria.ID;
 using Terraria.IO;
 using Terraria.ModLoader;
 using Terraria.WorldBuilding;
@@ -34,6 +35,19 @@ public class CreateUnderwaterVegetationPass : GenPass
             int y = Main.maxTilesY - ForgottenShrineGenerationConstants.GroundDepth - 1;
             int height = ForgottenShrineGenerationConstants.WaterDepth + WorldGen.genRand.Next(1, ForgottenShrineGenerationConstants.MaxCattailHeight);
             GenerateCattail(x, y, height);
+        }
+
+        for (int i = 0; i < ForgottenShrineGenerationConstants.LilypadCount; i++)
+        {
+            int x = WorldGen.genRand.Next(10, Main.maxTilesX - 10);
+            int y = Main.maxTilesY - ForgottenShrineGenerationConstants.GroundDepth - ForgottenShrineGenerationConstants.WaterDepth;
+
+            if (Framing.GetTileSafely(x, y).HasTile)
+                continue;
+
+            Main.tile[x, y].Get<TileWallWireStateData>().HasTile = true;
+            Main.tile[x, y].TileType = TileID.LilyPad;
+            Main.tile[x, y].TileFrameX = (short)(18 * WorldGen.genRand.Next(3, 15));
         }
     }
 

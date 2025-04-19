@@ -48,4 +48,9 @@ public static class ForgottenShrineGenerationConstants
     /// The maximum height of cattails above the water line.
     /// </summary>
     public static int MaxCattailHeight => 6;
+
+    /// <summary>
+    /// The amount of lilypads to generate atop the water.
+    /// </summary>
+    public static int LilypadCount => Main.maxTilesX / 21;
 }
