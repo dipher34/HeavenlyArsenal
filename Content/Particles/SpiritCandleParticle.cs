@@ -78,7 +78,7 @@ public class SpiritCandleParticle : BaseParticle
         Position += Velocity;
 
         float squishRate = 54f;
-        float squishWave = MathF.Sin(MathHelper.TwoPi * Time / squishRate + Position.X * 0.01f);
+        float squishWave = MathF.Sin(MathHelper.TwoPi * Time / squishRate);
         float squish = MathF.Pow(squishWave * 0.5f + 0.5f, 2.3f) * 0.75f;
         float baseSquish = squish;
         squish -= LumUtils.InverseLerp(0.4f, 0f, squish) * 0.55f;
