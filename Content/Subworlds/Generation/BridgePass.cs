@@ -84,8 +84,9 @@ public class BridgePass : GenPass
 
         // Create lanterns beneath the bridge.
         int decorationStartY = bridgeLowYPoint - bridgeThickness + 1;
-        PlaceLanterns(decorationStartY, 4);
-        PlaceOfuda(decorationStartY, 6);
+        PlaceLanterns(decorationStartY, 3);
+        PlaceOfuda(decorationStartY, 5);
+        GenerateRoof(bridgeLowYPoint - ForgottenShrineGenerationConstants.BridgeArchHeight);
     }
 
     /// <summary>
@@ -247,6 +248,18 @@ public class BridgePass : GenPass
                 Main.tile[ofudaPoint.X, ofudaPoint.Y].TileType = (ushort)ofudaID;
                 Main.tile[ofudaPoint.X, ofudaPoint.Y].Get<TileWallWireStateData>().HasTile = true;
                 TileEntity.PlaceEntityNet(ofudaPoint.X, ofudaPoint.Y, ModContent.TileEntityType<TEPlacedOfuda>());
+            }
+        }
+    }
+
+    private static void GenerateRoof(int archTopY)
+    {
+        int roofBottomY = archTopY - 10;
+        for (int x = 5; x < Main.maxTilesX - 5; x++)
+        {
+            for (int y = roofBottomY; y >= archTopY; y--)
+            {
+
             }
         }
     }

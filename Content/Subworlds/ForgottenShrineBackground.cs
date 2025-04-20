@@ -16,12 +16,24 @@ namespace HeavenlyArsenal.Content.Subworlds;
 
 public class ForgottenShrineBackground : Background
 {
+    /// <summary>
+    /// The curve that contains velocities for the spiral.
+    /// </summary>
     private static DeCasteljauCurve lanternPositionPath;
 
+    /// <summary>
+    /// The curve that contains positions for the spiral.
+    /// </summary>
     private static DeCasteljauCurve lanternVelocityPath;
 
+    /// <summary>
+    /// The particle system responsible for lanterns in the background.
+    /// </summary>
     private static FramedFastParticleSystem lanternSystem;
 
+    /// <summary>
+    /// The set of discrete points that compose the spiral.
+    /// </summary>
     private static readonly Vector2[] lanternPathOffsets = new Vector2[65];
 
     private static readonly Asset<Texture2D> skyColorGradient = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Subworlds/ShrineSkyColor");
@@ -29,6 +41,13 @@ public class ForgottenShrineBackground : Background
     private static readonly Asset<Texture2D> skyLantern = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Subworlds/SkyLantern");
 
     private static readonly Asset<Texture2D> scarletMoon = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Subworlds/TheScarletMoon");
+
+    private static readonly Asset<Texture2D>[] backgroundLayers =
+    [
+        ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Subworlds/BackgroundFront"),
+        ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Subworlds/BackgroundMid"),
+        ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Subworlds/BackgroundBack"),
+    ];
 
     private static Vector2 MoonPosition => WotGUtils.ViewportSize * new Vector2(0.67f, 0.15f);
 
@@ -99,12 +118,30 @@ public class ForgottenShrineBackground : Background
 
         Main.instance.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
         lanternSystem.RenderAll();
+
+        RenderMountains(backgroundSize);
     }
 
     private static void ResetSpriteBatch()
     {
         Main.spriteBatch.End();
         Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, SamplerState.PointClamp, DepthStencilState.None, LumUtils.CullOnlyScreen, null, Matrix.Identity);
+    }
+
+    private static void RenderParallaxLayer(Vector2 backgroundSize, float parallax, Color color, Texture2D backgroundTexture)
+    {
+        // Loop the background horizontally.
+        float scale = 2.45f;
+        float screenYPositionInterpolant = Main.screenPosition.Y / Main.maxTilesY / 16f;
+        for (int i = -3; i <= 3; i++)
+        {
+            // Draw the base background.
+            Vector2 layerPosition = new Vector2(backgroundSize.X * 0.5f + backgroundTexture.Width * i * scale, backgroundSize.Y - (int)((screenYPositionInterpolant + 0.4f) * scale * 230f));
+            layerPosition.Y += 10f / parallax;
+            layerPosition.X -= parallax * Main.screenPosition.X % (backgroundTexture.Width * scale);
+
+            Main.spriteBatch.Draw(backgroundTexture, layerPosition - backgroundTexture.Size() * scale * 0.5f, null, color, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+        }
     }
 
     private static void RenderGradient()
@@ -122,6 +159,14 @@ public class ForgottenShrineBackground : Background
         Vector2 screenArea = WotGUtils.ViewportSize;
         Vector2 textureArea = screenArea / pixel.Size();
         Main.spriteBatch.Draw(pixel, screenArea * 0.5f, null, Color.Black, 0f, pixel.Size() * 0.5f, textureArea, 0, 0f);
+    }
+
+    private static void RenderMountains(Vector2 backgroundSize)
+    {
+        ResetSpriteBatch();
+        RenderParallaxLayer(backgroundSize, 0.035f, Color.White, backgroundLayers[2].Value);
+        RenderParallaxLayer(backgroundSize, 0.081f, Color.White, backgroundLayers[1].Value);
+        RenderParallaxLayer(backgroundSize, 0.133f, Color.White, backgroundLayers[0].Value);
     }
 
     private static void RenderMoon()
