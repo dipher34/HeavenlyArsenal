@@ -201,7 +201,7 @@ public class BridgeDetailsPass : GenPass
             int tiledBridgeX = x % (bridgeWidth * rooftopsPerBridge);
             if (tiledBridgeX == bridgeWidth / 2)
             {
-                ForgottenShrineGenerationHelpers.ShrineRooftopSet rooftopSet = WorldGen.genRand.Next(ForgottenShrineGenerationHelpers.BridgeRooftopConfigurations);
+                var rooftopSet = WorldGen.genRand.Next(ForgottenShrineGenerationHelpers.BridgeRooftopConfigurations);
                 foreach (var rooftop in rooftopSet.Rooftops)
                     GenerateRooftop(x, rooftopY - rooftop.VerticalOffset, rooftop.Width, rooftop.Height);
             }
