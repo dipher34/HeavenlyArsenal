@@ -154,4 +154,15 @@ public static class ForgottenShrineGenerationHelpers
     /// </summary>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     internal static bool InRooftopBridgeRange(int x) => x / BridgeArchWidth % BridgeRooftopsPerBridge == 0;
+
+    /// <summary>
+    /// Calculates the point at which a starting point reaches open air upon moving downward.
+    /// </summary>
+    internal static Point DescendToAir(Point p)
+    {
+        while (p.Y < Main.maxTilesY && Main.tile[p.X, p.Y].HasTile)
+            p.Y++;
+
+        return p;
+    }
 }

@@ -129,10 +129,7 @@ public class BridgeDetailsPass : GenPass
                 if (dx != 0 && onlyPlaceInCenter)
                     continue;
 
-                Point lanternPoint = new Point(x + dx * spacing, startY - archOffset);
-                while (Framing.GetTileSafely(lanternPoint).HasTile)
-                    lanternPoint.Y++;
-
+                Point lanternPoint = ForgottenShrineGenerationHelpers.DescendToAir(new Point(x + dx * spacing, startY - archOffset));
                 WorldGen.PlaceObject(lanternPoint.X, lanternPoint.Y, tileID, false, tileStyle);
             }
         }
@@ -154,10 +151,7 @@ public class BridgeDetailsPass : GenPass
                 if (dx == 0)
                     continue;
 
-                Point ofudaPoint = new Point(x + dx * spacing, startY - archOffset);
-                while (Framing.GetTileSafely(ofudaPoint).HasTile)
-                    ofudaPoint.Y++;
-
+                Point ofudaPoint = ForgottenShrineGenerationHelpers.DescendToAir(new Point(x + dx * spacing, startY - archOffset));
                 Main.tile[ofudaPoint.X, ofudaPoint.Y].TileType = (ushort)ofudaID;
                 Main.tile[ofudaPoint.X, ofudaPoint.Y].Get<TileWallWireStateData>().HasTile = true;
                 TileEntity.PlaceEntityNet(ofudaPoint.X, ofudaPoint.Y, ModContent.TileEntityType<TEPlacedOfuda>());
@@ -246,22 +240,16 @@ public class BridgeDetailsPass : GenPass
             if (tiledBridgeX == bridgeWidth / 2 - smallLanternSpacing ||
                 tiledBridgeX == bridgeWidth / 2 + smallLanternSpacing)
             {
-                int y = roofBottomY - 4;
-                while (Framing.GetTileSafely(x, y).HasTile)
-                    y++;
-
+                Point lanternPoint = ForgottenShrineGenerationHelpers.DescendToAir(new Point(x, roofBottomY - 4));
                 int lanternVariant = possibleLanternVariants[bridgeIndex * 2 % possibleLanternVariants.Length];
-                WorldGen.PlaceObject(x, y, TileID.HangingLanterns, false, lanternVariant);
+                WorldGen.PlaceObject(lanternPoint.X, lanternPoint.Y, TileID.HangingLanterns, false, lanternVariant);
             }
 
             // Place a large dynasty lantern.
             if (tiledBridgeX == bridgeWidth / 2)
             {
-                int y = roofBottomY - 4;
-                while (Framing.GetTileSafely(x, y).HasTile)
-                    y++;
-
-                WorldGen.PlaceObject(x, y, TileID.Chandeliers, false, 22);
+                Point lanternPoint = ForgottenShrineGenerationHelpers.DescendToAir(new Point(x, roofBottomY - 4));
+                WorldGen.PlaceObject(lanternPoint.X, lanternPoint.Y, TileID.Chandeliers, false, 22);
             }
 
             // Place ofuda.
