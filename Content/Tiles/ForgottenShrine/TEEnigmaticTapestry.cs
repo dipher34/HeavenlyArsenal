@@ -100,7 +100,7 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
         if (!Main.LocalPlayer.WithinRange(Position.ToWorldCoordinates(), 3000f))
             return;
 
-        for (int i = 0; i < 10; i++)
+        for (int i = 0; i < 8; i++)
             ApplySimulationStep();
     }
 
