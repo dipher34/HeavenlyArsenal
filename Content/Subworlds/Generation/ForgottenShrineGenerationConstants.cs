@@ -1,9 +1,36 @@
-﻿using Terraria;
+﻿using System.Collections.Generic;
+using Terraria;
 
 namespace HeavenlyArsenal.Content.Subworlds.Generation;
 
 public static class ForgottenShrineGenerationConstants
 {
+    /// <summary>
+    /// Represents data for a rooftop generation set for a bridge.
+    /// </summary>
+    /// <param name="Width">The width of the rooftop.</param>
+    /// <param name="Height">The height of the rooftop.</param>
+    /// <param name="VerticalOffset">The vertical placement offset of this rooftop relative to the base roof level.</param>
+    public record struct ShrineRooftopInfo(int Width, int Height, int VerticalOffset);
+
+    /// <summary>
+    /// Represents a set of rooftops atop each other.
+    /// </summary>
+    /// <param name="Rooftops"></param>
+    public record ShrineRooftopSet(List<ShrineRooftopInfo> Rooftops)
+    {
+        public ShrineRooftopSet() : this([]) { }
+
+        /// <summary>
+        /// Adds a new rooftop to this set.
+        /// </summary>
+        public ShrineRooftopSet Add(ShrineRooftopInfo rooftop)
+        {
+            Rooftops.Add(rooftop);
+            return this;
+        }
+    }
+
     /// <summary>
     /// The depth of ground beneath the shrine's shallow water.
     /// </summary>
@@ -63,4 +90,26 @@ public static class ForgottenShrineGenerationConstants
     /// The amount of lilypads to generate atop the water.
     /// </summary>
     public static int LilypadCount => 0;
+
+    /// <summary>
+    /// The set of possible rooftops that can be selected for a given roof on the bridge.
+    /// </summary>
+    public static List<ShrineRooftopSet> BridgeRooftopConfigurations =>
+    [
+        // Standard.
+        new ShrineRooftopSet().
+            Add(new ShrineRooftopInfo((int)(BridgeArchWidth / 1.3f), (int)(BridgeArchWidth / 2.3f), 0)).
+            Add(new ShrineRooftopInfo((int)(BridgeArchWidth / 2.1f), (int)(BridgeArchWidth / 2.05f), (int)(BridgeArchWidth / 8.1f))).
+            Add(new ShrineRooftopInfo((int)(BridgeArchWidth / 2.9f), (int)(BridgeArchWidth / 3.07f), (int)(BridgeArchWidth / 5.3f))),
+
+        // Pointy.
+        new ShrineRooftopSet().
+            Add(new ShrineRooftopInfo((int)(BridgeArchWidth / 1.3f), (int)(BridgeArchWidth / 2.2f), 0)).
+            Add(new ShrineRooftopInfo((int)(BridgeArchWidth / 2.8f), (int)(BridgeArchWidth / 1.4f), (int)(BridgeArchWidth / 5.6f))),
+
+        // Flat.
+        new ShrineRooftopSet().
+            Add(new ShrineRooftopInfo((int)(BridgeArchWidth / 0.95f), (int)(BridgeArchWidth / 2.9f), 0)).
+            Add(new ShrineRooftopInfo((int)(BridgeArchWidth / 1.5f), (int)(BridgeArchWidth / 1.5f), (int)(BridgeArchWidth / 6.2f))),
+    ];
 }

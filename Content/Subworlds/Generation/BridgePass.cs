@@ -312,13 +312,12 @@ public class BridgePass : GenPass
             int tiledBridgeX = x % (bridgeWidth * 2);
             if (tiledBridgeX == bridgeWidth / 2)
             {
-                int roofWidth = (int)(ForgottenShrineGenerationConstants.BridgeArchWidth / 1.3f);
-                int roofHeight = (int)(ForgottenShrineGenerationConstants.BridgeArchWidth / 2.3f);
-                GenerateRooftop(x, rooftopY, roofWidth, roofHeight);
-                GenerateRooftop(x, rooftopY - (int)(roofHeight / 3.5f), (int)(roofWidth * 0.62f), (int)(roofHeight * 1.12f));
-                GenerateRooftop(x, rooftopY - (int)(roofHeight / 2.3f), (int)(roofWidth * 0.45f), (int)(roofHeight * 0.75f));
+                ForgottenShrineGenerationConstants.ShrineRooftopSet rooftopSet = WorldGen.genRand.Next(ForgottenShrineGenerationConstants.BridgeRooftopConfigurations);
+                foreach (var rooftop in rooftopSet.Rooftops)
+                    GenerateRooftop(x, rooftopY - rooftop.VerticalOffset, rooftop.Width, rooftop.Height);
             }
 
+            // Place a large dynasty lantern.
             if (tiledBridgeX == bridgeWidth / 2)
             {
                 int y = roofBottomY - 4;
@@ -328,6 +327,7 @@ public class BridgePass : GenPass
                 WorldGen.PlaceObject(x, y, TileID.Chandeliers, false, 22);
             }
 
+            // Place ofuda.
             if (tiledBridgeX == bridgeWidth / 2 - ofudaSpacing ||
                 tiledBridgeX == bridgeWidth / 2 + ofudaSpacing)
             {
