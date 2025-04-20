@@ -254,13 +254,94 @@ public class BridgePass : GenPass
 
     private static void GenerateRoof(int archTopY)
     {
-        int roofBottomY = archTopY - 10;
-        for (int x = 5; x < Main.maxTilesX - 5; x++)
-        {
-            for (int y = roofBottomY; y >= archTopY; y--)
-            {
+        int bridgeWidth = ForgottenShrineGenerationConstants.BridgeArchWidth;
+        int wallHeight = 21;
+        int ceilingWallHeight = 4;
+        int roofBottomY = archTopY - wallHeight;
 
+        // Create pillars.
+        int pillarSpacing = bridgeWidth / 3;
+        for (int y = archTopY; y >= roofBottomY; y--)
+        {
+            int height = archTopY - y;
+            for (int x = 5; x < Main.maxTilesX - 5; x++)
+            {
+                int distanceFromPillar = TriangleWaveDistance(x, pillarSpacing);
+                if (distanceFromPillar == 1)
+                    WorldGen.PlaceWall(x, y, WallID.WhiteDynasty);
+                if (distanceFromPillar <= 3 && height == wallHeight - ceilingWallHeight - 1)
+                    WorldGen.PlaceWall(x, y, WallID.WhiteDynasty);
+                if (distanceFromPillar == 2 && height == wallHeight - ceilingWallHeight - 2)
+                    WorldGen.PlaceWall(x, y, WallID.WhiteDynasty);
+                if (distanceFromPillar == 0)
+                    WorldGen.PlaceWall(x, y, WallID.Wood);
             }
         }
+
+        // Create painted white dynasty tiles at the top.
+        for (int y = archTopY; y >= roofBottomY; y--)
+        {
+            int height = archTopY - y;
+            for (int x = 5; x < Main.maxTilesX - 5; x++)
+            {
+                if (height >= wallHeight - ceilingWallHeight)
+                {
+                    WorldGen.KillWall(x, y);
+
+                    int patternHeight = (int)MathF.Round(MathHelper.Lerp(3f, 1f, LumUtils.Cos01(MathHelper.TwoPi * x / bridgeWidth * 3f)));
+                    ushort wallID = height >= wallHeight - patternHeight && height < wallHeight ? WallID.AshWood : WallID.WhiteDynasty;
+                    WorldGen.PlaceWall(x, y, wallID);
+                    WorldGen.paintWall(x, y, PaintID.SkyBluePaint);
+                }
+            }
+        }
+
+        // Place a roof over center points on the bridge.
+        int rooftopY = roofBottomY + 1;
+        for (int x = 5; x < Main.maxTilesX - 5; x++)
+        {
+            int tiledBridgeX = x % (bridgeWidth * 2);
+            if (tiledBridgeX == bridgeWidth / 2)
+            {
+                int roofWidth = (int)(ForgottenShrineGenerationConstants.BridgeArchWidth / 1.3f);
+                int roofHeight = (int)(ForgottenShrineGenerationConstants.BridgeArchWidth / 2.3f);
+                GenerateRooftop(x, rooftopY, roofWidth, roofHeight);
+                GenerateRooftop(x, rooftopY - (int)(roofHeight / 3.5f), (int)(roofWidth * 0.62f), (int)(roofHeight * 1.12f));
+                GenerateRooftop(x, rooftopY - (int)(roofHeight / 2.3f), (int)(roofWidth * 0.45f), (int)(roofHeight * 0.75f));
+            }
+
+            if (tiledBridgeX == bridgeWidth / 2)
+            {
+                int y = roofBottomY - 4;
+                while (Framing.GetTileSafely(x, y).HasTile)
+                    y++;
+
+                WorldGen.PlaceObject(x, y, TileID.Chandeliers, false, 22);
+            }
+        }
+    }
+
+    private static void GenerateRooftop(int x, int y, int roofWidth, int roofHeight)
+    {
+        for (int dy = 0; dy < roofHeight; dy++)
+        {
+            float heightInterpolant = dy / (float)(roofHeight - 1f);
+            int width = (int)Math.Ceiling(MathF.Pow(1f - heightInterpolant, 2.3f) * roofWidth * 0.5f + 0.001f);
+            for (int dx = -width; dx <= width; dx++)
+            {
+                // Shave off a bit of the bottom of the rooftop based on X position since otherwise it looks like a werid christmas tree.
+                int verticalCull = (int)MathF.Round((1f - LumUtils.Convert01To010(LumUtils.InverseLerp(-width, width, dx))) * 4f);
+                if (dy < verticalCull)
+                    continue;
+
+                WorldGen.PlaceTile(x + dx, y - dy, TileID.BlueDynastyShingles);
+                WorldGen.paintTile(x + dx, y - dy, PaintID.BluePaint);
+            }
+        }
+    }
+
+    private static int TriangleWaveDistance(int x, int modulo)
+    {
+        return Math.Abs((x - modulo / 2) % modulo - modulo / 2);
     }
 }
