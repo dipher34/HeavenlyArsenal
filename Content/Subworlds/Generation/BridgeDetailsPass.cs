@@ -238,9 +238,11 @@ public class BridgeDetailsPass : GenPass
         }
 
         // Adorn the bottom of the roof with cool things.
+        int[] possibleLanternVariants = [3, 5, 26];
         for (int x = 5; x < Main.maxTilesX - 5; x++)
         {
             int tiledBridgeX = x % (bridgeWidth * rooftopsPerBridge);
+            int bridgeIndex = x / bridgeWidth / rooftopsPerBridge;
 
             // Place small lanterns.
             if (tiledBridgeX == bridgeWidth / 2 - smallLanternSpacing ||
@@ -250,7 +252,7 @@ public class BridgeDetailsPass : GenPass
                 while (Framing.GetTileSafely(x, y).HasTile)
                     y++;
 
-                int lanternVariant = WorldGen.genRand.NextFromList(3, 5, 26);
+                int lanternVariant = possibleLanternVariants[bridgeIndex * 2 % possibleLanternVariants.Length];
                 WorldGen.PlaceObject(x, y, TileID.HangingLanterns, false, lanternVariant);
             }
 
