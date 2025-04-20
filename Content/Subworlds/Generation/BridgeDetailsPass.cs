@@ -18,8 +18,6 @@ public class BridgeDetailsPass : GenPass
     {
         progress.Message = "Creating bridge details.";
 
-        // Adorn the bridge with ropes and create beams.
-        int bridgeWidth = ForgottenShrineGenerationHelpers.BridgeArchWidth;
         int groundLevelY = Main.maxTilesY - ForgottenShrineGenerationHelpers.GroundDepth;
         int waterLevelY = groundLevelY - ForgottenShrineGenerationHelpers.WaterDepth;
         int bridgeLowYPoint = waterLevelY - ForgottenShrineGenerationHelpers.BridgeBeamHeight;
