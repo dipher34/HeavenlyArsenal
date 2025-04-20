@@ -55,7 +55,7 @@ float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD
     
     // Use reflection math to determine the color of the pixel when reflected along the reflection line.
     float reflectedY = reconvertedReflectionY * 2 - coords.y;
-    float reflectionWave = sin(worldStableCoords.y * 300 + globalTime * 3) * (1 - reflectionInterpolant) * reflectionWaviness;
+    float reflectionWave = sin(worldStableCoords.y * 300 - globalTime * 3) * (1 - reflectionInterpolant) * reflectionWaviness;
     float2 reflectionCoords = float2(coords.x + reflectionWave, (reflectedY - 0.5) * stretch + 0.5);
     float edgeOfScreenTaper = smoothstep(0, 0.1, reflectionCoords.y) * smoothstep(1, 0.9, reflectionCoords.y);
     float4 reflectedColor = tex2D(baseTexture, reflectionCoords);
