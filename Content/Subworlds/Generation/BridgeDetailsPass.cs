@@ -170,6 +170,9 @@ public class BridgeDetailsPass : GenPass
         }
     }
 
+    /// <summary>
+    /// Generates a roof out of patterned walls and periodic rooftop tiles at the center of bridges.
+    /// </summary>
     private static void GenerateRoof(int archTopY)
     {
         int bridgeWidth = ForgottenShrineGenerationHelpers.BridgeArchWidth;
@@ -277,6 +280,9 @@ public class BridgeDetailsPass : GenPass
         }
     }
 
+    /// <summary>
+    /// Generates a rooftop at a given position for a bridge.
+    /// </summary>
     private static void GenerateRooftop(int x, int y, int roofWidth, int roofHeight)
     {
         int dynastyWoodLayerHeight = ForgottenShrineGenerationHelpers.BridgeRooftopDynastyWoodLayerHeight;
