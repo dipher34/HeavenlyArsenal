@@ -49,7 +49,7 @@ public class TEUnderwaterTree : ModTileEntity
         Texture2D texture = treeTextures[treeVariant].Value;
 
         UnifiedRandom rng = new UnifiedRandom(Position.X + 74 + Position.Y * 113);
-        float baseLength = ForgottenShrineGenerationConstants.WaterDepth * 16f;
+        float baseLength = ForgottenShrineGenerationHelpers.WaterDepth * 16f;
         float treeLength = baseLength + rng.NextFloat(100f, 193f);
         float rotation = rng.NextFloatDirection() * 0.4f + MathHelper.PiOver2;
 

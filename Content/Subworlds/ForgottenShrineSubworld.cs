@@ -31,7 +31,8 @@ public class ForgottenShrineSubworld : Subworld
     [
         new DefineWorldLinePass(),
         new CreateGroundPass(),
-        new BridgePass(),
+        new BaseBridgePass(),
+        new BridgeDetailsPass(),
         new CreateUnderwaterVegetationPass(),
         new SmoothenPass(),
     ];

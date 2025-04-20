@@ -10,62 +10,28 @@ using Terraria.WorldBuilding;
 
 namespace HeavenlyArsenal.Content.Subworlds.Generation;
 
-public class BridgePass : GenPass
+public class BridgeDetailsPass : GenPass
 {
-    public BridgePass() : base("Terrain", 1f) { }
+    public BridgeDetailsPass() : base("Terrain", 1f) { }
 
     protected override void ApplyPass(GenerationProgress progress, GameConfiguration configuration)
     {
-        progress.Message = "Creating the bridge.";
-
-        int bridgeWidth = ForgottenShrineGenerationConstants.BridgeArchWidth;
-        int groundLevelY = Main.maxTilesY - ForgottenShrineGenerationConstants.GroundDepth;
-        int waterLevelY = groundLevelY - ForgottenShrineGenerationConstants.WaterDepth;
-        int bridgeLowYPoint = waterLevelY - ForgottenShrineGenerationConstants.BridgeBeamHeight;
-        int bridgeThickness = ForgottenShrineGenerationConstants.BridgeThickness;
-
-        int[] placeFenceSpokeMap = new int[Main.maxTilesX];
-        bool[] useDescendingFramesMap = new bool[Main.maxTilesX];
-        for (int x = 1; x < Main.maxTilesX - 1; x++)
-        {
-            int previousHeight = CalculateArchHeight(x - 1, out _);
-            int archHeight = CalculateArchHeight(x, out _);
-            int nextArchHeight = CalculateArchHeight(x + 1, out _);
-            bool ascending = archHeight > previousHeight;
-            bool descending = archHeight > nextArchHeight;
-            if (ascending)
-                placeFenceSpokeMap[x] = archHeight - previousHeight;
-            if (descending)
-            {
-                placeFenceSpokeMap[x] = archHeight - nextArchHeight;
-                useDescendingFramesMap[x] = true;
-            }
-        }
-
-        for (int x = 0; x < Main.maxTilesX; x++)
-        {
-            int archHeight = CalculateArchHeight(x, out float archHeightInterpolant);
-
-            // Place base bridge tiles.
-            int extraThickness = (int)Utils.Remap(archHeightInterpolant, 0.6f, 0f, 0f, bridgeThickness * 1.25f);
-            int archStartingY = bridgeLowYPoint - archHeight;
-            PlaceBaseTiles(x, archStartingY, extraThickness);
-
-            // Create walls underneath the bridge.
-            PlaceWalls(x, archHeightInterpolant, archStartingY, extraThickness);
-
-            // Place fences atop the bridge.
-            PlaceFence(x, archStartingY, placeFenceSpokeMap, useDescendingFramesMap);
-        }
+        progress.Message = "Creating bridge details.";
 
         // Adorn the bridge with ropes and create beams.
-        int innerRopeSpacing = (bridgeWidth - ForgottenShrineGenerationConstants.BridgeUndersideRopeWidth) / 2;
+        int bridgeWidth = ForgottenShrineGenerationHelpers.BridgeArchWidth;
+        int groundLevelY = Main.maxTilesY - ForgottenShrineGenerationHelpers.GroundDepth;
+        int waterLevelY = groundLevelY - ForgottenShrineGenerationHelpers.WaterDepth;
+        int bridgeLowYPoint = waterLevelY - ForgottenShrineGenerationHelpers.BridgeBeamHeight;
+        int innerRopeSpacing = (bridgeWidth - ForgottenShrineGenerationHelpers.BridgeUndersideRopeWidth) / 2;
+        int bridgeThickness = ForgottenShrineGenerationHelpers.BridgeThickness;
+
         for (int x = 0; x < Main.maxTilesX; x++)
         {
             if (x >= 5 && x < Main.maxTilesX - 5 && x % bridgeWidth == 0)
                 PlaceBeam(groundLevelY, x, bridgeLowYPoint);
 
-            int ropeY = bridgeLowYPoint - bridgeThickness - CalculateArchHeight(x, out _);
+            int ropeY = bridgeLowYPoint - bridgeThickness - ForgottenShrineGenerationHelpers.CalculateArchHeight(x, out _);
             if (x >= 5 && x < Main.maxTilesX - 5 && x % bridgeWidth == innerRopeSpacing)
             {
                 Point start = new Point(x, ropeY).ToWorldCoordinates().ToPoint();
@@ -77,7 +43,7 @@ public class BridgePass : GenPass
                 start.Y -= 11;
                 end.Y -= 11;
 
-                ShrineRopeSystem.Register(new ShrineRopeData(start, end, ForgottenShrineGenerationConstants.BridgeUndersideRopeSag * 16f));
+                ShrineRopeSystem.Register(new ShrineRopeData(start, end, ForgottenShrineGenerationHelpers.BridgeUndersideRopeSag * 16f));
             }
         }
 
@@ -86,90 +52,6 @@ public class BridgePass : GenPass
         PlaceLanterns(decorationStartY, 3);
         PlaceOfuda(decorationStartY, 5);
         GenerateRoof(bridgeLowYPoint);
-    }
-
-    /// <summary>
-    /// Determines the vertical offset of the bridge's arch at a given X position in tile coordinates.
-    /// </summary>
-    internal static int CalculateArchHeight(int x, out float archHeightInterpolant)
-    {
-        archHeightInterpolant = MathF.Abs(MathF.Sin(MathHelper.Pi * x / ForgottenShrineGenerationConstants.BridgeArchWidth));
-        return (int)MathF.Round(archHeightInterpolant * ForgottenShrineGenerationConstants.BridgeArchHeight);
-    }
-
-    /// <summary>
-    /// Places the base tiles for the bridge that the player can walk on.
-    /// </summary>
-    private static void PlaceBaseTiles(int x, int archStartingY, int extraThickness)
-    {
-        int bridgeThickness = ForgottenShrineGenerationConstants.BridgeThickness;
-        for (int dy = -extraThickness; dy < bridgeThickness; dy++)
-        {
-            int archY = archStartingY - dy;
-            int tileID = TileID.GrayBrick;
-            if (dy >= bridgeThickness - 2)
-                tileID = TileID.RedDynastyShingles;
-            else if (dy >= bridgeThickness - 4)
-                tileID = TileID.DynastyWood;
-
-            WorldGen.PlaceTile(x, archY, tileID);
-        }
-    }
-
-    /// <summary>
-    /// Places guardrail fences above the bridge.
-    /// </summary>
-    private static void PlaceFence(int x, int archStartingY, int[] placeFenceSpokeMap, bool[] useDescendingFramesMap)
-    {
-        int bridgeWidth = ForgottenShrineGenerationConstants.BridgeArchWidth;
-        int bridgeThickness = ForgottenShrineGenerationConstants.BridgeThickness;
-        int fenceHeight = 4;
-        int fenceFrameX = 2;
-        int fenceXPosition = x % bridgeWidth;
-        if (fenceXPosition == bridgeWidth / 3 || fenceXPosition == bridgeWidth * 2 / 3)
-            fenceFrameX = 3;
-        if (fenceXPosition == bridgeWidth / 2)
-            fenceFrameX = 4;
-
-        if (placeFenceSpokeMap[x] >= 1)
-        {
-            fenceHeight += placeFenceSpokeMap[x];
-            fenceFrameX = useDescendingFramesMap[x] ? 0 : 1;
-        }
-
-        for (int dy = 0; dy < fenceHeight; dy++)
-        {
-            int fenceY = archStartingY - bridgeThickness - dy;
-            Tile t = Main.tile[x, fenceY];
-            t.TileType = (ushort)ModContent.TileType<CrimsonFence>();
-            t.HasTile = true;
-            t.TileFrameX = (short)(fenceFrameX * 18);
-
-            int frameY = 2;
-            if (dy == fenceHeight - 1)
-                frameY = 0;
-            if (dy == fenceHeight - 2)
-                frameY = 1;
-            if (dy == 0)
-                frameY = 3;
-
-            t.TileFrameY = (short)(frameY * 18);
-        }
-    }
-
-    /// <summary>
-    /// Places walls below the bridge.
-    /// </summary>
-    private static void PlaceWalls(int x, float archHeightInterpolant, int archStartingY, int extraThickness)
-    {
-        int bridgeThickness = ForgottenShrineGenerationConstants.BridgeThickness;
-        int wallHeight = (int)MathF.Round(MathHelper.Lerp(8f, 2f, MathF.Pow(archHeightInterpolant, 1.7f)));
-        for (int dy = -extraThickness - wallHeight; dy < bridgeThickness - 2; dy++)
-        {
-            int wallY = archStartingY - dy;
-            WorldGen.PlaceWall(x, wallY, WallID.LivingWood);
-            WorldGen.paintWall(x, wallY, PaintID.GrayPaint);
-        }
     }
 
     /// <summary>
@@ -186,10 +68,10 @@ public class BridgePass : GenPass
         // x = arcsin(1 / height) * width / pi
 
         // For a bit of artistic preference, 0.5 will be used instead of 1 like in the original equation, making the beams a bit thinner.
-        float intermediateArcsine = MathF.Asin(0.5f / ForgottenShrineGenerationConstants.BridgeArchHeight);
-        int beamWidth = (int)MathF.Round(intermediateArcsine * ForgottenShrineGenerationConstants.BridgeArchWidth / MathHelper.Pi);
-        if (ForgottenShrineGenerationConstants.BridgeArchHeight == 0)
-            beamWidth = ForgottenShrineGenerationConstants.BridgeArchWidth / 33;
+        float intermediateArcsine = MathF.Asin(0.5f / ForgottenShrineGenerationHelpers.BridgeArchHeight);
+        int beamWidth = (int)MathF.Round(intermediateArcsine * ForgottenShrineGenerationHelpers.BridgeArchWidth / MathHelper.Pi);
+        if (ForgottenShrineGenerationHelpers.BridgeArchHeight == 0)
+            beamWidth = ForgottenShrineGenerationHelpers.BridgeArchWidth / 33;
 
         for (int dx = -beamWidth; dx <= beamWidth; dx++)
         {
@@ -212,10 +94,10 @@ public class BridgePass : GenPass
     /// </summary>
     private static void PlaceLanterns(int startY, int spacing)
     {
-        int bridgeWidth = ForgottenShrineGenerationConstants.BridgeArchWidth;
+        int bridgeWidth = ForgottenShrineGenerationHelpers.BridgeArchWidth;
         for (int x = bridgeWidth / 2; x < Main.maxTilesX - bridgeWidth / 2; x += bridgeWidth)
         {
-            int archOffset = CalculateArchHeight(x, out _);
+            int archOffset = ForgottenShrineGenerationHelpers.CalculateArchHeight(x, out _);
             for (int dx = -1; dx <= 1; dx++)
             {
                 Point lanternPoint = new Point(x + dx * spacing, startY - archOffset);
@@ -232,11 +114,11 @@ public class BridgePass : GenPass
     /// </summary>
     private static void PlaceOfuda(int startY, int spacing)
     {
-        int bridgeWidth = ForgottenShrineGenerationConstants.BridgeArchWidth;
+        int bridgeWidth = ForgottenShrineGenerationHelpers.BridgeArchWidth;
         int ofudaID = ModContent.TileType<PlacedOfuda>();
         for (int x = bridgeWidth / 2; x < Main.maxTilesX - bridgeWidth / 2; x += bridgeWidth)
         {
-            int archOffset = CalculateArchHeight(x, out _);
+            int archOffset = ForgottenShrineGenerationHelpers.CalculateArchHeight(x, out _);
             for (int dx = -2; dx <= 2; dx++)
             {
                 if (dx == 0)
@@ -255,8 +137,8 @@ public class BridgePass : GenPass
 
     private static void GenerateRoof(int archTopY)
     {
-        int bridgeWidth = ForgottenShrineGenerationConstants.BridgeArchWidth;
-        int wallHeight = ForgottenShrineGenerationConstants.BridgeArchHeight + 21;
+        int bridgeWidth = ForgottenShrineGenerationHelpers.BridgeArchWidth;
+        int wallHeight = ForgottenShrineGenerationHelpers.BridgeArchHeight + 21;
         int ceilingWallHeight = 4;
         int roofBottomY = archTopY - wallHeight;
         int ofudaID = ModContent.TileType<PlacedOfuda>();
@@ -271,7 +153,7 @@ public class BridgePass : GenPass
             int height = archTopY - y;
             for (int x = 5; x < Main.maxTilesX - 5; x++)
             {
-                if (y >= archTopY - CalculateArchHeight(x, out _))
+                if (y >= archTopY - ForgottenShrineGenerationHelpers.CalculateArchHeight(x, out _))
                     continue;
 
                 int distanceFromPillar = TriangleWaveDistance(x, pillarSpacing);
@@ -292,7 +174,7 @@ public class BridgePass : GenPass
             int height = archTopY - y;
             for (int x = 5; x < Main.maxTilesX - 5; x++)
             {
-                if (y >= archTopY - CalculateArchHeight(x, out _))
+                if (y >= archTopY - ForgottenShrineGenerationHelpers.CalculateArchHeight(x, out _))
                     continue;
 
                 if (height >= wallHeight - ceilingWallHeight)
@@ -313,7 +195,7 @@ public class BridgePass : GenPass
             int tiledBridgeX = x % (bridgeWidth * 2);
             if (tiledBridgeX == bridgeWidth / 2)
             {
-                ForgottenShrineGenerationConstants.ShrineRooftopSet rooftopSet = WorldGen.genRand.Next(ForgottenShrineGenerationConstants.BridgeRooftopConfigurations);
+                ForgottenShrineGenerationHelpers.ShrineRooftopSet rooftopSet = WorldGen.genRand.Next(ForgottenShrineGenerationHelpers.BridgeRooftopConfigurations);
                 foreach (var rooftop in rooftopSet.Rooftops)
                     GenerateRooftop(x, rooftopY - rooftop.VerticalOffset, rooftop.Width, rooftop.Height);
             }

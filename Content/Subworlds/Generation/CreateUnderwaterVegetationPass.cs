@@ -18,29 +18,29 @@ public class CreateUnderwaterVegetationPass : GenPass
         progress.Message = "Creating underwater vegetation.";
 
         ushort treeID = (ushort)ModContent.TileType<UnderwaterTree>();
-        for (int i = 0; i < ForgottenShrineGenerationConstants.UnderwaterTreeCount; i++)
+        for (int i = 0; i < ForgottenShrineGenerationHelpers.UnderwaterTreeCount; i++)
         {
-            float xInterpolant = i / (float)(ForgottenShrineGenerationConstants.UnderwaterTreeCount - 1f);
+            float xInterpolant = i / (float)(ForgottenShrineGenerationHelpers.UnderwaterTreeCount - 1f);
             int x = (int)MathHelper.Lerp(50f, Main.maxTilesX - 50f, xInterpolant) + WorldGen.genRand.Next(-24, 24);
-            int y = Main.maxTilesY - ForgottenShrineGenerationConstants.GroundDepth - 1;
+            int y = Main.maxTilesY - ForgottenShrineGenerationHelpers.GroundDepth - 1;
             Main.tile[x, y].TileType = treeID;
             Main.tile[x, y].Get<TileWallWireStateData>().HasTile = true;
             TileEntity.PlaceEntityNet(x, y, ModContent.TileEntityType<TEUnderwaterTree>());
         }
 
-        for (int i = 0; i < ForgottenShrineGenerationConstants.CattailCount; i++)
+        for (int i = 0; i < ForgottenShrineGenerationHelpers.CattailCount; i++)
         {
-            float xInterpolant = i / (float)(ForgottenShrineGenerationConstants.CattailCount - 1f);
+            float xInterpolant = i / (float)(ForgottenShrineGenerationHelpers.CattailCount - 1f);
             int x = (int)MathHelper.Lerp(20f, Main.maxTilesX - 20f, xInterpolant) + WorldGen.genRand.Next(-15, 15);
-            int y = Main.maxTilesY - ForgottenShrineGenerationConstants.GroundDepth - 1;
-            int height = ForgottenShrineGenerationConstants.WaterDepth + WorldGen.genRand.Next(1, ForgottenShrineGenerationConstants.MaxCattailHeight);
+            int y = Main.maxTilesY - ForgottenShrineGenerationHelpers.GroundDepth - 1;
+            int height = ForgottenShrineGenerationHelpers.WaterDepth + WorldGen.genRand.Next(1, ForgottenShrineGenerationHelpers.MaxCattailHeight);
             GenerateCattail(x, y, height);
         }
 
-        for (int i = 0; i < ForgottenShrineGenerationConstants.LilypadCount; i++)
+        for (int i = 0; i < ForgottenShrineGenerationHelpers.LilypadCount; i++)
         {
             int x = WorldGen.genRand.Next(10, Main.maxTilesX - 10);
-            int y = Main.maxTilesY - ForgottenShrineGenerationConstants.GroundDepth - ForgottenShrineGenerationConstants.WaterDepth;
+            int y = Main.maxTilesY - ForgottenShrineGenerationHelpers.GroundDepth - ForgottenShrineGenerationHelpers.WaterDepth;
 
             if (Framing.GetTileSafely(x, y).HasTile)
                 continue;

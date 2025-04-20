@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.Xna.Framework;
+using System;
+using System.Collections.Generic;
 using Terraria;
 
 namespace HeavenlyArsenal.Content.Subworlds.Generation;
 
-public static class ForgottenShrineGenerationConstants
+public static class ForgottenShrineGenerationHelpers
 {
     /// <summary>
     /// Represents data for a rooftop generation set for a bridge.
@@ -112,4 +114,13 @@ public static class ForgottenShrineGenerationConstants
             Add(new ShrineRooftopInfo((int)(BridgeArchWidth / 0.65f), (int)(BridgeArchWidth / 2.9f), 0)).
             Add(new ShrineRooftopInfo((int)(BridgeArchWidth / 1.4f), (int)(BridgeArchWidth / 1.5f), (int)(BridgeArchWidth / 7.2f))),
     ];
+
+    /// <summary>
+    /// Determines the vertical offset of the bridge's arch at a given X position in tile coordinates.
+    /// </summary>
+    internal static int CalculateArchHeight(int x, out float archHeightInterpolant)
+    {
+        archHeightInterpolant = MathF.Abs(MathF.Sin(MathHelper.Pi * x / BridgeArchWidth));
+        return (int)MathF.Round(archHeightInterpolant * BridgeArchHeight);
+    }
 }

@@ -42,8 +42,8 @@ public class ForgottenShrineLotusSystem : ModSystem
     {
         if (!lotusParticleSystem.particles.Any(p => p.Active))
         {
-            int groundLevelY = Main.maxTilesY - ForgottenShrineGenerationConstants.GroundDepth;
-            int waterLevelY = groundLevelY - ForgottenShrineGenerationConstants.WaterDepth;
+            int groundLevelY = Main.maxTilesY - ForgottenShrineGenerationHelpers.GroundDepth;
+            int waterLevelY = groundLevelY - ForgottenShrineGenerationHelpers.WaterDepth;
             for (int i = 0; i < LotusCount; i++)
             {
                 float lotusSize = Main.rand.NextFloat(3f, 8.4f);

@@ -13,14 +13,14 @@ public class CreateGroundPass : GenPass
     {
         progress.Message = "Placing ground.";
 
-        int groundDepth = ForgottenShrineGenerationConstants.GroundDepth;
+        int groundDepth = ForgottenShrineGenerationHelpers.GroundDepth;
         for (int y = Main.maxTilesY - groundDepth; y < Main.maxTilesY; y++)
         {
             for (int x = 0; x < Main.maxTilesX; x++)
                 WorldGen.PlaceTile(x, y, TileID.Mud);
         }
 
-        int waterDepth = ForgottenShrineGenerationConstants.WaterDepth;
+        int waterDepth = ForgottenShrineGenerationHelpers.WaterDepth;
         for (int y = Main.maxTilesY - groundDepth - waterDepth; y < Main.maxTilesY - groundDepth; y++)
         {
             for (int x = 0; x < Main.maxTilesX; x++)
