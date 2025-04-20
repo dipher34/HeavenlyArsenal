@@ -1,10 +1,14 @@
-﻿using HeavenlyArsenal.Core.Physics.ClothManagement;
+﻿using HeavenlyArsenal.Content.Subworlds;
+using HeavenlyArsenal.Core.Physics.ClothManagement;
 using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Content.Tiles.TileEntities;
 using NoxusBoss.Core.Graphics.LightingMask;
 using ReLogic.Content;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -15,12 +19,21 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
 {
     private ClothSimulation cloth;
 
+    private static bool tapestriesAreSettling;
+
+    /// <summary>
+    /// The position at which this cloth is anchored, essentially its top-center in world coordinates.
+    /// </summary>
+    private Vector3 AnchorPosition => new Vector3(Position.ToWorldCoordinates(0f, 0f), 0f);
+
     private static float ClothPointSpacing => 13f;
 
     private static readonly Asset<Texture2D>[] tapestryTextures =
     [
         ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Tiles/ForgottenShrine/EnigmaticTapestry1"),
-        ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Tiles/ForgottenShrine/EnigmaticTapestry2")
+        ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Tiles/ForgottenShrine/EnigmaticTapestry2"),
+        ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Tiles/ForgottenShrine/EnigmaticTapestry3"),
+        ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Tiles/ForgottenShrine/EnigmaticTapestry4"),
     ];
 
     public override bool IsTileValidForEntity(int x, int y)
@@ -41,37 +54,86 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
         return Place(i, j);
     }
 
-    public void ClientSideUpdate()
+    // Sync the tile entity the moment it is place on the server.
+    // This is done to cause it to register among all clients.
+    public override void OnNetPlace() => NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
+
+    public override void Load()
     {
-        Vector3 anchorPosition = new Vector3(Position.ToWorldCoordinates(0f, 0f), 0f);
-        if (!Main.LocalPlayer.WithinRange(Position.ToWorldCoordinates(), 3000f))
-            return;
+        // Ensure that all tapestries settle upon entering the subworld.
+        ForgottenShrineSystem.OnEnter += SettleClothOnEnteringWorldWrapper;
+    }
 
-        cloth ??= new ClothSimulation(anchorPosition, 21, 13, ClothPointSpacing, 50f, 0.018f);
-
-        for (int i = 0; i < 10; i++)
+    private static void SettleClothOnEnteringWorldWrapper()
+    {
+        new Thread(() =>
         {
-            for (int x = 0; x < cloth.Width; x++)
-            {
-                for (int y = 0; y < 2; y++)
-                    ConstrainParticle(anchorPosition, cloth.particleGrid[x, y]);
-            }
+            tapestriesAreSettling = true;
 
-            Vector3 playerPosition3 = new Vector3(Main.LocalPlayer.Center, 0f);
-            for (int y = 0; y < cloth.Height; y++)
+            try
             {
-                for (int x = 0; x < cloth.Width; x++)
-                {
-                    float pushInterpolant = LumUtils.InverseLerp(36f, 19f, Vector3.Distance(playerPosition3, cloth.particleGrid[x, y].Position));
-                    Vector3 pushForce = new Vector3(Main.LocalPlayer.velocity * pushInterpolant * 0.75f, 0f);
-                    cloth.particleGrid[x, y].AddForce(pushForce);
-                }
+                SettleClothOnEnteringWorld();
             }
+            finally
+            {
+                tapestriesAreSettling = false;
+            }
+        }).Start();
+    }
 
-            cloth.Simulate(0.051f, false, Vector3.UnitY * 3.5f);
+    private static void SettleClothOnEnteringWorld()
+    {
+        // The ordering query is to ensure that tapestries that are closest to the player settle first, making it less likely that the player 
+        // will see the process happening on the separate thread.
+        List<TEEnigmaticTapestry> placedTapestries = [.. ByID.Values.Where(te => te is TEEnigmaticTapestry).
+                    OrderByDescending(te => te.Position.ToWorldCoordinates().Distance(Main.LocalPlayer.Center)).
+                    Select(te => te as TEEnigmaticTapestry)];
+        foreach (TEEnigmaticTapestry tapestry in placedTapestries)
+        {
+            for (int i = 0; i < 1000; i++)
+                tapestry.ApplySimulationStep();
         }
     }
 
+    public void ClientSideUpdate()
+    {
+        if (!Main.LocalPlayer.WithinRange(Position.ToWorldCoordinates(), 3000f))
+            return;
+
+        for (int i = 0; i < 10; i++)
+            ApplySimulationStep();
+    }
+
+    /// <summary>
+    /// Applies a simulationn step to this tapestry's cloth.
+    /// </summary>
+    public void ApplySimulationStep()
+    {
+        cloth ??= new ClothSimulation(AnchorPosition, 21, 13, ClothPointSpacing, 50f, 0.0051f);
+
+        Vector3 playerPosition3 = new Vector3(Main.LocalPlayer.Center, 0f);
+        for (int x = 0; x < cloth.Width; x++)
+        {
+            for (int y = 0; y < 2; y++)
+                ConstrainParticle(AnchorPosition, cloth.particleGrid[x, y]);
+        }
+
+        for (int y = 0; y < cloth.Height; y++)
+        {
+            for (int x = 0; x < cloth.Width; x++)
+            {
+                float pushInterpolant = LumUtils.InverseLerp(36f, 19f, Vector3.Distance(playerPosition3, cloth.particleGrid[x, y].Position));
+                Vector3 pushForce = new Vector3(Main.LocalPlayer.velocity * pushInterpolant * 0.75f, 0f);
+                cloth.particleGrid[x, y].AddForce(pushForce);
+            }
+        }
+
+        cloth.Simulate(0.051f, false, Vector3.UnitY * 3f);
+    }
+
+    /// <summary>
+    /// Locks certain cloth particles in place so that they don't fall infinitely.
+    /// </summary>
     private void ConstrainParticle(Vector3 anchor, ClothPoint? point)
     {
         if (point is null)
@@ -84,7 +146,7 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
     }
 
     /// <summary>
-    /// Renders this ofuda.
+    /// Renders this tapestry.
     /// </summary>
     public void Render()
     {
@@ -93,8 +155,8 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
         if (cloth is null)
             return;
 
-        int ofudaVariant = ID % tapestryTextures.Length;
-        Texture2D texture = tapestryTextures[ofudaVariant].Value;
+        int tapestryVariant = ((int)(ID / MathHelper.PiOver2) + Position.X * 11) % tapestryTextures.Length;
+        Texture2D texture = tapestryTextures[tapestryVariant].Value;
         RenderTapestry(texture);
     }
 
@@ -118,7 +180,7 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
             ManagedShader pixelationShader = ShaderManager.GetShader("HeavenlyArsenal.ShrineTapestryPostProcessingShader");
             pixelationShader.TrySetParameter("zoom", Main.GameViewMatrix.Zoom);
             pixelationShader.TrySetParameter("screenSize", WotGUtils.ViewportSize);
-            pixelationShader.TrySetParameter("pixelationFactor", Vector2.One * 2f / target.Size());
+            pixelationShader.TrySetParameter("pixelationFactor", Vector2.One * 1.5f / target.Size());
             pixelationShader.SetTexture(LightingMaskTargetManager.LightTarget, 1);
             pixelationShader.Apply();
 
@@ -126,8 +188,4 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
             Main.spriteBatch.Draw(target, drawPosition, null, Color.White, 0f, target.Size() * 0.5f, 1f, 0, 0f);
         }
     }
-
-    // Sync the tile entity the moment it is place on the server.
-    // This is done to cause it to register among all clients.
-    public override void OnNetPlace() => NetMessage.SendData(MessageID.TileEntitySharing, -1, -1, null, ID, Position.X, Position.Y);
 }
