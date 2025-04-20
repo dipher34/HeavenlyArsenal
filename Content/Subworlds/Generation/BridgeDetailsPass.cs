@@ -39,7 +39,7 @@ public class BridgeDetailsPass : GenPass
         int bridgeWidth = ForgottenShrineGenerationHelpers.BridgeArchWidth;
         for (int x = 5; x < Main.maxTilesX - 5; x++)
         {
-            if (x >= 5 && x < Main.maxTilesX - 5 && x % bridgeWidth == 0)
+            if (x % bridgeWidth == 0)
                 PlaceBeam(groundLevelY, x, bridgeLowYPoint);
         }
     }
@@ -66,14 +66,11 @@ public class BridgeDetailsPass : GenPass
         for (int dx = -beamWidth; dx <= beamWidth; dx++)
         {
             int x = startingX + dx;
-            bool atEdge = Math.Abs(dx) == beamWidth;
+            bool isBeamEdge = Math.Abs(dx) == beamWidth;
+            ushort wallID = isBeamEdge ? WallID.LivingWood : WallID.GrayBrick;
             for (int y = startingY; y < groundLevelY; y++)
             {
-                bool useWoodenBeams = atEdge;
-                if (useWoodenBeams)
-                    Main.tile[x, y].WallType = WallID.LivingWood;
-                else
-                    Main.tile[x, y].WallType = WallID.GrayBrick;
+                Main.tile[x, y].WallType = wallID;
                 WorldGen.paintWall(x, y, PaintID.None);
             }
         }
