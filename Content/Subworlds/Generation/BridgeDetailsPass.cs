@@ -53,6 +53,9 @@ public class BridgeDetailsPass : GenPass
         for (int dx = -beamWidth; dx <= beamWidth; dx++)
         {
             int x = startingX + dx;
+            if (x < 0 || x >= Main.maxTilesX)
+                continue;
+
             bool isBeamEdge = Math.Abs(dx) == beamWidth;
             ushort wallID = isBeamEdge ? WallID.LivingWood : WallID.GrayBrick;
             for (int y = startingY; y < groundLevelY; y++)
