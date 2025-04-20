@@ -258,6 +258,7 @@ public class BridgePass : GenPass
         int wallHeight = 21;
         int ceilingWallHeight = 4;
         int roofBottomY = archTopY - wallHeight;
+        int ofudaID = ModContent.TileType<PlacedOfuda>();
 
         // Create pillars.
         int pillarSpacing = bridgeWidth / 3;
@@ -298,6 +299,7 @@ public class BridgePass : GenPass
 
         // Place a roof over center points on the bridge.
         int rooftopY = roofBottomY + 1;
+        int ofudaSpacing = 9;
         for (int x = 5; x < Main.maxTilesX - 5; x++)
         {
             int tiledBridgeX = x % (bridgeWidth * 2);
@@ -317,6 +319,14 @@ public class BridgePass : GenPass
                     y++;
 
                 WorldGen.PlaceObject(x, y, TileID.Chandeliers, false, 22);
+            }
+
+            if (tiledBridgeX == bridgeWidth / 2 - ofudaSpacing ||
+                tiledBridgeX == bridgeWidth / 2 + ofudaSpacing)
+            {
+                Main.tile[x, rooftopY + 1].TileType = (ushort)ofudaID;
+                Main.tile[x, rooftopY + 1].Get<TileWallWireStateData>().HasTile = true;
+                TileEntity.PlaceEntityNet(x, rooftopY + 1, ModContent.TileEntityType<TEPlacedOfuda>());
             }
         }
     }

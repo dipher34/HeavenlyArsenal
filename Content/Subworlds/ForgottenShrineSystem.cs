@@ -90,25 +90,22 @@ public class ForgottenShrineSystem : ModSystem
 
     private static void CreateCandles()
     {
-        // TODO -- Dunno about these to be honest.
-        return;
-
         float spacingPerBridge = ForgottenShrineGenerationConstants.BridgeArchWidth * 16f;
         int candleCount = Main.maxTilesX / ForgottenShrineGenerationConstants.BridgeArchWidth;
         int groundLevelY = Main.maxTilesY - ForgottenShrineGenerationConstants.GroundDepth;
         int waterLevelY = groundLevelY - ForgottenShrineGenerationConstants.WaterDepth;
         int bridgeLowYPoint = waterLevelY - ForgottenShrineGenerationConstants.BridgeBeamHeight;
-        float x = spacingPerBridge * 0.5f;
+        float x = spacingPerBridge * 1.5f;
         for (int i = 0; i < candleCount; i++)
         {
-            Vector2 candleSpawnPosition = new Vector2(x + 50f, bridgeLowYPoint * 16f - 190f);
+            Vector2 candleSpawnPosition = new Vector2(x + 8f, bridgeLowYPoint * 16f - 166f);
 
             SpiritCandleParticle candle = SpiritCandleParticle.Pool.RequestParticle();
             candle.Prepare(candleSpawnPosition, Vector2.Zero, 0f, Color.White, Vector2.One * 0.35f);
 
             ParticleEngine.Particles.Add(candle);
 
-            x += spacingPerBridge;
+            x += spacingPerBridge * 2f;
         }
     }
 

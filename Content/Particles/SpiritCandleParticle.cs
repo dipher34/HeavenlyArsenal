@@ -80,23 +80,11 @@ public class SpiritCandleParticle : BaseParticle
         float squishRate = 54f;
         float squishWave = MathF.Sin(MathHelper.TwoPi * Time / squishRate);
         float horizontalSquish = MathF.Pow(squishWave * 0.5f + 0.5f, 2.3f) * 0.75f;
-        float baseHorizontalSquish = horizontalSquish;
         horizontalSquish -= LumUtils.InverseLerp(0.4f, 0f, horizontalSquish) * 0.55f;
         horizontalSquish *= 0.1f;
 
         Scale = new Vector2(1f + horizontalSquish, 1f - horizontalSquish) * BaseScale;
-        Rotation = MathF.Sin(MathHelper.Pi * Time / squishRate) * 0.5f;
-        Velocity = new Vector2(Rotation * -5f, squishWave * -2f);
-
-        if (baseHorizontalSquish <= 0.04f)
-        {
-            Vector2 fireSpawnPosition = Position - Vector2.UnitY.RotatedBy(Rotation) * Scale.Y * 192f;
-            Vector2 fireVelocity = Vector2.UnitY.RotatedBy(Rotation).RotatedByRandom(0.3f) * Main.rand.NextFloat(-4f, -2.4f);
-            Dust ember = Dust.NewDustPerfect(fireSpawnPosition, 264, fireVelocity);
-            ember.color = Color.Lerp(Color.Orange, Color.Red, Main.rand.NextFloat(0.65f));
-            ember.noGravity = Main.rand.NextBool();
-            ember.scale *= Main.rand.NextFloat(0.67f, 1.33f);
-        }
+        Velocity = Vector2.UnitY * squishWave * -0.7f;
 
         Time++;
     }
@@ -109,7 +97,7 @@ public class SpiritCandleParticle : BaseParticle
         Main.spriteBatch.Draw(texture, Position + settings.AnchorPosition, texture.Frame(), Color.MultiplyRGB(light), Rotation, texture.Size() * new Vector2(0.5f, 1f), Scale, 0, 0);
 
         Vector2 glowDrawPosition = Position + settings.AnchorPosition - Vector2.UnitY.RotatedBy(Rotation) * Scale.Y * 192f;
-        float glowFlicker = MathHelper.Lerp(0.9f, 1.1f, LumUtils.Cos01(Main.GlobalTimeWrappedHourly * 30f + Position.X * 0.01f)) * LumUtils.Saturate(Scale.Y * 2.7f);
+        float glowFlicker = MathHelper.Lerp(0.9f, 1.1f, LumUtils.Cos01(Main.GlobalTimeWrappedHourly * 30f + Position.X * 0.01f)) * LumUtils.Saturate(1f - (1f - Scale.Y / BaseScale.Y) * 4.4f);
         Texture2D glow = GennedAssets.Textures.GreyscaleTextures.BloomCirclePinpoint.Value;
         Vector2 glowOrigin = glow.Size() * 0.5f;
         Main.spriteBatch.Draw(glow, glowDrawPosition, null, new Color(1f, 0.97f, 0.9f, 0f) * 0.9f, Rotation, glowOrigin, new Vector2(0.5f, Scale.Y * 2.5f) * glowFlicker * 0.2f, 0, 0f);
