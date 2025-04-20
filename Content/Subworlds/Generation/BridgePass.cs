@@ -262,7 +262,7 @@ public class BridgePass : GenPass
         int ofudaID = ModContent.TileType<PlacedOfuda>();
         int pillarSpacing = bridgeWidth / 3;
         int rooftopY = roofBottomY + 1;
-        int ofudaSpacing = 9;
+        int ofudaSpacing = bridgeWidth / 9;
 
         // Create pillars.
         for (int y = archTopY; y >= roofBottomY; y--)
