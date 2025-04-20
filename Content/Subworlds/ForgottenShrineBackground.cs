@@ -200,7 +200,7 @@ public class ForgottenShrineBackground : Background
         {
             float pathInterpolant = Main.rand.NextFloat(0.05f, 1f);
             float size = MathHelper.Lerp(2.5f, 11.5f, MathF.Pow(Main.rand.NextFloat(), 5f)) * Main.rand.NextFloat(0.4f, 1.2f);
-            Vector2 spawnPosition = MoonPosition + lanternPositionPath.Evaluate(pathInterpolant) * 1.5f + Main.rand.NextVector2Circular(210f, 210f);
+            Vector2 spawnPosition = MoonPosition + lanternPositionPath.Evaluate(pathInterpolant) * 1.6f + Main.rand.NextVector2Circular(210f, 210f);
             Vector2 velocity = lanternVelocityPath.Evaluate(pathInterpolant) * -Main.rand.NextFloat(0.007f, 0.03f);
             lanternSystem?.CreateNew(spawnPosition, velocity, Vector2.One * size, new Color(255, Main.rand.Next(40, 150), 33) * 0.75f, pathInterpolant);
         }
