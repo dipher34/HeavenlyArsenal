@@ -19,7 +19,6 @@ public static class ForgottenShrineGenerationHelpers
     /// <summary>
     /// Represents a set of rooftops atop each other.
     /// </summary>
-    /// <param name="Rooftops"></param>
     public record ShrineRooftopSet(List<ShrineRooftopInfo> Rooftops)
     {
         public ShrineRooftopSet() : this([]) { }
