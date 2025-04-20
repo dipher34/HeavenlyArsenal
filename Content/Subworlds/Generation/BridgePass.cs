@@ -83,16 +83,16 @@ public class BridgePass : GenPass
         }
 
         // Create lanterns beneath the bridge.
-        int decorationStartY = bridgeLowYPoint - bridgeThickness + 1;
+        int decorationStartY = bridgeLowYPoint - bridgeThickness;
         PlaceLanterns(decorationStartY, 3);
         PlaceOfuda(decorationStartY, 5);
-        GenerateRoof(bridgeLowYPoint - ForgottenShrineGenerationConstants.BridgeArchHeight);
+        GenerateRoof(bridgeLowYPoint);
     }
 
     /// <summary>
     /// Determines the vertical offset of the bridge's arch at a given X position in tile coordinates.
     /// </summary>
-    private static int CalculateArchHeight(int x, out float archHeightInterpolant)
+    internal static int CalculateArchHeight(int x, out float archHeightInterpolant)
     {
         archHeightInterpolant = MathF.Abs(MathF.Sin(MathHelper.Pi * x / ForgottenShrineGenerationConstants.BridgeArchWidth));
         return (int)MathF.Round(archHeightInterpolant * ForgottenShrineGenerationConstants.BridgeArchHeight);
@@ -216,9 +216,10 @@ public class BridgePass : GenPass
         int bridgeWidth = ForgottenShrineGenerationConstants.BridgeArchWidth;
         for (int x = bridgeWidth / 2; x < Main.maxTilesX - bridgeWidth / 2; x += bridgeWidth)
         {
+            int archOffset = CalculateArchHeight(x, out _);
             for (int dx = -1; dx <= 1; dx++)
             {
-                Point lanternPoint = new Point(x + dx * spacing, startY);
+                Point lanternPoint = new Point(x + dx * spacing, startY - archOffset);
                 while (Framing.GetTileSafely(lanternPoint).HasTile)
                     lanternPoint.Y++;
 
@@ -236,12 +237,13 @@ public class BridgePass : GenPass
         int ofudaID = ModContent.TileType<PlacedOfuda>();
         for (int x = bridgeWidth / 2; x < Main.maxTilesX - bridgeWidth / 2; x += bridgeWidth)
         {
+            int archOffset = CalculateArchHeight(x, out _);
             for (int dx = -2; dx <= 2; dx++)
             {
                 if (dx == 0)
                     continue;
 
-                Point ofudaPoint = new Point(x + dx * spacing, startY);
+                Point ofudaPoint = new Point(x + dx * spacing, startY - archOffset);
                 while (Framing.GetTileSafely(ofudaPoint).HasTile)
                     ofudaPoint.Y++;
 
@@ -255,18 +257,23 @@ public class BridgePass : GenPass
     private static void GenerateRoof(int archTopY)
     {
         int bridgeWidth = ForgottenShrineGenerationConstants.BridgeArchWidth;
-        int wallHeight = 21;
+        int wallHeight = ForgottenShrineGenerationConstants.BridgeArchHeight + 21;
         int ceilingWallHeight = 4;
         int roofBottomY = archTopY - wallHeight;
         int ofudaID = ModContent.TileType<PlacedOfuda>();
+        int pillarSpacing = bridgeWidth / 3;
+        int rooftopY = roofBottomY + 1;
+        int ofudaSpacing = 9;
 
         // Create pillars.
-        int pillarSpacing = bridgeWidth / 3;
         for (int y = archTopY; y >= roofBottomY; y--)
         {
             int height = archTopY - y;
             for (int x = 5; x < Main.maxTilesX - 5; x++)
             {
+                if (y >= archTopY - CalculateArchHeight(x, out _))
+                    continue;
+
                 int distanceFromPillar = TriangleWaveDistance(x, pillarSpacing);
                 if (distanceFromPillar == 1)
                     WorldGen.PlaceWall(x, y, WallID.WhiteDynasty);
@@ -285,6 +292,9 @@ public class BridgePass : GenPass
             int height = archTopY - y;
             for (int x = 5; x < Main.maxTilesX - 5; x++)
             {
+                if (y >= archTopY - CalculateArchHeight(x, out _))
+                    continue;
+
                 if (height >= wallHeight - ceilingWallHeight)
                 {
                     WorldGen.KillWall(x, y);
@@ -298,8 +308,6 @@ public class BridgePass : GenPass
         }
 
         // Place a roof over center points on the bridge.
-        int rooftopY = roofBottomY + 1;
-        int ofudaSpacing = 9;
         for (int x = 5; x < Main.maxTilesX - 5; x++)
         {
             int tiledBridgeX = x % (bridgeWidth * 2);
