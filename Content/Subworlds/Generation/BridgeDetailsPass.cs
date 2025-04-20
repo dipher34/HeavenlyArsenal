@@ -23,35 +23,27 @@ public class BridgeDetailsPass : GenPass
         int groundLevelY = Main.maxTilesY - ForgottenShrineGenerationHelpers.GroundDepth;
         int waterLevelY = groundLevelY - ForgottenShrineGenerationHelpers.WaterDepth;
         int bridgeLowYPoint = waterLevelY - ForgottenShrineGenerationHelpers.BridgeBeamHeight;
-        int innerRopeSpacing = (bridgeWidth - ForgottenShrineGenerationHelpers.BridgeUndersideRopeWidth) / 2;
         int bridgeThickness = ForgottenShrineGenerationHelpers.BridgeThickness;
-
-        for (int x = 0; x < Main.maxTilesX; x++)
-        {
-            if (x >= 5 && x < Main.maxTilesX - 5 && x % bridgeWidth == 0)
-                PlaceBeam(groundLevelY, x, bridgeLowYPoint);
-
-            int ropeY = bridgeLowYPoint - bridgeThickness - ForgottenShrineGenerationHelpers.CalculateArchHeight(x, out _);
-            if (x >= 5 && x < Main.maxTilesX - 5 && x % bridgeWidth == innerRopeSpacing)
-            {
-                Point start = new Point(x, ropeY).ToWorldCoordinates().ToPoint();
-                Point end = new Point(x + bridgeWidth - innerRopeSpacing * 2, ropeY).ToWorldCoordinates().ToPoint();
-                while (Framing.GetTileSafely(start.ToVector2()).HasTile)
-                    start.Y += 16;
-                while (Framing.GetTileSafely(end.ToVector2()).HasTile)
-                    end.Y += 16;
-                start.Y -= 11;
-                end.Y -= 11;
-
-                ShrineRopeSystem.Register(new ShrineRopeData(start, end, ForgottenShrineGenerationHelpers.BridgeUndersideRopeSag * 16f));
-            }
-        }
-
-        // Create lanterns beneath the bridge.
         int decorationStartY = bridgeLowYPoint - bridgeThickness;
+
+        PlaceBeams(groundLevelY, bridgeLowYPoint);
+        PlaceRopes(decorationStartY);
         PlaceLanterns(decorationStartY, 3);
         PlaceOfuda(decorationStartY, 5);
         GenerateRoof(bridgeLowYPoint);
+    }
+
+    /// <summary>
+    /// Places beams into the water at points where the arches are at their nadir.
+    /// </summary>
+    private static void PlaceBeams(int groundLevelY, int bridgeLowYPoint)
+    {
+        int bridgeWidth = ForgottenShrineGenerationHelpers.BridgeArchWidth;
+        for (int x = 5; x < Main.maxTilesX - 5; x++)
+        {
+            if (x >= 5 && x < Main.maxTilesX - 5 && x % bridgeWidth == 0)
+                PlaceBeam(groundLevelY, x, bridgeLowYPoint);
+        }
     }
 
     /// <summary>
@@ -90,6 +82,36 @@ public class BridgeDetailsPass : GenPass
     }
 
     /// <summary>
+    /// Places ropes beneath arches.
+    /// </summary>
+    private static void PlaceRopes(int startY)
+    {
+        int bridgeWidth = ForgottenShrineGenerationHelpers.BridgeArchWidth;
+        int innerRopeSpacing = (bridgeWidth - ForgottenShrineGenerationHelpers.BridgeUndersideRopeWidth) / 2;
+        for (int x = 0; x < Main.maxTilesX; x++)
+        {
+            // Only place ropes beneath bridges with a rooftop, to make them feel more sepcial
+            if (!ForgottenShrineGenerationHelpers.InRooftopBridgeRange(x))
+                continue;
+
+            int ropeY = startY - ForgottenShrineGenerationHelpers.CalculateArchHeight(x, out _);
+            if (x >= 5 && x < Main.maxTilesX - 5 && x % bridgeWidth == innerRopeSpacing)
+            {
+                Point start = new Point(x, ropeY).ToWorldCoordinates().ToPoint();
+                Point end = new Point(x + bridgeWidth - innerRopeSpacing * 2, ropeY).ToWorldCoordinates().ToPoint();
+                while (Framing.GetTileSafely(start.ToVector2()).HasTile)
+                    start.Y += 16;
+                while (Framing.GetTileSafely(end.ToVector2()).HasTile)
+                    end.Y += 16;
+                start.Y -= 11;
+                end.Y -= 11;
+
+                ShrineRopeSystem.Register(new ShrineRopeData(start, end, ForgottenShrineGenerationHelpers.BridgeUndersideRopeSag * 16f));
+            }
+        }
+    }
+
+    /// <summary>
     /// Places paper lanterns underneath the bridge.
     /// </summary>
     private static void PlaceLanterns(int startY, int spacing)
@@ -98,13 +120,25 @@ public class BridgeDetailsPass : GenPass
         for (int x = bridgeWidth / 2; x < Main.maxTilesX - bridgeWidth / 2; x += bridgeWidth)
         {
             int archOffset = ForgottenShrineGenerationHelpers.CalculateArchHeight(x, out _);
+            bool onlyPlaceInCenter = !ForgottenShrineGenerationHelpers.InRooftopBridgeRange(x);
             for (int dx = -1; dx <= 1; dx++)
             {
+                int tileID = TileID.ChineseLanterns;
+                int tileStyle = 0;
+
+                // DON'T place the center lantern by default.
+                if (dx == 0 && !onlyPlaceInCenter)
+                    continue;
+
+                // Only place the center lantern if necessary.
+                if (dx != 0 && onlyPlaceInCenter)
+                    continue;
+
                 Point lanternPoint = new Point(x + dx * spacing, startY - archOffset);
                 while (Framing.GetTileSafely(lanternPoint).HasTile)
                     lanternPoint.Y++;
 
-                WorldGen.PlaceObject(lanternPoint.X, lanternPoint.Y, TileID.ChineseLanterns);
+                WorldGen.PlaceObject(lanternPoint.X, lanternPoint.Y, tileID, false, tileStyle);
             }
         }
     }
@@ -119,7 +153,8 @@ public class BridgeDetailsPass : GenPass
         for (int x = bridgeWidth / 2; x < Main.maxTilesX - bridgeWidth / 2; x += bridgeWidth)
         {
             int archOffset = ForgottenShrineGenerationHelpers.CalculateArchHeight(x, out _);
-            for (int dx = -2; dx <= 2; dx++)
+            int ofudaOnEachSide = ForgottenShrineGenerationHelpers.InRooftopBridgeRange(x) ? 3 : 1;
+            for (int dx = -ofudaOnEachSide; dx <= ofudaOnEachSide; dx++)
             {
                 if (dx == 0)
                     continue;

@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Terraria;
 
 namespace HeavenlyArsenal.Content.Subworlds.Generation;
@@ -66,7 +67,12 @@ public static class ForgottenShrineGenerationHelpers
     /// <summary>
     /// The maximum height of arches on the bridge.
     /// </summary>
-    public static int BridgeArchHeight => 4;
+    public static int BridgeArchHeight => 3;
+
+    /// <summary>
+    /// The factor by which arches are exaggerated for big bridges with a rooftop.
+    /// </summary>
+    public static float BridgeArchHeightBigBridgeFactor => 2f;
 
     /// <summary>
     /// The vertical thickness of the bridge.
@@ -131,6 +137,16 @@ public static class ForgottenShrineGenerationHelpers
     internal static int CalculateArchHeight(int x, out float archHeightInterpolant)
     {
         archHeightInterpolant = MathF.Abs(MathF.Sin(MathHelper.Pi * x / BridgeArchWidth));
-        return (int)MathF.Round(archHeightInterpolant * BridgeArchHeight);
+        float maxHeight = BridgeArchHeight;
+        if (InRooftopBridgeRange(x))
+            maxHeight *= BridgeArchHeightBigBridgeFactor;
+
+        return (int)MathF.Round(archHeightInterpolant * maxHeight);
     }
+
+    /// <summary>
+    /// Determines whether a given X position in tile coordinates is in the range of a bridge with a rooftop.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    internal static bool InRooftopBridgeRange(int x) => x / BridgeArchWidth % BridgeRooftopsPerBridge == 0;
 }
