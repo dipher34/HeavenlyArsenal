@@ -71,7 +71,7 @@ public static class ForgottenShrineGenerationHelpers
     /// <summary>
     /// The height of beams for the bridge before the shrine.
     /// </summary>
-    public static int BridgeBeamHeight => 11;
+    public static int BridgeBeamHeight => 9;
 
     /// <summary>
     /// The width of arches on the bridge.
@@ -116,7 +116,7 @@ public static class ForgottenShrineGenerationHelpers
     /// <summary>
     /// The maximum height of cattails above the water line.
     /// </summary>
-    public static int MaxCattailHeight => 7;
+    public static int MaxCattailHeight => (int)(BridgeBeamHeight * 0.65f);
 
     /// <summary>
     /// The amount of lilypads to generate atop the water.
