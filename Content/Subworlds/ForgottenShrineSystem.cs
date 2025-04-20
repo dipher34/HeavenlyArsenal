@@ -13,6 +13,7 @@ using SubworldLibrary;
 using System;
 using System.Reflection;
 using Terraria;
+using Terraria.GameContent.Events;
 using Terraria.GameContent.Shaders;
 using Terraria.Localization;
 using Terraria.ModLoader;
@@ -149,6 +150,7 @@ public class ForgottenShrineSystem : ModSystem
         Main.time = Main.nightLength * 0.71;
         Main.dayTime = false;
         Main.windSpeedCurrent = 0.23f;
+        Sandstorm.Happening = false;
     }
 
     public override void PostDrawTiles()
