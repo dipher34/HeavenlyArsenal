@@ -82,7 +82,7 @@ public static class ForgottenShrineGenerationHelpers
     /// <summary>
     /// The amount of tree structures to generate underwater.
     /// </summary>
-    public static int UnderwaterTreeCount => Main.maxTilesX / 60;
+    public static int UnderwaterTreeCount => Main.maxTilesX / 43;
 
     /// <summary>
     /// The amount of cattails to generate underwater.
