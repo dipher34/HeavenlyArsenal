@@ -59,7 +59,7 @@ public class ForgottenShrineSystem : ModSystem
     private string UseMoonNotFoundText(string originalText)
     {
         if (WasInSubworldLastFrame)
-            return Language.GetTextValue("GameUI.WaxingCrescent");
+            return Language.GetTextValue("GameUI.WaningCrescent");
 
         return null;
     }
