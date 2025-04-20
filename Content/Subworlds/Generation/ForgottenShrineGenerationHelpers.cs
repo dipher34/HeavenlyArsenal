@@ -135,6 +135,11 @@ public static class ForgottenShrineGenerationHelpers
     public static int BridgeRooftopDynastyWoodLayerHeight => 2;
 
     /// <summary>
+    /// The amount of vertical space dedicated to walls above pillars but below rooftops.
+    /// </summary>
+    public static int BridgeRoofWallUndersideHeight => 4;
+
+    /// <summary>
     /// The baseline height of walls behind the bridge. Determines things such as how high rooftops are as a baseline.
     /// </summary>
     public static int BridgeBackWallHeight => 19;

@@ -157,50 +157,37 @@ public class BridgeDetailsPass : GenPass
     {
         int bridgeWidth = ForgottenShrineGenerationHelpers.BridgeArchWidth;
         int wallHeight = ForgottenShrineGenerationHelpers.BridgeArchHeight + ForgottenShrineGenerationHelpers.BridgeBackWallHeight;
-        int ceilingWallHeight = 4;
+        int roofWallUndersideHeight = ForgottenShrineGenerationHelpers.BridgeRoofWallUndersideHeight;
         int roofBottomY = archTopY - wallHeight;
-        int ofudaID = ModContent.TileType<PlacedOfuda>();
         int pillarSpacing = bridgeWidth / 3;
         int rooftopY = roofBottomY + 1;
-        int smallLanternSpacing = bridgeWidth / 19;
-        int ofudaSpacing = bridgeWidth / 9;
         int rooftopsPerBridge = ForgottenShrineGenerationHelpers.BridgeRooftopsPerBridge;
 
-        // Create pillars.
-        for (int y = archTopY; y >= roofBottomY; y--)
+        for (int x = 5; x < Main.maxTilesX - 5; x++)
         {
-            int height = archTopY - y;
-            for (int x = 5; x < Main.maxTilesX - 5; x++)
+            int distanceFromPillar = TriangleWaveDistance(x, pillarSpacing);
+            int patternHeight = (int)MathF.Round(MathHelper.Lerp(3f, 1f, LumUtils.Cos01(MathHelper.TwoPi * x / bridgeWidth * 3f)));
+            for (int y = archTopY; y >= roofBottomY; y--)
             {
+                int height = archTopY - y;
                 if (y >= archTopY - ForgottenShrineGenerationHelpers.CalculateArchHeight(x))
                     continue;
 
-                int distanceFromPillar = TriangleWaveDistance(x, pillarSpacing);
+                // Create pillars.
                 if (distanceFromPillar == 1)
                     WorldGen.PlaceWall(x, y, WallID.WhiteDynasty);
-                if (distanceFromPillar <= 3 && height == wallHeight - ceilingWallHeight - 1)
+                if (distanceFromPillar <= 3 && height == wallHeight - roofWallUndersideHeight - 1)
                     WorldGen.PlaceWall(x, y, WallID.WhiteDynasty);
-                if (distanceFromPillar == 2 && height == wallHeight - ceilingWallHeight - 2)
+                if (distanceFromPillar == 2 && height == wallHeight - roofWallUndersideHeight - 2)
                     WorldGen.PlaceWall(x, y, WallID.WhiteDynasty);
                 if (distanceFromPillar == 0)
                     WorldGen.PlaceWall(x, y, WallID.Wood);
-            }
-        }
 
-        // Create painted white dynasty tiles at the top.
-        for (int y = archTopY; y >= roofBottomY; y--)
-        {
-            int height = archTopY - y;
-            for (int x = 5; x < Main.maxTilesX - 5; x++)
-            {
-                if (y >= archTopY - ForgottenShrineGenerationHelpers.CalculateArchHeight(x))
-                    continue;
-
-                if (height >= wallHeight - ceilingWallHeight)
+                // Create painted white dynasty tiles at the top.
+                if (height >= wallHeight - roofWallUndersideHeight)
                 {
                     WorldGen.KillWall(x, y);
 
-                    int patternHeight = (int)MathF.Round(MathHelper.Lerp(3f, 1f, LumUtils.Cos01(MathHelper.TwoPi * x / bridgeWidth * 3f)));
                     ushort wallID = height >= wallHeight - patternHeight && height < wallHeight ? WallID.AshWood : WallID.WhiteDynasty;
                     WorldGen.PlaceWall(x, y, wallID);
                     WorldGen.paintWall(x, y, PaintID.SkyBluePaint);
@@ -221,36 +208,48 @@ public class BridgeDetailsPass : GenPass
         }
 
         // Adorn the bottom of the roof with cool things.
-        int[] possibleLanternVariants = [3, 5, 26];
+        // This has be done separately from the rooptop generation loop because otherwise the rooftops may be incomplete, making it impossible to place decorations at certain spots.
         for (int x = 5; x < Main.maxTilesX - 5; x++)
+            PlaceDecorationsUnderneathRooftop(x, roofBottomY);
+    }
+
+    /// <summary>
+    /// Places decorations underneath a generated rooftop.
+    /// </summary>
+    private static void PlaceDecorationsUnderneathRooftop(int x, int roofBottomY)
+    {
+        int bridgeWidth = ForgottenShrineGenerationHelpers.BridgeArchWidth;
+        int rooftopsPerBridge = ForgottenShrineGenerationHelpers.BridgeRooftopsPerBridge;
+        int smallLanternSpacing = bridgeWidth / 19;
+        int ofudaSpacing = bridgeWidth / 9;
+        int tiledBridgeX = x % (bridgeWidth * rooftopsPerBridge);
+        int bridgeIndex = x / bridgeWidth / rooftopsPerBridge;
+        int ofudaID = ModContent.TileType<PlacedOfuda>();
+        int[] possibleLanternVariants = [3, 5, 26];
+
+        // Place small lanterns.
+        if (tiledBridgeX == bridgeWidth / 2 - smallLanternSpacing ||
+            tiledBridgeX == bridgeWidth / 2 + smallLanternSpacing)
         {
-            int tiledBridgeX = x % (bridgeWidth * rooftopsPerBridge);
-            int bridgeIndex = x / bridgeWidth / rooftopsPerBridge;
+            Point lanternPoint = ForgottenShrineGenerationHelpers.DescendToAir(new Point(x, roofBottomY - 4));
+            int lanternVariant = possibleLanternVariants[bridgeIndex * 2 % possibleLanternVariants.Length];
+            WorldGen.PlaceObject(lanternPoint.X, lanternPoint.Y, TileID.HangingLanterns, false, lanternVariant);
+        }
 
-            // Place small lanterns.
-            if (tiledBridgeX == bridgeWidth / 2 - smallLanternSpacing ||
-                tiledBridgeX == bridgeWidth / 2 + smallLanternSpacing)
-            {
-                Point lanternPoint = ForgottenShrineGenerationHelpers.DescendToAir(new Point(x, roofBottomY - 4));
-                int lanternVariant = possibleLanternVariants[bridgeIndex * 2 % possibleLanternVariants.Length];
-                WorldGen.PlaceObject(lanternPoint.X, lanternPoint.Y, TileID.HangingLanterns, false, lanternVariant);
-            }
+        // Place a large dynasty lantern.
+        if (tiledBridgeX == bridgeWidth / 2)
+        {
+            Point lanternPoint = ForgottenShrineGenerationHelpers.DescendToAir(new Point(x, roofBottomY - 4));
+            WorldGen.PlaceObject(lanternPoint.X, lanternPoint.Y, TileID.Chandeliers, false, 22);
+        }
 
-            // Place a large dynasty lantern.
-            if (tiledBridgeX == bridgeWidth / 2)
-            {
-                Point lanternPoint = ForgottenShrineGenerationHelpers.DescendToAir(new Point(x, roofBottomY - 4));
-                WorldGen.PlaceObject(lanternPoint.X, lanternPoint.Y, TileID.Chandeliers, false, 22);
-            }
-
-            // Place ofuda.
-            if (tiledBridgeX == bridgeWidth / 2 - ofudaSpacing ||
-                tiledBridgeX == bridgeWidth / 2 + ofudaSpacing)
-            {
-                Main.tile[x, rooftopY + 1].TileType = (ushort)ofudaID;
-                Main.tile[x, rooftopY + 1].Get<TileWallWireStateData>().HasTile = true;
-                TileEntity.PlaceEntityNet(x, rooftopY + 1, ModContent.TileEntityType<TEPlacedOfuda>());
-            }
+        // Place ofuda.
+        if (tiledBridgeX == bridgeWidth / 2 - ofudaSpacing ||
+            tiledBridgeX == bridgeWidth / 2 + ofudaSpacing)
+        {
+            Main.tile[x, roofBottomY + 2].TileType = (ushort)ofudaID;
+            Main.tile[x, roofBottomY + 2].Get<TileWallWireStateData>().HasTile = true;
+            TileEntity.PlaceEntityNet(x, roofBottomY + 2, ModContent.TileEntityType<TEPlacedOfuda>());
         }
     }
 
@@ -259,6 +258,9 @@ public class BridgeDetailsPass : GenPass
     /// </summary>
     private static void GenerateRooftop(int x, int y, int roofWidth, int roofHeight)
     {
+        if (roofHeight <= 1)
+            return;
+
         int dynastyWoodLayerHeight = ForgottenShrineGenerationHelpers.BridgeRooftopDynastyWoodLayerHeight;
         for (int dy = 0; dy < roofHeight; dy++)
         {
@@ -272,16 +274,11 @@ public class BridgeDetailsPass : GenPass
                     continue;
 
                 Point p = new Point(x + dx, y - dy);
-                if (dy < verticalCull + dynastyWoodLayerHeight && !Framing.GetTileSafely(p).HasTile)
-                {
-                    WorldGen.PlaceTile(p.X, p.Y, TileID.DynastyWood);
-                    WorldGen.paintTile(p.X, p.Y, PaintID.RedPaint);
-                }
-                else
-                {
-                    WorldGen.PlaceTile(p.X, p.Y, TileID.BlueDynastyShingles);
-                    WorldGen.paintTile(p.X, p.Y, PaintID.BluePaint);
-                }
+                bool isWoodLayer = dy < verticalCull + dynastyWoodLayerHeight && !Framing.GetTileSafely(p).HasTile;
+                ushort tileID = isWoodLayer ? TileID.DynastyWood : TileID.BlueDynastyShingles;
+                byte paintID = isWoodLayer ? PaintID.RedPaint : PaintID.BluePaint;
+                WorldGen.PlaceTile(p.X, p.Y, tileID);
+                WorldGen.paintTile(p.X, p.Y, paintID);
             }
         }
     }
