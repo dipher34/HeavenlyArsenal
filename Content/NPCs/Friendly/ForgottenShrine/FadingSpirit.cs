@@ -305,6 +305,10 @@ public partial class FadingSpirit : ModNPC
         if (LumUtils.AnyBosses())
             return 0f;
 
+        bool onBridge = spawnInfo.SpawnTileX >= BaseBridgePass.BridgeGenerator.Left && spawnInfo.SpawnTileX <= BaseBridgePass.BridgeGenerator.Right;
+        if (!onBridge)
+            return 0f;
+
         return 1f;
     }
 

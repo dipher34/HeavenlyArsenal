@@ -2,6 +2,7 @@
 sampler noiseTexture : register(s1);
 sampler liquidTexture : register(s2);
 sampler rippleTexture : register(s3);
+sampler tileTexture : register(s4);
 
 float globalTime;
 float reflectionMaxDepth;
@@ -66,14 +67,19 @@ float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD
     float2 rippleCorrectiveOffset = float2(0.5, reflectionLineY);
     float2 rippleCoords = (liquidTextureCoords - rippleCorrectiveOffset) * float2(1, ripplePerspectiveSquishFactor) + rippleCorrectiveOffset;
     float4 rippleData = tex2D(rippleTexture, rippleCoords);
-    float rippleLight = clamp(fwidth(rippleData.y) * 3.5, 0, 0.3) * tex2D(liquidTexture, liquidTextureCoords).a;
+    float liquidOpacity = tex2D(liquidTexture, liquidTextureCoords).a;
+    float rippleLight = clamp(fwidth(rippleData.y) * 3.5, 0, 0.3) * liquidOpacity;
     
     // Make reflections brighter in spots where it's already bright.
     float reflectionBrightness = dot(reflectedColor.rgb, float3(0.3, 0.6, 0.1));
     reflectedColor *= 1 + smoothstep(0.5, 1, reflectionBrightness) * 0.93;
     
+    // Disable reflections if there's a tile right above the line.
+    bool tileAboveReflection = tex2D(tileTexture, float2(liquidTextureCoords.x, reflectionLineY) - float2(0, 0.0001)).a > 0;
+    baseColor *= 1 + (tileAboveReflection * reflectionInterpolant) * reflectionStrength * 0.5;
+    
     // Combine things together.
-    return baseColor + reflectionInterpolant * reflectedColor * reflectionStrength * edgeOfScreenTaper + rippleLight;
+    return baseColor + reflectionInterpolant * reflectedColor * reflectionStrength * edgeOfScreenTaper * (1 - tileAboveReflection) + rippleLight;
 }
 
 technique Technique1

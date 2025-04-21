@@ -24,9 +24,14 @@ public class CreateUnderwaterVegetationPass : GenPass
             float xInterpolant = i / (float)(ForgottenShrineGenerationHelpers.UnderwaterTreeCount - 1f);
             int x = (int)MathHelper.Lerp(50f, Main.maxTilesX - 50f, xInterpolant) + WorldGen.genRand.Next(-24, 24);
             int y = Main.maxTilesY - ForgottenShrineGenerationHelpers.GroundDepth - 1;
-            Main.tile[x, y].TileType = treeID;
-            Main.tile[x, y].Get<TileWallWireStateData>().HasTile = true;
-            TileEntity.PlaceEntityNet(x, y, ModContent.TileEntityType<TEUnderwaterTree>());
+            Tile t = Main.tile[x, y];
+
+            if (!t.HasTile)
+            {
+                Main.tile[x, y].TileType = treeID;
+                Main.tile[x, y].Get<TileWallWireStateData>().HasTile = true;
+                TileEntity.PlaceEntityNet(x, y, ModContent.TileEntityType<TEUnderwaterTree>());
+            }
         }
 
         // Create cattails.
@@ -37,7 +42,10 @@ public class CreateUnderwaterVegetationPass : GenPass
             int x = (int)MathHelper.Lerp(20f, Main.maxTilesX - 20f, xInterpolant) + WorldGen.genRand.Next(-20, 20);
             int y = Main.maxTilesY - ForgottenShrineGenerationHelpers.GroundDepth - 1;
             int height = ForgottenShrineGenerationHelpers.WaterDepth + WorldGen.genRand.Next(1, ForgottenShrineGenerationHelpers.MaxCattailHeight);
-            GenerateCattail(x, y, height);
+
+            Tile t = Main.tile[x, y];
+            if (!t.HasTile)
+                GenerateCattail(x, y, height);
         }
 
         // Create lilypads.
@@ -45,8 +53,9 @@ public class CreateUnderwaterVegetationPass : GenPass
         {
             int x = WorldGen.genRand.Next(10, Main.maxTilesX - 10);
             int y = Main.maxTilesY - ForgottenShrineGenerationHelpers.GroundDepth - ForgottenShrineGenerationHelpers.WaterDepth;
+            Tile t = Main.tile[x, y];
 
-            if (Framing.GetTileSafely(x, y).HasTile)
+            if (t.HasTile || t.LiquidAmount == 0)
                 continue;
 
             Main.tile[x, y].Get<TileWallWireStateData>().HasTile = true;
@@ -57,6 +66,11 @@ public class CreateUnderwaterVegetationPass : GenPass
 
     private static void GenerateCattail(int x, int y, int height)
     {
+        Vector2 startWorld = new Vector2(x, y).ToWorldCoordinates();
+        Vector2 endWorld = startWorld - Vector2.UnitY * height * 16f;
+        if (!Collision.CanHit(startWorld, 16, 16, endWorld, 16, 16))
+            return;
+
         ushort cattailID = (ushort)ModContent.TileType<ShrineCattail>();
         for (int dy = 0; dy < height; dy++)
         {

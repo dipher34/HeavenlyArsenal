@@ -16,7 +16,8 @@ public class SmoothenPass : GenPass
         {
             for (int y = 5; y < Main.maxTilesY - 5; y++)
             {
-                if (Main.tile[x, y].HasTile)
+                Tile t = Main.tile[x, y];
+                if (t.HasTile && t.LiquidAmount <= 0)
                     Tile.SmoothSlope(x, y, false);
             }
         }

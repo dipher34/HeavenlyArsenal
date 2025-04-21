@@ -43,6 +43,7 @@ public class ForgottenShrineSystem : ModSystem
         CellPhoneInfoModificationSystem.PlayerYPositionReplacementTextEvent += UseParsecsPositionTextY;
         GlobalNPCEventHandlers.EditSpawnPoolEvent += OnlyAllowFriendlySpawnsInShrine;
         GlobalNPCEventHandlers.EditSpawnRateEvent += IncreaseFriendlySpawnsInShrine;
+        On_Main.DrawBlack += ForceDrawBlack;
     }
 
     private static void OnlyAllowFriendlySpawnsInShrine(IDictionary<int, float> pool, NPCSpawnInfo spawnInfo)
@@ -65,6 +66,14 @@ public class ForgottenShrineSystem : ModSystem
             spawnRate = 180;
             maxSpawns = LumUtils.AnyBosses() ? 0 : 5;
         }
+    }
+
+    private static void ForceDrawBlack(On_Main.orig_DrawBlack orig, Main self, bool force)
+    {
+        if (WasInSubworldLastFrame)
+            force = true;
+
+        orig(self, force);
     }
 
     private string UseWeatherText(string originalText)

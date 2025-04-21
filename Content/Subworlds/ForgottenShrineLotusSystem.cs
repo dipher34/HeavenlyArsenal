@@ -7,7 +7,6 @@ using NoxusBoss.Core.Graphics.LightingMask;
 using ReLogic.Content;
 using SubworldLibrary;
 using System;
-using System.Linq;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -40,17 +39,18 @@ public class ForgottenShrineLotusSystem : ModSystem
 
     private static void ScatterLotusesIfNecessary()
     {
-        if (!lotusParticleSystem.particles.Any(p => p.Active))
+        for (int i = 0; i < lotusParticleSystem.particles.Length; i++)
+            lotusParticleSystem.particles[i].Active = false;
+
+        int groundLevelY = Main.maxTilesY - ForgottenShrineGenerationHelpers.GroundDepth;
+        int waterLevelY = groundLevelY - ForgottenShrineGenerationHelpers.WaterDepth;
+        for (int i = 0; i < LotusCount; i++)
         {
-            int groundLevelY = Main.maxTilesY - ForgottenShrineGenerationHelpers.GroundDepth;
-            int waterLevelY = groundLevelY - ForgottenShrineGenerationHelpers.WaterDepth;
-            for (int i = 0; i < LotusCount; i++)
-            {
-                float lotusSize = Main.rand.NextFloat(3f, 8.4f);
-                float squish = Main.rand.NextFloat(1.1f, 1.5f);
-                Vector2 lotusSpawnPosition = new Vector2(Main.rand.NextFloat(Main.maxTilesX * 16f), waterLevelY * 16f);
+            float lotusSize = Main.rand.NextFloat(3f, 8.4f);
+            float squish = Main.rand.NextFloat(1.1f, 1.5f);
+            Vector2 lotusSpawnPosition = new Vector2(Main.rand.NextFloat(Main.maxTilesX * 16f), waterLevelY * 16f);
+            if (!Collision.SolidCollision(lotusSpawnPosition - Vector2.One * 8f, 16, 16))
                 lotusParticleSystem.CreateNew(lotusSpawnPosition, Vector2.Zero, new Vector2(squish, 1f) * lotusSize, Color.Wheat);
-            }
         }
     }
 
