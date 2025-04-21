@@ -423,7 +423,9 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
             for (int dx = -width; dx <= width; dx++)
             {
                 // Shave off a bit of the bottom of the rooftop based on X position since otherwise it looks like a weird christmas tree.
-                int verticalCull = (int)MathF.Round((1f - LumUtils.Convert01To010(LumUtils.InverseLerp(-width, width, dx))) * 4f);
+                float horizontalInterpolant = LumUtils.InverseLerp(-width, width, dx);
+                float verticalBump = 1f - LumUtils.Convert01To010(horizontalInterpolant);
+                int verticalCull = (int)MathF.Round(verticalBump * 4f);
                 if (dy < verticalCull)
                     continue;
 
