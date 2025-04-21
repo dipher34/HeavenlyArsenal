@@ -149,7 +149,9 @@ public class ForgottenShrineLiquidVisualsSystem : ModSystem
     {
         foreach (Player p in Main.ActivePlayers)
         {
-            if (Collision.WetCollision(p.TopLeft, p.width, p.height + 16) && p.velocity.Length() >= 0.2f && Main.rand.NextBool(3))
+            bool headIsDry = !Collision.WetCollision(p.TopLeft, p.width, 16);
+            bool waterAtFeet = Collision.WetCollision(p.TopLeft, p.width, p.height + 16);
+            if (headIsDry && waterAtFeet && p.velocity.Length() >= 0.2f && Main.rand.NextBool(3))
                 PointsToAddRipplesAt.Enqueue(p.Bottom + Vector2.UnitY * 5f + Main.rand.NextVector2Circular(4f, 0f));
         }
 
