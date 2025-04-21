@@ -1,6 +1,7 @@
 ﻿sampler baseTexture : register(s0);
 sampler noiseTexture : register(s1);
 sampler liquidTexture : register(s2);
+sampler rippleTexture : register(s3);
 
 float globalTime;
 float reflectionMaxDepth;
@@ -38,6 +39,9 @@ float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD
     float2 worldStableCoords = (coords - 0.5) / zoom + 0.5 + screenPosition / targetSize;
     float2 liquidTextureCoords = (coords - 0.5) / zoom + 0.5 + screenOffset;
     
+    float4 rippleData = tex2D(rippleTexture, liquidTextureCoords);
+    float rippleLight = clamp(fwidth(rippleData.y) * 3.5, 0, 0.3) * tex2D(liquidTexture, liquidTextureCoords).a;
+    
     // Calculate the reflection line Y position.
     float reflectionLineY = CalculateLiquidPixelLineY(liquidTextureCoords);
     float reconvertedReflectionY = (reflectionLineY - screenOffset.y - 0.5) * zoom.y + 0.5;
@@ -65,7 +69,7 @@ float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD
     reflectedColor *= 1 + smoothstep(0.5, 1, reflectionBrightness) * 0.93;
     
     // Combine things together.
-    return baseColor + reflectionInterpolant * reflectedColor * reflectionStrength * edgeOfScreenTaper;
+    return baseColor + reflectionInterpolant * reflectedColor * reflectionStrength * edgeOfScreenTaper + rippleLight;
 }
 
 technique Technique1

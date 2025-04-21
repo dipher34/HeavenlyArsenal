@@ -5,7 +5,6 @@ float2 pixelationFactor;
 float2 screenSize;
 float2 zoom;
 
-
 float4 Sample(float2 coords)
 {
     return tex2D(baseTexture, coords);
