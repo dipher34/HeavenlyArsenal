@@ -79,6 +79,7 @@ public partial class FadingSpirit : ModNPC
         NPC.dontTakeDamage = true;
         NPC.HitSound = SoundID.NPCHit1;
         NPC.friendly = true;
+        NPC.hide = true;
         NPC.Opacity = 0f;
         AIType = -1;
 
@@ -241,6 +242,11 @@ public partial class FadingSpirit : ModNPC
         FadeTowards(0f);
         if (NPC.Opacity <= 0f)
             NPC.active = false;
+    }
+
+    public override void DrawBehind(int index)
+    {
+        Main.instance.DrawCacheNPCsOverPlayers.Add(index);
     }
 
     public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
