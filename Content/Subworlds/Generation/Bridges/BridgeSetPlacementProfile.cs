@@ -55,6 +55,7 @@ public class BridgeSetPlacementProfile
                 FenceDescendingFlags[index] = true;
             }
 
+            // Store bridge arch data.
             ArchHeights[index] = archHeight;
             ArchHeightInterpolants[index] = archHeightInterpolant;
         }
