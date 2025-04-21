@@ -424,7 +424,7 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
                 bool isWoodLayer = dy < verticalCull + dynastyWoodLayerHeight && !Framing.GetTileSafely(p).HasTile;
                 ushort tileID = isWoodLayer ? TileID.DynastyWood : TileID.BlueDynastyShingles;
                 byte paintID = isWoodLayer ? PaintID.RedPaint : PaintID.BluePaint;
-                WorldGen.PlaceTile(p.X, p.Y, tileID);
+                Main.tile[p].TileType = tileID;
                 WorldGen.paintTile(p.X, p.Y, paintID);
             }
         }
