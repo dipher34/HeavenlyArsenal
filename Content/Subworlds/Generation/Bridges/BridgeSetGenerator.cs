@@ -73,14 +73,20 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
         for (int dy = -extraThickness; dy < bridgeThickness; dy++)
         {
             int archY = archStartingY - dy;
-            int tileID = TileID.GrayBrick;
-            if (dy >= bridgeThickness - 2)
-                tileID = TileID.RedDynastyShingles;
-            else if (dy >= bridgeThickness - 4)
-                tileID = TileID.DynastyWood;
-
+            int tileID = DetermineBaseTileIDByHeight(dy, bridgeThickness);
             WorldGen.PlaceTile(x, archY, tileID);
         }
+    }
+
+    internal static int DetermineBaseTileIDByHeight(int y, int height)
+    {
+        int tileID = TileID.GrayBrick;
+        if (y >= height - 2)
+            tileID = TileID.RedDynastyShingles;
+        else if (y >= height - 4)
+            tileID = TileID.DynastyWood;
+
+        return tileID;
     }
 
     /// <summary>

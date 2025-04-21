@@ -1,24 +1,21 @@
-﻿using Terraria;
+﻿using CalamityMod;
+using HeavenlyArsenal.ArsenalPlayer;
+using HeavenlyArsenal.Content.Projectiles.Weapons.Rogue;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
-using Microsoft.Xna.Framework;
-using HeavenlyArsenal.Content.Projectiles.Weapons.Rogue;
-using System;
-using CalamityMod;
-using HeavenlyArsenal.Content.Projectiles.Weapons.Magic;
-using HeavenlyArsenal.ArsenalPlayer;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Audio;
 
 namespace HeavenlyArsenal.Content.Items.Weapons.Rogue;
 
 class LifeAndCessation : ModItem
 {
-  
+
 
     public override void SetStaticDefaults()
     {
-       
+
     }
 
     public override void SetDefaults()
@@ -26,7 +23,7 @@ class LifeAndCessation : ModItem
         Item.width = 32;
         Item.height = 32;
 
-        
+
         Item.DamageType = ModContent.GetInstance<RogueDamageClass>();
         Item.damage = 3002;
         Item.crit = -30;
@@ -39,7 +36,7 @@ class LifeAndCessation : ModItem
         Item.useTurn = true;
 
         Item.useStyle = ItemUseStyleID.Shoot;
-        Item.noUseGraphic = true; 
+        Item.noUseGraphic = true;
         Item.shoot = ModContent.ProjectileType<HeldLifeCessationProjectile>();
         Item.shootSpeed = 0.1f; // The “held projectile” doesn’t really move. lmao.
         Item.autoReuse = true;
@@ -80,5 +77,5 @@ class LifeAndCessation : ModItem
         spriteBatch.Draw(barCharge, position + new Vector2(0, 35) * scale, chargeFrame, barColor, 0, barCharge.Size() * 0.5f, scale * 1.2f, 0, 0);
     }
 
-   
+
 }

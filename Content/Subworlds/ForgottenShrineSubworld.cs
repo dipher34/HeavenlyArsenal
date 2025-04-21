@@ -35,6 +35,7 @@ public class ForgottenShrineSubworld : Subworld
         new CreateWaterbedPass(),
         new CreateUnderwaterVegetationPass(),
         new BaseBridgePass(),
+        new BridgeDockPass(),
         new SmoothenPass(),
         new SetPlayerSpawnPointPass()
     ];
