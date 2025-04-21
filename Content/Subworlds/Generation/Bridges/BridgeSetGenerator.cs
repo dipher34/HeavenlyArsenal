@@ -68,8 +68,8 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
             PlaceFence(x, archStartingY, placeFenceSpokeMap, useDescendingFramesMap);
         }
 
+        // Place decorations.
         int decorationStartY = bridgeLowYPoint - bridgeThickness;
-
         PlaceBeams(groundLevelY, bridgeLowYPoint);
         PlaceRopesUnderneathBridge(decorationStartY);
         PlaceLanternsUnderneathBridge(decorationStartY, 3);
