@@ -129,7 +129,7 @@ public class ForgottenShrineSystem : ModSystem
         int snappedBridgeStartX = ForgottenShrineGenerationHelpers.BridgeStartX;
         snappedBridgeStartX -= snappedBridgeStartX % ForgottenShrineGenerationHelpers.BridgeArchWidth;
 
-        float x = spacingPerBridge * (ForgottenShrineGenerationHelpers.BridgeRooftopsPerBridge - 0.5f) + snappedBridgeStartX * 16f;
+        float x = spacingPerBridge * (ForgottenShrineGenerationHelpers.BridgeRooftopsPerBridge + 0.5f) + snappedBridgeStartX * 16f;
         for (int i = 0; i < candleCount; i++)
         {
             // Ensure that candles only appear on bridges without a roof.
