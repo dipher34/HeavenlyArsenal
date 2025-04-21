@@ -27,7 +27,7 @@ public class WestFieldPass : GenPass
         int curveDipWidth = ForgottenShrineGenerationHelpers.WaterCurveDipWidth;
         int maxTerrainBumpiness = 14;
         int maxWallHeight = 3;
-        float terrainHorizontalVariance = 0.009f;
+        float terrainHorizontalVariance = 0.0056f;
         float wallHorizontalVariance = 0.013f;
         float heightMapSeed = WorldGen.genRand.NextFloat(10000f);
 
@@ -39,8 +39,10 @@ public class WestFieldPass : GenPass
             float easedCurveInterpolant = MathF.Sqrt(1.001f - edgeCurveInterpolant.Squared());
             bottom = (int)MathHelper.Lerp(bottom, waterLevelY, easedCurveInterpolant);
 
-            int hillyOffset = (int)MathF.Round(UnholySine(x * terrainHorizontalVariance * 0.3f + heightMapSeed * 1.1f) * (1f - easedCurveInterpolant) * -maxTerrainBumpiness * 2);
-            int heightOffset = (int)MathF.Round(UnholySine(x * terrainHorizontalVariance + heightMapSeed) * (1f - easedCurveInterpolant) * -maxTerrainBumpiness - hillyOffset);
+            int baseOffset = (int)MathF.Round(UnholySine(x * terrainHorizontalVariance + heightMapSeed) * (1f - easedCurveInterpolant) * -maxTerrainBumpiness);
+            int hillyOffset = (int)MathF.Round(UnholySine(x * terrainHorizontalVariance * 0.3f + heightMapSeed * 1.1f) * (1f - easedCurveInterpolant) * -maxTerrainBumpiness * 2f);
+            int bumpOffset = (int)MathF.Round(UnholySine(x * terrainHorizontalVariance * 5f + heightMapSeed * 1.1f) * (1f - easedCurveInterpolant) * -2f);
+            int heightOffset = -baseOffset - hillyOffset - bumpOffset;
             int top = bridgeLowYPoint + heightOffset;
 
             for (int y = top; y < bottom; y++)
