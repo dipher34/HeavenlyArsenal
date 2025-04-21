@@ -12,9 +12,9 @@ public class SmoothenPass : GenPass
     {
         progress.Message = "Smoothing the world.";
 
-        for (int y = 5; y < Main.maxTilesY - 5; y++)
+        for (int y = 5; y < Main.maxTilesY - 5; y += 2)
         {
-            for (int x = 5; x < Main.maxTilesX - 5; x++)
+            for (int x = 5; x < Main.maxTilesX - 5; x += 2)
                 Tile.SmoothSlope(x, y);
         }
     }

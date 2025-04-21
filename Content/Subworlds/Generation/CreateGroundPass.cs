@@ -17,7 +17,11 @@ public class CreateGroundPass : GenPass
         for (int y = Main.maxTilesY - groundDepth; y < Main.maxTilesY; y++)
         {
             for (int x = 0; x < Main.maxTilesX; x++)
-                WorldGen.PlaceTile(x, y, TileID.Mud);
+            {
+                Tile t = Main.tile[x, y];
+                t.HasTile = true;
+                t.TileType = TileID.Mud;
+            }
         }
 
         int waterDepth = ForgottenShrineGenerationHelpers.WaterDepth;
