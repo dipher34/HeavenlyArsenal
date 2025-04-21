@@ -12,10 +12,13 @@ public class SmoothenPass : GenPass
     {
         progress.Message = "Smoothing the world.";
 
-        for (int y = 5; y < Main.maxTilesY - 5; y += 2)
+        for (int x = 5; x < Main.maxTilesX - 5; x++)
         {
-            for (int x = 5; x < Main.maxTilesX - 5; x += 2)
-                Tile.SmoothSlope(x, y);
+            for (int y = 5; y < Main.maxTilesY - 5; y++)
+            {
+                if (Main.tile[x, y].HasTile)
+                    Tile.SmoothSlope(x, y, false);
+            }
         }
     }
 }
