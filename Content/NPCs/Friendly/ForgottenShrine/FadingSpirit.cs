@@ -272,10 +272,19 @@ public partial class FadingSpirit : ModNPC
 
     public override float SpawnChance(NPCSpawnInfo spawnInfo)
     {
-        if (spawnInfo.Player.InModBiome<ForgottenShrineBiome>() && !LumUtils.AnyBosses())
-            return 1f;
+        if (!spawnInfo.Player.InModBiome<ForgottenShrineBiome>())
+            return 0f;
 
-        return 0f;
+        Vector2 checkPoint = new Vector2(spawnInfo.SpawnTileX * 16f, spawnInfo.SpawnTileY * 16f - 54f);
+        bool openHorizontalSpace = Collision.CanHit(checkPoint, 1, 1, checkPoint - Vector2.UnitX * 300f, 1, 1) &&
+                                   Collision.CanHit(checkPoint, 1, 1, checkPoint + Vector2.UnitX * 300f, 1, 1);
+        if (!openHorizontalSpace)
+            return 0f;
+
+        if (LumUtils.AnyBosses())
+            return 0f;
+
+        return 1f;
     }
 
     public override int SpawnNPC(int tileX, int tileY)
