@@ -1,38 +1,13 @@
-﻿using Microsoft.Xna.Framework;
+﻿using HeavenlyArsenal.Content.Subworlds.Generation.Bridges;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Terraria;
 
 namespace HeavenlyArsenal.Content.Subworlds.Generation;
 
 public static class ForgottenShrineGenerationHelpers
 {
-    /// <summary>
-    /// Represents data for a rooftop generation set for a bridge.
-    /// </summary>
-    /// <param name="Width">The width of the rooftop.</param>
-    /// <param name="Height">The height of the rooftop.</param>
-    /// <param name="VerticalOffset">The vertical placement offset of this rooftop relative to the base roof level.</param>
-    public record struct ShrineRooftopInfo(int Width, int Height, int VerticalOffset);
-
-    /// <summary>
-    /// Represents a set of rooftops atop each other.
-    /// </summary>
-    public record ShrineRooftopSet(List<ShrineRooftopInfo> Rooftops)
-    {
-        public ShrineRooftopSet() : this([]) { }
-
-        /// <summary>
-        /// Adds a new rooftop to this set.
-        /// </summary>
-        public ShrineRooftopSet Add(ShrineRooftopInfo rooftop)
-        {
-            Rooftops.Add(rooftop);
-            return this;
-        }
-    }
-
     /// <summary>
     /// The depth of ground beneath the shrine's shallow water.
     /// </summary>
@@ -169,30 +144,6 @@ public static class ForgottenShrineGenerationHelpers
             Add(new ShrineRooftopInfo((int)(BridgeArchWidth / 0.65f), (int)(BridgeArchWidth / 2.9f), 0)).
             Add(new ShrineRooftopInfo((int)(BridgeArchWidth / 1.4f), (int)(BridgeArchWidth / 1.5f), (int)(BridgeArchWidth / 7.2f))),
     ];
-
-    /// <summary>
-    /// Determines the vertical offset of the bridge's arch at a given X position in tile coordinates, providing the arch height interpolant in the process.
-    /// </summary>
-    internal static int CalculateArchHeight(int x, out float archHeightInterpolant)
-    {
-        archHeightInterpolant = MathF.Abs(MathF.Sin(MathHelper.Pi * x / BridgeArchWidth));
-        float maxHeight = BridgeArchHeight;
-        if (InRooftopBridgeRange(x))
-            maxHeight *= BridgeArchHeightBigBridgeFactor;
-
-        return (int)MathF.Round(archHeightInterpolant * maxHeight);
-    }
-
-    /// <summary>
-    /// Determines the vertical offset of the bridge's arch at a given X position in tile coordinates.
-    /// </summary>
-    internal static int CalculateArchHeight(int x) => CalculateArchHeight(x, out _);
-
-    /// <summary>
-    /// Determines whether a given X position in tile coordinates is in the range of a bridge with a rooftop.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static bool InRooftopBridgeRange(int x) => x / BridgeArchWidth % BridgeRooftopsPerBridge == 0;
 
     /// <summary>
     /// Calculates the point at which a starting point reaches open air upon moving downward.

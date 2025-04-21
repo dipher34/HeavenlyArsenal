@@ -1,6 +1,7 @@
 ﻿using HeavenlyArsenal.Content.Tiles.ForgottenShrine;
 using Microsoft.Xna.Framework;
 using System;
+using System.Runtime.CompilerServices;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
@@ -195,10 +196,10 @@ public class BridgeSetGenerator(int left, int right)
         for (int x = Left; x < Right; x++)
         {
             // Only place ropes beneath bridges with a rooftop, to make them feel more sepcial
-            if (!ForgottenShrineGenerationHelpers.InRooftopBridgeRange(x))
+            if (!InRooftopBridgeRange(x))
                 continue;
 
-            int ropeY = startY - ForgottenShrineGenerationHelpers.CalculateArchHeight(x);
+            int ropeY = startY - CalculateArchHeight(x);
             if (CalculateXWrappedBySingleBridge(x) == innerRopeSpacing)
             {
                 Vector2 start = new Point(x, ropeY).ToWorldCoordinates();
@@ -227,8 +228,8 @@ public class BridgeSetGenerator(int left, int right)
             if (x < Left || x >= Right)
                 continue;
 
-            int archOffset = ForgottenShrineGenerationHelpers.CalculateArchHeight(x);
-            bool onlyPlaceInCenter = !ForgottenShrineGenerationHelpers.InRooftopBridgeRange(x);
+            int archOffset = CalculateArchHeight(x);
+            bool onlyPlaceInCenter = !InRooftopBridgeRange(x);
             for (int dx = -1; dx <= 1; dx++)
             {
                 int tileID = TileID.ChineseLanterns;
@@ -257,8 +258,8 @@ public class BridgeSetGenerator(int left, int right)
         int ofudaID = ModContent.TileType<PlacedOfuda>();
         for (int x = Left + bridgeWidth / 2; x < Right - bridgeWidth / 2; x += bridgeWidth)
         {
-            int archOffset = ForgottenShrineGenerationHelpers.CalculateArchHeight(x);
-            int ofudaOnEachSide = ForgottenShrineGenerationHelpers.InRooftopBridgeRange(x) ? 3 : 1;
+            int archOffset = CalculateArchHeight(x);
+            int ofudaOnEachSide = InRooftopBridgeRange(x) ? 3 : 1;
             for (int dx = -ofudaOnEachSide; dx <= ofudaOnEachSide; dx++)
             {
                 if (dx == 0)
@@ -292,7 +293,7 @@ public class BridgeSetGenerator(int left, int right)
             for (int y = archTopY; y >= roofBottomY; y--)
             {
                 int height = archTopY - y;
-                if (y >= archTopY - ForgottenShrineGenerationHelpers.CalculateArchHeight(x))
+                if (y >= archTopY - CalculateArchHeight(x))
                     continue;
 
                 // Create pillars.
@@ -438,6 +439,12 @@ public class BridgeSetGenerator(int left, int right)
     public int CalculateXWrappedByBridgeSet(int x) => (x - Left) % (ForgottenShrineGenerationHelpers.BridgeArchWidth * ForgottenShrineGenerationHelpers.BridgeRooftopsPerBridge);
 
     /// <summary>
+    /// Determines whether a given X position in tile coordinates is in the range of a bridge with a rooftop.
+    /// </summary>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public bool InRooftopBridgeRange(int x) => (x - Left) / ForgottenShrineGenerationHelpers.BridgeArchWidth % ForgottenShrineGenerationHelpers.BridgeRooftopsPerBridge == 0;
+
+    /// <summary>
     /// Determines the vertical offset of the bridge's arch at a given X position in tile coordinates, providing the arch height interpolant in the process.
     /// </summary>
     public int CalculateArchHeight(int x, out float archHeightInterpolant)
@@ -446,7 +453,7 @@ public class BridgeSetGenerator(int left, int right)
 
         archHeightInterpolant = MathF.Abs(MathF.Sin(MathHelper.Pi * x / ForgottenShrineGenerationHelpers.BridgeArchWidth));
         float maxHeight = ForgottenShrineGenerationHelpers.BridgeArchHeight;
-        if (ForgottenShrineGenerationHelpers.InRooftopBridgeRange(x))
+        if (InRooftopBridgeRange(x))
             maxHeight *= ForgottenShrineGenerationHelpers.BridgeArchHeightBigBridgeFactor;
 
         return (int)MathF.Round(archHeightInterpolant * maxHeight);
