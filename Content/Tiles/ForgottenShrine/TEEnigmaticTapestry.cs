@@ -111,7 +111,6 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
     {
         cloth ??= new ClothSimulation(AnchorPosition, 21, 13, ClothPointSpacing, 50f, 0.0051f);
 
-        Vector3 playerPosition3 = new Vector3(Main.LocalPlayer.Center, 0f);
         for (int x = 0; x < cloth.Width; x++)
         {
             for (int y = 0; y < 2; y++)
@@ -122,7 +121,8 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
         {
             for (int x = 0; x < cloth.Width; x++)
             {
-                float pushInterpolant = LumUtils.InverseLerp(36f, 19f, Vector3.Distance(playerPosition3, cloth.particleGrid[x, y].Position));
+                Vector2 position2D = new Vector2(cloth.particleGrid[x, y].Position.X, cloth.particleGrid[x, y].Position.Y);
+                float pushInterpolant = LumUtils.InverseLerp(36f, 19f, Main.LocalPlayer.Distance(position2D));
                 Vector3 pushForce = new Vector3(Main.LocalPlayer.velocity * pushInterpolant * 0.75f, 0f);
                 cloth.particleGrid[x, y].AddForce(pushForce);
             }
@@ -139,9 +139,9 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
         if (point is null)
             return;
 
-        float width = cloth.Width * ClothPointSpacing;
+        float width = cloth.Width * ClothPointSpacing * 0.9f;
         float xInterpolant = point.X / (float)cloth.Width;
-        point.Position = anchor + new Vector3((xInterpolant - 0.5f) * width, 0f, LumUtils.Convert01To010(xInterpolant) * 25f);
+        point.Position = anchor + new Vector3((xInterpolant - 0.5f) * width, 0f, LumUtils.Convert01To010(xInterpolant) * 130f);
         point.IsFixed = true;
     }
 
