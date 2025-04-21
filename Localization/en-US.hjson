@@ -442,6 +442,11 @@ Mods: {
 					"Nothing."
 					'''
 			}
+
+			Samsara: {
+				DisplayName: Samsara
+				Tooltip: ""
+			}
 		}
 
 		Projectiles: {
@@ -507,6 +512,8 @@ Mods: {
 			Scythe_Stealth.DisplayName: Scythe_ Stealth
 			Shuuriken_Proj.DisplayName: Shuuriken_ Proj
 			Thistle_Proj.DisplayName: Thistle_ Proj
+			PossibilitySeed.DisplayName: Possibility Seed
+			PossibilitySeed_Laser.DisplayName: Possibility Seed_ Laser
 		}
 
 		NPCs.AnAffrontToGod.DisplayName: Cravatar
