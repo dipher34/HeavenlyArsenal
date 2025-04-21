@@ -6,6 +6,11 @@ namespace HeavenlyArsenal.Content.Subworlds.Generation.Bridges;
 public class BaseBridgePass : GenPass
 {
     /// <summary>
+    /// The width of each bridge in the set.
+    /// </summary>
+    public const int BridgeWidth = 84;
+
+    /// <summary>
     /// The manager used by the bridge generation algorithm.
     /// </summary>
     public static readonly BridgeSetGenerator BridgeGenerator = CreateBridgeGenerator();
@@ -16,8 +21,8 @@ public class BaseBridgePass : GenPass
     public static readonly BridgeGenerationSettings GenerationSettings = new BridgeGenerationSettings()
     {
         BridgeBeamHeight = 9,
-        BridgeArchWidth = 84,
-        BridgeUndersideRopeWidth = 50,
+        BridgeArchWidth = BridgeWidth,
+        BridgeUndersideRopeWidth = (int)(BridgeWidth * 0.6f),
         BridgeUndersideRopeSag = 6,
         BridgeArchHeight = 3,
         BridgeArchHeightBigBridgeFactor = 2f,
@@ -52,7 +57,7 @@ public class BaseBridgePass : GenPass
     private static BridgeSetGenerator CreateBridgeGenerator()
     {
         int left = 400;
-        int right = left + GenerationSettings.BridgeArchWidth * 12;
+        int right = left + BridgeWidth * 12;
         return new BridgeSetGenerator(left, right, GenerationSettings);
     }
 
