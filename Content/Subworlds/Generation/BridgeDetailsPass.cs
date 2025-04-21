@@ -37,7 +37,7 @@ public class BridgeDetailsPass : GenPass
     private static void PlaceBeams(int groundLevelY, int bridgeLowYPoint)
     {
         int bridgeWidth = ForgottenShrineGenerationHelpers.BridgeArchWidth;
-        for (int x = 5; x < Main.maxTilesX - 5; x++)
+        for (int x = ForgottenShrineGenerationHelpers.BridgeStartX; x < Main.maxTilesX - 5; x++)
         {
             if (x % bridgeWidth == 0)
                 PlaceBeam(groundLevelY, x, bridgeLowYPoint);
@@ -73,7 +73,7 @@ public class BridgeDetailsPass : GenPass
     {
         int bridgeWidth = ForgottenShrineGenerationHelpers.BridgeArchWidth;
         int innerRopeSpacing = (bridgeWidth - ForgottenShrineGenerationHelpers.BridgeUndersideRopeWidth) / 2;
-        for (int x = 0; x < Main.maxTilesX; x++)
+        for (int x = ForgottenShrineGenerationHelpers.BridgeStartX; x < Main.maxTilesX; x++)
         {
             // Only place ropes beneath bridges with a rooftop, to make them feel more sepcial
             if (!ForgottenShrineGenerationHelpers.InRooftopBridgeRange(x))
@@ -105,6 +105,9 @@ public class BridgeDetailsPass : GenPass
         int bridgeWidth = ForgottenShrineGenerationHelpers.BridgeArchWidth;
         for (int x = bridgeWidth / 2; x < Main.maxTilesX - bridgeWidth / 2; x += bridgeWidth)
         {
+            if (x < ForgottenShrineGenerationHelpers.BridgeStartX)
+                continue;
+
             int archOffset = ForgottenShrineGenerationHelpers.CalculateArchHeight(x);
             bool onlyPlaceInCenter = !ForgottenShrineGenerationHelpers.InRooftopBridgeRange(x);
             for (int dx = -1; dx <= 1; dx++)
@@ -133,7 +136,8 @@ public class BridgeDetailsPass : GenPass
     {
         int bridgeWidth = ForgottenShrineGenerationHelpers.BridgeArchWidth;
         int ofudaID = ModContent.TileType<PlacedOfuda>();
-        for (int x = bridgeWidth / 2; x < Main.maxTilesX - bridgeWidth / 2; x += bridgeWidth)
+        int bridgeStartX = ForgottenShrineGenerationHelpers.BridgeStartX;
+        for (int x = bridgeStartX + bridgeWidth / 2; x < Main.maxTilesX - bridgeWidth / 2; x += bridgeWidth)
         {
             int archOffset = ForgottenShrineGenerationHelpers.CalculateArchHeight(x);
             int ofudaOnEachSide = ForgottenShrineGenerationHelpers.InRooftopBridgeRange(x) ? 3 : 1;
@@ -163,7 +167,7 @@ public class BridgeDetailsPass : GenPass
         int rooftopY = roofBottomY + 1;
         int rooftopsPerBridge = ForgottenShrineGenerationHelpers.BridgeRooftopsPerBridge;
 
-        for (int x = 5; x < Main.maxTilesX - 5; x++)
+        for (int x = ForgottenShrineGenerationHelpers.BridgeStartX; x < Main.maxTilesX - 5; x++)
         {
             int distanceFromPillar = TriangleWaveDistance(x, pillarSpacing);
             int patternHeight = (int)MathF.Round(MathHelper.Lerp(3f, 1f, LumUtils.Cos01(MathHelper.TwoPi * x / bridgeWidth * 3f)));
@@ -196,7 +200,7 @@ public class BridgeDetailsPass : GenPass
         }
 
         // Place a roof over center points on the bridge.
-        for (int x = 5; x < Main.maxTilesX - 5; x++)
+        for (int x = ForgottenShrineGenerationHelpers.BridgeStartX; x < Main.maxTilesX - 5; x++)
         {
             int tiledBridgeX = x % (bridgeWidth * rooftopsPerBridge);
             if (tiledBridgeX == bridgeWidth / 2)
@@ -209,7 +213,7 @@ public class BridgeDetailsPass : GenPass
 
         // Adorn the bottom of the roof with cool things.
         // This has be done separately from the rooptop generation loop because otherwise the rooftops may be incomplete, making it impossible to place decorations at certain spots.
-        for (int x = 5; x < Main.maxTilesX - 5; x++)
+        for (int x = ForgottenShrineGenerationHelpers.BridgeStartX; x < Main.maxTilesX - 5; x++)
         {
             PlaceDecorationsUnderneathRooftop(x, roofBottomY);
             PlaceDecorationsAboveTopOfArch(x, roofBottomY);

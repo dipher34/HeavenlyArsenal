@@ -40,7 +40,7 @@ public class BaseBridgePass : GenPass
             }
         }
 
-        for (int x = 0; x < Main.maxTilesX; x++)
+        for (int x = ForgottenShrineGenerationHelpers.BridgeStartX; x < Main.maxTilesX; x++)
         {
             int archHeight = ForgottenShrineGenerationHelpers.CalculateArchHeight(x, out float archHeightInterpolant);
 
@@ -90,6 +90,11 @@ public class BaseBridgePass : GenPass
             fenceFrameX = 3;
         if (fenceXPosition == bridgeWidth / 2)
             fenceFrameX = 4;
+        if (x == ForgottenShrineGenerationHelpers.BridgeStartX)
+        {
+            fenceFrameX = 0;
+            fenceHeight += 2;
+        }
 
         if (placeFenceSpokeMap[x] >= 1)
         {

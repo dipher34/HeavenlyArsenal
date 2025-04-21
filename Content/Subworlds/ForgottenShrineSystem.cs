@@ -92,12 +92,16 @@ public class ForgottenShrineSystem : ModSystem
     private static void CreateCandles()
     {
         float spacingPerBridge = ForgottenShrineGenerationHelpers.BridgeArchWidth * 16f;
-        int candleCount = Main.maxTilesX / ForgottenShrineGenerationHelpers.BridgeArchWidth;
+        int horizontalCoverage = Main.maxTilesX - ForgottenShrineGenerationHelpers.BridgeStartX;
+        int candleCount = horizontalCoverage / ForgottenShrineGenerationHelpers.BridgeArchWidth;
         int groundLevelY = Main.maxTilesY - ForgottenShrineGenerationHelpers.GroundDepth;
         int waterLevelY = groundLevelY - ForgottenShrineGenerationHelpers.WaterDepth;
         int bridgeLowYPoint = waterLevelY - ForgottenShrineGenerationHelpers.BridgeBeamHeight - ForgottenShrineGenerationHelpers.BridgeThickness;
         int bridgeIndex = 0;
-        float x = spacingPerBridge * (ForgottenShrineGenerationHelpers.BridgeRooftopsPerBridge - 0.5f);
+        int snappedBridgeStartX = ForgottenShrineGenerationHelpers.BridgeStartX;
+        snappedBridgeStartX -= snappedBridgeStartX % ForgottenShrineGenerationHelpers.BridgeArchWidth;
+
+        float x = spacingPerBridge * (ForgottenShrineGenerationHelpers.BridgeRooftopsPerBridge - 0.5f) + snappedBridgeStartX * 16f;
         for (int i = 0; i < candleCount; i++)
         {
             // Ensure that candles only appear on bridges without a roof.
@@ -156,7 +160,7 @@ public class ForgottenShrineSystem : ModSystem
         ModContent.GetInstance<ForgottenShrineBackground>().ShouldBeActive = true;
         Main.time = Main.nightLength * 0.71;
         Main.dayTime = false;
-        Main.windSpeedCurrent = 0.23f;
+        Main.windSpeedCurrent = 0f;
         Sandstorm.Happening = false;
     }
 

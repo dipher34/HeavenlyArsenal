@@ -16,7 +16,7 @@ public class SetPlayerSpawnPointPass : GenPass
         int groundLevelY = Main.maxTilesY - ForgottenShrineGenerationHelpers.GroundDepth;
         int waterLevelY = groundLevelY - ForgottenShrineGenerationHelpers.WaterDepth;
         int bridgeLowYPoint = waterLevelY - ForgottenShrineGenerationHelpers.BridgeBeamHeight - ForgottenShrineGenerationHelpers.BridgeThickness;
-        float x = spacingPerBridge * (ForgottenShrineGenerationHelpers.BridgeRooftopsPerBridge + 0.5f);
+        float x = spacingPerBridge * (ForgottenShrineGenerationHelpers.BridgeRooftopsPerBridge + 0.5f) + ForgottenShrineGenerationHelpers.BridgeStartX * 16f;
         float y = bridgeLowYPoint * 16f + ForgottenShrineGenerationHelpers.CalculateArchHeight((int)(x / 16)) * -16f;
 
         Main.spawnTileX = (int)(x / 16);
