@@ -7,7 +7,7 @@ using Terraria.IO;
 using Terraria.ModLoader;
 using Terraria.WorldBuilding;
 
-namespace HeavenlyArsenal.Content.Subworlds.Generation;
+namespace HeavenlyArsenal.Content.Subworlds.Generation.Bridges;
 
 public class BaseBridgePass : GenPass
 {
