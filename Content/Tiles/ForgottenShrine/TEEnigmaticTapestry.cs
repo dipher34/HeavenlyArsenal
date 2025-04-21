@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Terraria;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -35,6 +36,8 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
         ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Tiles/ForgottenShrine/EnigmaticTapestry3"),
         ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Tiles/ForgottenShrine/EnigmaticTapestry4"),
     ];
+
+    public static readonly SoundStyle InteractionSound = new SoundStyle("HeavenlyArsenal/Assets/Sounds/Environment/TapestryMove", 5);
 
     public override bool IsTileValidForEntity(int x, int y)
     {
@@ -117,6 +120,7 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
                 ConstrainParticle(AnchorPosition, cloth.particleGrid[x, y]);
         }
 
+        bool interactedWith = false;
         for (int y = 0; y < cloth.Height; y++)
         {
             for (int x = 0; x < cloth.Width; x++)
@@ -125,8 +129,14 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
                 float pushInterpolant = LumUtils.InverseLerp(36f, 19f, Main.LocalPlayer.Distance(position2D));
                 Vector3 pushForce = new Vector3(Main.LocalPlayer.velocity * pushInterpolant * 0.75f, 0f);
                 cloth.particleGrid[x, y].AddForce(pushForce);
+
+                if (pushInterpolant >= 0.67f)
+                    interactedWith = true;
             }
         }
+
+        if (interactedWith)
+            SoundEngine.PlaySound(InteractionSound with { MaxInstances = 1, SoundLimitBehavior = SoundLimitBehavior.IgnoreNew }, new Vector2(AnchorPosition.X, AnchorPosition.Y));
 
         cloth.Simulate(0.051f, false, Vector3.UnitY * 3f);
     }
