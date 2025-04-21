@@ -442,8 +442,14 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
         return Math.Abs((x - modulo / 2) % modulo - modulo / 2);
     }
 
+    /// <summary>
+    /// Calculates what a given X position in tile coordinates is relative to a given bridge for this generator.
+    /// </summary>
     public int CalculateXWrappedBySingleBridge(int x) => (x - Left) % Settings.BridgeArchWidth;
 
+    /// <summary>
+    /// Calculates what a given X position in tile coordinates is relative to a given bridge set for this generator.
+    /// </summary>
     public int CalculateXWrappedByBridgeSet(int x) => (x - Left) % (Settings.BridgeArchWidth * Settings.BridgeRooftopsPerBridge);
 
     /// <summary>
