@@ -63,7 +63,8 @@ float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD
     float4 reflectedColor = tex2D(baseTexture, reflectionCoords);
     
     // Calculate the influence of ripples.
-    float2 rippleCoords = (liquidTextureCoords - 0.5) * float2(1, ripplePerspectiveSquishFactor) + 0.5;
+    float2 rippleCorrectiveOffset = float2(0.5, reflectionLineY);
+    float2 rippleCoords = (liquidTextureCoords - rippleCorrectiveOffset) * float2(1, ripplePerspectiveSquishFactor) + rippleCorrectiveOffset;
     float4 rippleData = tex2D(rippleTexture, rippleCoords);
     float rippleLight = clamp(fwidth(rippleData.y) * 3.5, 0, 0.3) * tex2D(liquidTexture, liquidTextureCoords).a;
     
