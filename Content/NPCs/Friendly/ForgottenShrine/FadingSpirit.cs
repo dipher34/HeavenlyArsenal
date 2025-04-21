@@ -45,6 +45,20 @@ public partial class FadingSpirit : ModNPC
     public static int RareNameChooseChance => 400;
 
     /// <summary>
+    /// The amount of variant frames this spirit has.
+    /// </summary>
+    public static int TotalVariants => 4;
+
+    /// <summary>
+    /// The frame variant of this spirit.
+    /// </summary>
+    public int Variant
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
     /// The current state of this spirit.
     /// </summary>
     public SpiritAIState State
@@ -62,7 +76,6 @@ public partial class FadingSpirit : ModNPC
         set => NPC.ai[1] = value;
     }
 
-    public int variant;
     public override void SetStaticDefaults() => NPCID.Sets.CountsAsCritter[Type] = true;
 
     public override void SetDefaults()
@@ -107,11 +120,8 @@ public partial class FadingSpirit : ModNPC
         ]);
     }
 
-    public override void OnSpawn(IEntitySource source)
-    {
-        //todo: replace my god-awful code
-        variant = (int)Math.Round(Main.rand.NextFloat(0, 3));
-    }
+    public override void OnSpawn(IEntitySource source) => Variant = Main.rand.Next(TotalVariants);
+
     public override void AI()
     {
         switch (State)
@@ -266,17 +276,17 @@ public partial class FadingSpirit : ModNPC
         Texture2D texture = TextureAssets.Npc[Type].Value;
         SpriteEffects direction = NPC.spriteDirection.ToSpriteDirection();
 
-        Rectangle spiritFrame = texture.Frame(1,4,0,variant);
-        Main.spriteBatch.Draw(texture, drawPosition, spiritFrame, NPC.GetAlpha(Color.White) * 0.6f, NPC.rotation, new Vector2(spiritFrame.Center.X-14*NPC.direction, spiritFrame.Center.Y/(variant+1) -12), NPC.scale, direction, 0f);
+        Rectangle spiritFrame = texture.Frame(1, TotalVariants, 0, Variant);
+        Main.spriteBatch.Draw(texture, drawPosition, spiritFrame, NPC.GetAlpha(Color.White) * 0.6f, NPC.rotation, spiritFrame.Size() * new Vector2(0.5f, 1f), NPC.scale, direction, 0f);
         Main.spriteBatch.ResetToDefault();
 
-        float glowScale = NPC.scale * MathHelper.Lerp(0.95f, 1.05f, LumUtils.Cos01(NPC.whoAmI + NPC.Center.X * 0.01f + Main.GlobalTimeWrappedHourly * 33f));
+        float glowScale = NPC.scale * MathHelper.Lerp(1.05f, 1.15f, LumUtils.Cos01(NPC.whoAmI + NPC.Center.X * 0.01f + Main.GlobalTimeWrappedHourly * 33f));
         float hueShift = MathHelper.Lerp(-0.08f, 0.13f, NPC.whoAmI / 7f % 1f);
         Texture2D glow = GennedAssets.Textures.GreyscaleTextures.BloomCirclePinpoint;
-        Vector2 glowDrawPosition = drawPosition - Vector2.UnitY.RotatedBy(NPC.rotation) * NPC.scale * 15f;
+        Vector2 glowDrawPosition = drawPosition - Vector2.UnitY.RotatedBy(NPC.rotation) * NPC.scale * (spiritFrame.Height - 8f);
         Main.spriteBatch.Draw(glow, glowDrawPosition, null, NPC.GetAlpha(new Color(1f, 0.6f, 0.1f, 0f).HueShift(hueShift)) * 0.5f, 0f, glow.Size() * 0.5f, glowScale * 1.2f, 0, 0f);
-        Main.spriteBatch.Draw(glow, glowDrawPosition, null, NPC.GetAlpha(new Color(1f, 0.7f, 0.2f, 0f).HueShift(hueShift)) * 0.7f, 0f, glow.Size() * 0.5f, glowScale * 0.6f, 0, 0f);
-        Main.spriteBatch.Draw(glow, glowDrawPosition, null, NPC.GetAlpha(new Color(1f, 0.9f, 0.7f, 0f).HueShift(hueShift)) * 0.9f, 0f, glow.Size() * 0.5f, glowScale * 0.3f, 0, 0f);
+        Main.spriteBatch.Draw(glow, glowDrawPosition, null, NPC.GetAlpha(new Color(1f, 0.7f, 0.2f, 0f).HueShift(hueShift)) * 0.7f, 0f, glow.Size() * 0.5f, glowScale * 0.8f, 0, 0f);
+        Main.spriteBatch.Draw(glow, glowDrawPosition, null, NPC.GetAlpha(new Color(1f, 0.9f, 0.7f, 0f).HueShift(hueShift)) * 0.9f, 0f, glow.Size() * 0.5f, glowScale * 0.4f, 0, 0f);
 
         return false;
     }
