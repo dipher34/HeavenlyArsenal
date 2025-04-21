@@ -1,6 +1,7 @@
 sampler baseTexture : register(s0);
 sampler noiseTexture : register(s1);
 
+float decayFactor;
 float2 pixelationFactor;
 float2 ripplePoints[10];
 float2 stepSize;
@@ -29,8 +30,8 @@ float4 PixelFunction(float2 coords : TEXCOORD0, float4 color : COLOR0, float4 po
     pressureVelocity -= pressure * 0.004;
     
     // Make pressure and change in pressure exponentially dissipate over time.
-    pressureVelocity *= 0.955;
-    pressure *= 0.955;
+    pressureVelocity *= decayFactor;
+    pressure *= decayFactor;
     
     return float4(pressure + addedPressure, pressureVelocity, 0, 1);
 }

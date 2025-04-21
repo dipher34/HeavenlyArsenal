@@ -138,6 +138,7 @@ public class ForgottenShrineLiquidVisualsSystem : ModSystem
         ManagedShader rippleShader = ShaderManager.GetShader("HeavenlyArsenal.ShrineWaterRippleUpdateShader");
         rippleShader.TrySetParameter("ripplePoints", ripplePositions);
         rippleShader.TrySetParameter("stepSize", Vector2.One / texture.Size());
+        rippleShader.TrySetParameter("decayFactor", 0.996f);
         rippleShader.SetTexture(GennedAssets.Textures.Noise.PerlinNoise, 1, SamplerState.LinearWrap);
         rippleShader.Apply();
 
@@ -183,6 +184,7 @@ public class ForgottenShrineLiquidVisualsSystem : ModSystem
         reflectionShader.TrySetParameter("reflectionStrength", 0.47f);
         reflectionShader.TrySetParameter("reflectionMaxDepth", 146f);
         reflectionShader.TrySetParameter("reflectionWaviness", 0.0023f);
+        reflectionShader.TrySetParameter("ripplePerspectiveSquishFactor", 1.76f);
         reflectionShader.SetTexture(TileTargetManagers.LiquidTarget, 2, SamplerState.LinearClamp);
         reflectionShader.SetTexture(WaterStepRippleTarget, 3, SamplerState.LinearClamp);
         reflectionShader.Activate();
