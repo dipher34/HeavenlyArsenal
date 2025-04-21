@@ -33,28 +33,14 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
         int bridgeLowYPoint = waterLevelY - Settings.BridgeBeamHeight;
         int bridgeThickness = Settings.BridgeThickness;
 
-        int[] placeFenceSpokeMap = new int[Right - Left + 1];
-        bool[] useDescendingFramesMap = new bool[Right - Left + 1];
-        for (int x = Left; x <= Right; x++)
-        {
-            int index = x - Left;
-            int previousHeight = CalculateArchHeight(x - 1);
-            int archHeight = CalculateArchHeight(x);
-            int nextArchHeight = CalculateArchHeight(x + 1);
-            bool ascending = archHeight > previousHeight;
-            bool descending = archHeight > nextArchHeight;
-            if (ascending)
-                placeFenceSpokeMap[index] = archHeight - previousHeight;
-            if (descending)
-            {
-                placeFenceSpokeMap[index] = archHeight - nextArchHeight;
-                useDescendingFramesMap[index] = true;
-            }
-        }
+        // Determine placement profile information, including precomputations of arch heights, fence data, etc.
+        BridgeSetPlacementProfile profile = new BridgeSetPlacementProfile(this);
 
         for (int x = Left; x <= Right; x++)
         {
-            int archHeight = CalculateArchHeight(x, out float archHeightInterpolant);
+            int spanIndex = x - Left;
+            int archHeight = profile.ArchHeights[spanIndex];
+            float archHeightInterpolant = profile.ArchHeightInterpolants[spanIndex];
 
             // Place base bridge tiles.
             int extraThickness = (int)Utils.Remap(archHeightInterpolant, 0.6f, 0f, 0f, bridgeThickness * 1.25f);
@@ -65,16 +51,16 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
             PlaceWalls(x, archHeightInterpolant, archStartingY, extraThickness);
 
             // Place fences atop the bridge.
-            PlaceFence(x, archStartingY, placeFenceSpokeMap, useDescendingFramesMap);
+            PlaceFence(x, archStartingY, profile);
         }
 
         // Place decorations.
         int decorationStartY = bridgeLowYPoint - bridgeThickness;
         PlaceBeams(groundLevelY, bridgeLowYPoint);
-        PlaceRopesUnderneathBridge(decorationStartY);
-        PlaceLanternsUnderneathBridge(decorationStartY, 3);
-        PlaceOfudaUnderneathBridge(decorationStartY, 5);
-        GenerateRoof(bridgeLowYPoint);
+        PlaceRopesUnderneathBridge(decorationStartY, profile);
+        PlaceLanternsUnderneathBridge(decorationStartY, 3, profile);
+        PlaceOfudaUnderneathBridge(decorationStartY, 5, profile);
+        GenerateRoof(bridgeLowYPoint, profile);
     }
 
     /// <summary>
@@ -99,7 +85,7 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
     /// <summary>
     /// Places guardrail fences above the bridge.
     /// </summary>
-    private void PlaceFence(int x, int archStartingY, int[] placeFenceSpokeMap, bool[] useDescendingFramesMap)
+    private void PlaceFence(int x, int archStartingY, BridgeSetPlacementProfile profile)
     {
         int bridgeWidth = Settings.BridgeArchWidth;
         int bridgeThickness = Settings.BridgeThickness;
@@ -116,10 +102,11 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
             fenceHeight += 2;
         }
 
-        if (placeFenceSpokeMap[x - Left] >= 1)
+        int spanIndex = x - Left;
+        if (profile.FenceExtraHeightMap[spanIndex] >= 1)
         {
-            fenceHeight += placeFenceSpokeMap[x - Left];
-            fenceFrameX = useDescendingFramesMap[x - Left] ? 0 : 1;
+            fenceHeight += profile.FenceExtraHeightMap[spanIndex];
+            fenceFrameX = profile.FenceDescendingFlags[spanIndex] ? 0 : 1;
         }
 
         for (int dy = 0; dy < fenceHeight; dy++)
@@ -194,7 +181,7 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
     /// <summary>
     /// Places ropes beneath bridges.
     /// </summary>
-    private void PlaceRopesUnderneathBridge(int startY)
+    private void PlaceRopesUnderneathBridge(int startY, BridgeSetPlacementProfile profile)
     {
         int bridgeWidth = Settings.BridgeArchWidth;
         int innerRopeSpacing = (bridgeWidth - Settings.BridgeUndersideRopeWidth) / 2;
@@ -204,7 +191,8 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
             if (!InRooftopBridgeRange(x))
                 continue;
 
-            int ropeY = startY - CalculateArchHeight(x);
+            int spanIndex = x - Left;
+            int ropeY = startY - profile.ArchHeights[spanIndex];
             if (CalculateXWrappedBySingleBridge(x) == innerRopeSpacing)
             {
                 Vector2 start = new Point(x, ropeY).ToWorldCoordinates();
@@ -225,15 +213,16 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
     /// <summary>
     /// Places paper lanterns underneath bridges.
     /// </summary>
-    private void PlaceLanternsUnderneathBridge(int startY, int spacing)
+    private void PlaceLanternsUnderneathBridge(int startY, int spacing, BridgeSetPlacementProfile profile)
     {
         int bridgeWidth = Settings.BridgeArchWidth;
-        for (int x = bridgeWidth / 2; x < Right - bridgeWidth / 2; x += bridgeWidth)
+        for (int x = Left + bridgeWidth / 2; x < Right - bridgeWidth / 2; x += bridgeWidth)
         {
             if (x < Left || x >= Right)
                 continue;
 
-            int archOffset = CalculateArchHeight(x);
+            int spanIndex = x - Left;
+            int archOffset = profile.ArchHeights[spanIndex];
             bool onlyPlaceInCenter = !InRooftopBridgeRange(x);
             for (int dx = -1; dx <= 1; dx++)
             {
@@ -257,13 +246,14 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
     /// <summary>
     /// Places ofuda underneath bridges.
     /// </summary>
-    private void PlaceOfudaUnderneathBridge(int startY, int spacing)
+    private void PlaceOfudaUnderneathBridge(int startY, int spacing, BridgeSetPlacementProfile profile)
     {
         int bridgeWidth = Settings.BridgeArchWidth;
         int ofudaID = ModContent.TileType<PlacedOfuda>();
         for (int x = Left + bridgeWidth / 2; x < Right - bridgeWidth / 2; x += bridgeWidth)
         {
-            int archOffset = CalculateArchHeight(x);
+            int spanIndex = x - Left;
+            int archOffset = profile.ArchHeights[spanIndex];
             int ofudaOnEachSide = InRooftopBridgeRange(x) ? 3 : 1;
             for (int dx = -ofudaOnEachSide; dx <= ofudaOnEachSide; dx++)
             {
@@ -281,7 +271,7 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
     /// <summary>
     /// Generates a roof out of patterned walls and periodic rooftop tiles at the center of bridges.
     /// </summary>
-    private void GenerateRoof(int archTopY)
+    private void GenerateRoof(int archTopY, BridgeSetPlacementProfile profile)
     {
         int bridgeWidth = Settings.BridgeArchWidth;
         int wallHeight = Settings.BridgeArchHeight + Settings.BridgeBackWallHeight;
@@ -293,6 +283,7 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
         for (int x = Left; x < Right; x++)
         {
             int distanceFromPillar = TriangleWaveDistance(x - Left, pillarSpacing);
+            int spanIndex = x - Left;
 
             // Scuffed solution to make pillars partially generated the left side of the bridge set.
             if (x <= Left + 5)
@@ -302,7 +293,7 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
             for (int y = archTopY; y >= roofBottomY; y--)
             {
                 int height = archTopY - y;
-                if (y >= archTopY - CalculateArchHeight(x))
+                if (y >= archTopY - profile.ArchHeights[spanIndex])
                     continue;
 
                 // Create pillars.
