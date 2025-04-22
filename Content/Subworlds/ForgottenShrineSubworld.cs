@@ -33,9 +33,10 @@ public class ForgottenShrineSubworld : Subworld
         new DefineWorldLinePass(),
         new WestFieldPass(),
         new CreateWaterbedPass(),
-        new CreateUnderwaterVegetationPass(),
         new BaseBridgePass(),
         new BridgeDockPass(),
+        new ShrineIslandPass(),
+        new CreateUnderwaterVegetationPass(),
         new SmoothenPass(),
         new SetPlayerSpawnPointPass()
     ];

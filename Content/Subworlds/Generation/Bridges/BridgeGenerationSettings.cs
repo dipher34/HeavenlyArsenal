@@ -89,6 +89,11 @@ public class BridgeGenerationSettings
     public int BridgeBackWallHeight;
 
     /// <summary>
+    /// The width of the dock.
+    /// </summary>
+    public int DockWidth;
+
+    /// <summary>
     /// The set of possible rooftops that can be selected for a given roof on the bridge.
     /// </summary>
     public List<ShrineRooftopSet> BridgeRooftopConfigurations = new List<ShrineRooftopSet>();

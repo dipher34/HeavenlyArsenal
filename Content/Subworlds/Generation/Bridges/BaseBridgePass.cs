@@ -37,6 +37,7 @@ public class BaseBridgePass : GenPass
         BridgeRooftopDynastyWoodLayerHeight = 2,
         BridgeRoofWallUndersideHeight = 4,
         BridgeBackWallHeight = 19,
+        DockWidth = 75,
 
         BridgeRooftopConfigurations =
         [

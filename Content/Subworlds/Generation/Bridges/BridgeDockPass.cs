@@ -17,9 +17,8 @@ public class BridgeDockPass : GenPass
 
         BridgeGenerationSettings bridgeSettings = BaseBridgePass.BridgeGenerator.Settings;
 
-        int dockWidth = 75;
         int left = BaseBridgePass.BridgeGenerator.Right + 1;
-        int right = left + dockWidth;
+        int right = left + bridgeSettings.DockWidth;
         int baseDockDepth = bridgeSettings.BridgeBeamHeight + 1;
         int groundLevelY = Main.maxTilesY - ForgottenShrineGenerationHelpers.GroundDepth;
         int waterLevelY = groundLevelY - ForgottenShrineGenerationHelpers.WaterDepth;

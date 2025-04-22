@@ -41,6 +41,11 @@ public static class ForgottenShrineGenerationHelpers
     public static int LilypadCount => 0;
 
     /// <summary>
+    /// The width of the lake before the shrine.
+    /// </summary>
+    public static int LakeWidth => (int)(Main.maxTilesX * 0.1f);
+
+    /// <summary>
     /// Calculates the point at which a starting point reaches open air upon moving downward.
     /// </summary>
     internal static Point DescendToAir(Point p)
