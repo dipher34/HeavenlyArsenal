@@ -115,7 +115,7 @@ public class ForgottenShrineLiquidVisualsSystem : ModSystem
         {
             liquidDistanceTarget.Request(Main.instance.GraphicsDevice.Viewport.Width, Main.instance.GraphicsDevice.Viewport.Height, 0, () =>
             {
-                int padding = 5;
+                int padding = 3;
                 int left = (int)(Main.screenPosition.X / 16f - padding);
                 int top = (int)(Main.screenPosition.Y / 16f - padding);
                 int right = (int)(left + Main.instance.GraphicsDevice.Viewport.Width / 16f + padding);
