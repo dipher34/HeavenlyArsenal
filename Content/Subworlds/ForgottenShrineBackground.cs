@@ -112,14 +112,17 @@ public class ForgottenShrineBackground : Background
 
     public override void Render(Vector2 backgroundSize, float minDepth, float maxDepth)
     {
-        RenderGradient();
-        RenderMoon();
-        RenderLanternBackglowPath();
+        if (minDepth < 0f && maxDepth > 0f)
+        {
+            RenderGradient();
+            RenderMoon();
+            RenderLanternBackglowPath();
 
-        Main.instance.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
-        lanternSystem.RenderAll();
+            Main.instance.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
+            lanternSystem.RenderAll();
 
-        RenderMountains(backgroundSize);
+            RenderMountains(backgroundSize);
+        }
     }
 
     private static void ResetSpriteBatch()
