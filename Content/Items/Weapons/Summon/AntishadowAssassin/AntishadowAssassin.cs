@@ -1,6 +1,7 @@
 ﻿using CalamityMod;
 using CalamityMod.Items.Weapons.Melee;
 using HeavenlyArsenal.Content.Buffs;
+using HeavenlyArsenal.Content.NPCs.Friendly.ForgottenShrine;
 using HeavenlyArsenal.Core.Physics.ClothManagement;
 using Luminance.Assets;
 using Luminance.Common.Easings;
@@ -41,6 +42,7 @@ public class AntishadowAssassin : ModProjectile
         SliceTargetRepeatedly,
         PostSliceDash,
         EmergeNearTarget,
+        BowAtSpirit,
 
         Leave
     }
@@ -78,6 +80,15 @@ public class AntishadowAssassin : ModProjectile
     /// The type of mask used by this assassin.
     /// </summary>
     public int MaskVariant
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// A general-purpose cooldown that prevents this assassin from bowing repeatedly at targets.
+    /// </summary>
+    public int SpiritBowCooldown
     {
         get;
         set;
@@ -264,9 +275,14 @@ public class AntishadowAssassin : ModProjectile
     public static int TotalMasks => 6;
 
     /// <summary>
-    /// The maximum search range this assassin can examine.
+    /// The maximum search range this assassin can examine for targets.
     /// </summary>
     public static float TargetingRange => 756f;
+
+    /// <summary>
+    /// The maximum search range this assassin can examine for spirits to bow towards.
+    /// </summary>
+    public static float SpiritBowingRange => 267f;
 
     /// <summary>
     /// The scale of this assassin's arms.
@@ -461,6 +477,7 @@ public class AntishadowAssassin : ModProjectile
     {
         writer.Write((int)State);
         writer.Write(TargetIndex);
+        writer.Write(SpiritBowCooldown);
         writer.WriteVector2(DashStart);
     }
 
@@ -468,6 +485,7 @@ public class AntishadowAssassin : ModProjectile
     {
         State = (AssassinState)reader.ReadInt32();
         TargetIndex = reader.ReadInt32();
+        SpiritBowCooldown = reader.ReadInt32();
         DashStart = reader.ReadVector2();
     }
 
@@ -508,6 +526,9 @@ public class AntishadowAssassin : ModProjectile
             case AssassinState.PostSliceDash:
                 DoBehavior_PostSliceDash();
                 break;
+            case AssassinState.BowAtSpirit:
+                DoBehavior_BowAtSpirit();
+                break;
             case AssassinState.Leave:
                 DoBehavior_Leave();
                 break;
@@ -527,6 +548,8 @@ public class AntishadowAssassin : ModProjectile
 
         Time++;
         ExistenceTimer++;
+        if (SpiritBowCooldown >= 1)
+            SpiritBowCooldown--;
     }
 
     private void UpdateCloth()
@@ -579,6 +602,18 @@ public class AntishadowAssassin : ModProjectile
         {
             TargetIndex = targetIndex;
             SwitchState(AssassinState.DissipateToHuntTarget);
+        }
+
+        // Search for a spirit to bow towards.
+        else if (SpiritBowCooldown <= 0 && Main.rand.NextBool(75))
+        {
+            int spiritIndex = FindPotentialSpirit();
+            if (spiritIndex >= 0)
+            {
+                SpiritBowCooldown = LumUtils.SecondsToFrames(12f);
+                Projectile.spriteDirection = (int)Projectile.HorizontalDirectionTo(Main.npc[spiritIndex].Center);
+                SwitchState(AssassinState.BowAtSpirit);
+            }
         }
     }
 
@@ -805,6 +840,26 @@ public class AntishadowAssassin : ModProjectile
             SwitchState(AssassinState.StayNearOwner);
     }
 
+    private void DoBehavior_BowAtSpirit()
+    {
+        int bowDelay = 14;
+        int bowTime = 56;
+        int bowHoldTime = 40;
+
+        float bowInterpolant = LumUtils.InverseLerpBump(0f, bowTime, bowTime + bowHoldTime, bowTime * 2 + bowHoldTime, Time - bowDelay);
+        float angleReorientInterpolant = LumUtils.InverseLerp(0f, 0.2f, bowInterpolant) * 0.8f;
+        BowRotation = MathHelper.SmoothStep(0f, MathHelper.PiOver4, EasingCurves.Quadratic.Evaluate(EasingType.InOut, bowInterpolant));
+
+        LeftArmRotation = 0.15f.AngleLerp(BowRotation * 0.6f, angleReorientInterpolant);
+        RightArmRotation = (-0.15f).AngleLerp(BowRotation * 1.1f, angleReorientInterpolant);
+        KatanaRotation = bowInterpolant;
+        ArmOutlineOpacity = LumUtils.InverseLerp(0f, 0.25f, bowInterpolant);
+        Projectile.velocity.Y *= 0.9f;
+
+        if (Time >= bowDelay + bowTime * 2 + bowHoldTime)
+            SwitchState(AssassinState.StayNearOwner);
+    }
+
     private void DoBehavior_Leave()
     {
         int bowDelay = 14;
@@ -830,7 +885,7 @@ public class AntishadowAssassin : ModProjectile
         Projectile.Opacity = Projectile.Opacity.StepTowards(1f, 0.2f);
         Projectile.scale = 1f;
 
-        // Create fre particles when disappearing.
+        // Create fire particles when disappearing.
         for (int i = 0; i < 5; i++)
         {
             if (Main.rand.NextBool(DisappearanceInterpolant))
@@ -869,6 +924,30 @@ public class AntishadowAssassin : ModProjectile
         // detection zone.
         if (potentialTargets.Count >= 1)
             return potentialTargets.OrderBy(p => p.DistanceSQ(Owner.Center)).First().whoAmI;
+
+        return -1;
+    }
+
+    private int FindPotentialSpirit()
+    {
+        int spiritID = ModContent.NPCType<FadingSpirit>();
+        List<NPC> potentialSpirits = new List<NPC>(Main.maxNPCs);
+        foreach (NPC npc in Main.ActiveNPCs)
+        {
+            if (npc.type != spiritID || npc.As<FadingSpirit>().State != FadingSpirit.SpiritAIState.Linger)
+                continue;
+
+            bool tooClose = Projectile.WithinRange(npc.Center, SpiritBowingRange * 0.37f);
+            bool inRange = Projectile.WithinRange(npc.Center, SpiritBowingRange);
+            if (!inRange || tooClose)
+                continue;
+
+            potentialSpirits.Add(npc);
+        }
+
+        // Pick the closest valid target to the owner, since it's expected that the assassin will remain stationary.
+        if (potentialSpirits.Count >= 1)
+            return potentialSpirits.OrderBy(p => p.DistanceSQ(Owner.Center)).First().whoAmI;
 
         return -1;
     }
