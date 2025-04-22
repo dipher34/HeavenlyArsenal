@@ -270,7 +270,7 @@ public partial class FadingSpirit : ModNPC
 
     public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
     {
-        Vector2 drawPosition = NPC.Center - screenPos;
+        Vector2 drawPosition = NPC.Bottom - screenPos;
 
         Main.spriteBatch.UseBlendState(BlendState.NonPremultiplied);
         Texture2D texture = TextureAssets.Npc[Type].Value;
