@@ -25,6 +25,7 @@ public class WestFieldPass : GenPass
         int left = 1;
         int right = BaseBridgePass.BridgeGenerator.Left;
         int curveDipWidth = ForgottenShrineGenerationHelpers.WaterCurveDipWidth;
+        int protrusionWidth = curveDipWidth / 3;
         int maxTerrainBumpiness = 14;
         int maxWallHeight = 3;
         float terrainHorizontalVariance = 0.0056f;
@@ -37,7 +38,6 @@ public class WestFieldPass : GenPass
             int bottom = Main.maxTilesY - 5;
             float edgeCurveInterpolant = LumUtils.InverseLerp(0f, curveDipWidth, distanceFromEdge);
             float easedCurveInterpolant = MathF.Sqrt(1.001f - edgeCurveInterpolant.Squared());
-            bottom = (int)MathHelper.Lerp(bottom, waterLevelY, easedCurveInterpolant);
 
             int baseOffset = (int)MathF.Round(UnholySine(x * terrainHorizontalVariance + heightMapSeed) * (1f - easedCurveInterpolant) * -maxTerrainBumpiness);
             int hillyOffset = (int)MathF.Round(UnholySine(x * terrainHorizontalVariance * 0.3f + heightMapSeed * 1.1f) * (1f - easedCurveInterpolant) * -maxTerrainBumpiness * 2f);
@@ -57,6 +57,20 @@ public class WestFieldPass : GenPass
             {
                 Tile t = Main.tile[x, top + dy];
                 t.WallType = WallID.GrassUnsafe;
+            }
+        }
+
+        for (int x = right; x < right + protrusionWidth; x++)
+        {
+            float protrusionCurveInterpolant = LumUtils.InverseLerp(0f, protrusionWidth, x - right);
+            float easedProtrusionInterpolant = 1f - (1f - protrusionCurveInterpolant).Cubed();
+            int bottom = groundLevelY;
+            int top = (int)MathHelper.Lerp(waterLevelY, bottom, easedProtrusionInterpolant);
+            for (int y = top; y < bottom; y++)
+            {
+                Tile t = Main.tile[x, y];
+                t.HasTile = true;
+                t.TileType = y == top ? TileID.Grass : TileID.Dirt;
             }
         }
     }
