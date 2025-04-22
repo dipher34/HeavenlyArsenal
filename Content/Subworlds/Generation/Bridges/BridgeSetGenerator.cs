@@ -147,7 +147,10 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
         for (int dy = -extraThickness - wallHeight; dy < bridgeThickness - 2; dy++)
         {
             int wallY = archStartingY - dy;
-            WorldGen.PlaceWall(x, wallY, WallID.LivingWood);
+            bool isBottom = dy == -extraThickness - wallHeight;
+            ushort wallID = isBottom ? WallID.RichMaogany : WallID.GreenDungeonSlab;
+
+            WorldGen.PlaceWall(x, wallY, wallID);
             WorldGen.paintWall(x, wallY, PaintID.GrayPaint);
         }
     }
