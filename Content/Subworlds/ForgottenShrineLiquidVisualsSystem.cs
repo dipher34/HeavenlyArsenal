@@ -146,7 +146,7 @@ public class ForgottenShrineLiquidVisualsSystem : ModSystem
                         bool solidTile = Main.tile[x, y].HasTile && Main.tileSolid[Main.tile[x, y].TileType];
                         if (Main.tile[x, y].LiquidAmount >= 200 && !solidTile && waterLine is null)
                             waterLine = LumUtils.InverseLerp(tileArea.Top, tileArea.Bottom - 1f, y);
-                        if (solidTile && tileLine is null)
+                        if (solidTile && tileLine is null && waterLine is not null)
                             tileLine = LumUtils.InverseLerp(tileArea.Top, tileArea.Bottom - 1f, y);
                     }
 
