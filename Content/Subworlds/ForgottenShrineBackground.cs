@@ -131,7 +131,7 @@ public class ForgottenShrineBackground : Background
     private static void RenderParallaxLayer(Vector2 backgroundSize, float parallax, Color color, Texture2D backgroundTexture)
     {
         // Loop the background horizontally.
-        float scale = 2.45f;
+        float scale = 2.15f;
         float screenYPositionInterpolant = Main.screenPosition.Y / Main.maxTilesY / 16f;
         for (int i = -3; i <= 3; i++)
         {
