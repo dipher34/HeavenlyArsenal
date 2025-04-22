@@ -7,6 +7,7 @@ using Terraria;
 using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
+using Terraria.WorldBuilding;
 
 namespace HeavenlyArsenal.Content.Subworlds.Generation.Bridges;
 
@@ -340,6 +341,19 @@ public class BridgeSetGenerator(int left, int right, BridgeGenerationSettings se
                 var rooftopSet = WorldGen.genRand.Next(Settings.BridgeRooftopConfigurations);
                 foreach (var rooftop in rooftopSet.Rooftops)
                     GenerateRooftop(x, roofBottomY - rooftop.VerticalOffset + 1, rooftop.Width, rooftop.Height);
+            }
+        }
+
+        // Place decorations at points of descent along the bridge.
+        for (int x = Left; x < Right; x++)
+        {
+            int tiledBridgeSetX = CalculateXWrappedByBridgeSet(x);
+            if (tiledBridgeSetX == bridgeWidth * Settings.BridgeRooftopsPerBridge / 2 + bridgeWidth / 2)
+            {
+                Point chandelierPosition = new Point(x, roofBottomY + Settings.BridgeRoofWallUndersideHeight + 3);
+                WorldUtils.Gen(new Point(chandelierPosition.X, chandelierPosition.Y - 1), new Shapes.Mound(5, 3), new Actions.PlaceTile(TileID.RedDynastyShingles));
+
+                WorldGen.PlaceObject(chandelierPosition.X, chandelierPosition.Y, TileID.Chandeliers, style: 45);
             }
         }
 
