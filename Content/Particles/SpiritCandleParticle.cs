@@ -96,11 +96,11 @@ public class SpiritCandleParticle : BaseParticle
         Color light = Lighting.GetColor(Position.ToTileCoordinates()) * lightExposureFactor;
         Main.spriteBatch.Draw(texture, Position + settings.AnchorPosition, texture.Frame(), Color.MultiplyRGB(light), Rotation, texture.Size() * new Vector2(0.5f, 1f), Scale, 0, 0);
 
-        Vector2 glowDrawPosition = Position + settings.AnchorPosition - Vector2.UnitY.RotatedBy(Rotation) * Scale.Y * 192f;
-        float glowFlicker = MathHelper.Lerp(0.9f, 1.1f, LumUtils.Cos01(Main.GlobalTimeWrappedHourly * 30f + Position.X * 0.01f)) * LumUtils.Saturate(1f - (1f - Scale.Y / BaseScale.Y) * 4.4f);
+        Vector2 glowDrawPosition = Position + settings.AnchorPosition - Vector2.UnitY.RotatedBy(Rotation) * Scale.Y * 28f;
+        float glowFlicker = MathHelper.Lerp(0.9f, 1.1f, LumUtils.Cos01(Main.GlobalTimeWrappedHourly * 30f + Position.X * 0.01f)) * LumUtils.Saturate(1f - (1f - Scale.Y / BaseScale.Y) * 4.4f) * 0.7f;
         Texture2D glow = GennedAssets.Textures.GreyscaleTextures.BloomCirclePinpoint.Value;
         Vector2 glowOrigin = glow.Size() * 0.5f;
-        Main.spriteBatch.Draw(glow, glowDrawPosition, null, new Color(1f, 0.97f, 0.9f, 0f) * 0.9f, Rotation, glowOrigin, new Vector2(0.5f, Scale.Y * 2.5f) * glowFlicker * 0.2f, 0, 0f);
+        Main.spriteBatch.Draw(glow, glowDrawPosition, null, new Color(1f, 0.97f, 0.9f, 0f) * 0.9f, Rotation, glowOrigin, new Vector2(0.5f, Scale.Y * 1.2f) * glowFlicker * 0.2f, 0, 0f);
         Main.spriteBatch.Draw(glow, glowDrawPosition, null, new Color(1f, 0.95f, 0.4f, 0f) * 0.6f, Rotation, glowOrigin, glowFlicker * 0.4f, 0, 0f);
         Main.spriteBatch.Draw(glow, glowDrawPosition, null, new Color(1f, 0.61f, 0.2f, 0f) * 0.4f, Rotation, glowOrigin, glowFlicker * 0.7f, 0, 0f);
     }

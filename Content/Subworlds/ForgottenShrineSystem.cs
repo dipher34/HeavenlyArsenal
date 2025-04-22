@@ -123,7 +123,7 @@ public class ForgottenShrineSystem : ModSystem
                 float verticalOffset = BaseBridgePass.BridgeGenerator.CalculateArchHeight(tileX) * -16f - 30f;
                 Vector2 candleSpawnPosition = new Vector2(worldX, bridgeLowYPoint * 16f + verticalOffset);
                 SpiritCandleParticle candle = SpiritCandleParticle.Pool.RequestParticle();
-                candle.Prepare(candleSpawnPosition, Vector2.Zero, 0f, Color.White, Vector2.One * 0.35f);
+                candle.Prepare(candleSpawnPosition, Vector2.Zero, 0f, Color.White, Vector2.One);
 
                 ParticleEngine.Particles.Add(candle);
             }
