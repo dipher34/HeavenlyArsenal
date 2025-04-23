@@ -1,10 +1,12 @@
 ﻿using HeavenlyArsenal.Content.Subworlds.Generation.Bridges;
+using HeavenlyArsenal.Content.Tiles.ForgottenShrine;
 using Luminance.Common.Utilities;
 using Microsoft.Xna.Framework;
 using System;
 using Terraria;
 using Terraria.ID;
 using Terraria.IO;
+using Terraria.ModLoader;
 using Terraria.WorldBuilding;
 
 namespace HeavenlyArsenal.Content.Subworlds.Generation;
@@ -31,6 +33,7 @@ public class WestFieldPass : GenPass
         float terrainHorizontalVariance = 0.0056f;
         float wallHorizontalVariance = 0.013f;
         float heightMapSeed = WorldGen.genRand.NextFloat(10000f);
+        ushort grassID = (ushort)ModContent.TileType<SacredGrass>();
 
         for (int x = left; x < right; x++)
         {
@@ -49,7 +52,7 @@ public class WestFieldPass : GenPass
             {
                 Tile t = Main.tile[x, y];
                 t.HasTile = true;
-                t.TileType = y == top ? TileID.Grass : TileID.Dirt;
+                t.TileType = y == top ? grassID : TileID.Dirt;
             }
 
             int wallHeight = (int)MathF.Round(UnholySine(x * wallHorizontalVariance - heightMapSeed) * (1f - easedCurveInterpolant) * -maxWallHeight);
@@ -70,8 +73,21 @@ public class WestFieldPass : GenPass
             {
                 Tile t = Main.tile[x, y];
                 t.HasTile = true;
-                t.TileType = y == top ? TileID.Grass : TileID.Dirt;
+                t.TileType = y == top ? grassID : TileID.Dirt;
             }
+        }
+
+        // Place a ton of lillies.
+        int lilyCount = ForgottenShrineGenerationHelpers.WestIslandLilyCount;
+        for (int i = 0; i < lilyCount; i++)
+        {
+            int lilyX = (int)(WorldGen.genRand.NextFloat(left, right) * 16f);
+            int lilyY = (int)(LumUtils.FindGroundVertical(new Point((int)(lilyX / 16f), Main.maxTilesY - 10)).Y * 16f);
+            Point tileAbove = new Point(lilyX / 16, lilyY / 16 - 1);
+            if (Framing.GetTileSafely(tileAbove).LiquidAmount >= 20)
+                continue;
+
+            SpiderLilyRenderer.Register(new SpiderLilyData(new Point(lilyX, lilyY)));
         }
     }
 

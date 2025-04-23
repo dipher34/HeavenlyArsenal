@@ -73,7 +73,7 @@ public class ShrinePass : GenPass
 
     private static void PlaceToriiGateMiddleArch(int left, int right, int y)
     {
-        for (int x = left; x < right; x++)
+        for (int x = left; x <= right; x++)
         {
             for (int dy = -1; dy < 1; dy++)
             {
@@ -87,7 +87,7 @@ public class ShrinePass : GenPass
 
     private static void PlaceToriiGateUpperArch(int left, int right, int y)
     {
-        for (int x = left; x < right; x++)
+        for (int x = left; x <= right; x++)
         {
             float xInterpolant = LumUtils.InverseLerp(left, right - 1f, x);
             int archVerticalOffset = (int)MathF.Round(LumUtils.Convert01To010(xInterpolant) * 4f);

@@ -28,6 +28,7 @@ public class ShrineIslandPass : GenPass
         int basinDepth = 12;
         ushort grassID = (ushort)ModContent.TileType<SacredGrass>();
 
+        // Create the island.
         for (int x = left; x <= right; x++)
         {
             float xInterpolant = LumUtils.InverseLerp(left, right, x);
