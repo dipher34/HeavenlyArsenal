@@ -144,6 +144,8 @@ public class ForgottenShrineSystem : ModSystem
             return;
 
         ModContent.GetInstance<ForgottenShrineBackground>().ShouldBeActive = true;
+        ModContent.GetInstance<ForgottenShrineBackground>().Opacity = 1f;
+
         Main.time = Main.nightLength * 0.71;
         Main.dayTime = false;
         Main.windSpeedCurrent = 0f;
@@ -152,9 +154,6 @@ public class ForgottenShrineSystem : ModSystem
 
     public override void ModifySunLightColor(ref Color tileColor, ref Color backgroundColor)
     {
-        if (!SubworldSystem.IsActive<ForgottenShrineSubworld>())
-            return;
-
-        tileColor = new Color(0.6f, 0.4f, 0.4f);
+        tileColor = Color.Lerp(tileColor, new Color(0.6f, 0.4f, 0.4f), ModContent.GetInstance<ForgottenShrineBackground>().Opacity);
     }
 }

@@ -112,6 +112,9 @@ public class ForgottenShrineBackground : Background
 
     public override void Render(Vector2 backgroundSize, float minDepth, float maxDepth)
     {
+        if (Opacity < 1f)
+            return;
+
         if (minDepth < 0f && maxDepth > 0f)
         {
             RenderGradient();
