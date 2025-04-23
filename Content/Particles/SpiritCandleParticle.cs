@@ -81,7 +81,7 @@ public class SpiritCandleParticle : BaseParticle
         float squishWave = MathF.Sin(MathHelper.TwoPi * Time / squishRate);
         float horizontalSquish = MathF.Pow(squishWave * 0.5f + 0.5f, 2.3f) * 0.75f;
         horizontalSquish -= LumUtils.InverseLerp(0.4f, 0f, horizontalSquish) * 0.55f;
-        horizontalSquish *= 0.1f;
+        horizontalSquish *= 0.05f;
 
         Scale = new Vector2(1f + horizontalSquish, 1f - horizontalSquish) * BaseScale;
         Velocity = Vector2.UnitY * squishWave * -0.7f;
@@ -96,7 +96,7 @@ public class SpiritCandleParticle : BaseParticle
         Color light = Lighting.GetColor(Position.ToTileCoordinates()) * lightExposureFactor;
         Main.spriteBatch.Draw(texture, Position + settings.AnchorPosition, texture.Frame(), Color.MultiplyRGB(light), Rotation, texture.Size() * new Vector2(0.5f, 1f), Scale, 0, 0);
 
-        Vector2 glowDrawPosition = Position + settings.AnchorPosition - Vector2.UnitY.RotatedBy(Rotation) * Scale.Y * 28f;
+        Vector2 glowDrawPosition = Position + settings.AnchorPosition - Vector2.UnitY.RotatedBy(Rotation) * Scale.Y * 38f;
         float glowFlicker = MathHelper.Lerp(0.9f, 1.1f, LumUtils.Cos01(Main.GlobalTimeWrappedHourly * 30f + Position.X * 0.01f)) * LumUtils.Saturate(1f - (1f - Scale.Y / BaseScale.Y) * 4.4f) * 0.7f;
         Texture2D glow = GennedAssets.Textures.GreyscaleTextures.BloomCirclePinpoint.Value;
         Vector2 glowOrigin = glow.Size() * 0.5f;

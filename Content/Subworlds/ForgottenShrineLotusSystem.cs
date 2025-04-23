@@ -7,7 +7,6 @@ using NoxusBoss.Core.Graphics.FastParticleSystems;
 using NoxusBoss.Core.Graphics.LightingMask;
 using ReLogic.Content;
 using SubworldLibrary;
-using System;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -18,7 +17,7 @@ public class ForgottenShrineLotusSystem : ModSystem
 {
     private static FastParticleSystem lotusParticleSystem;
 
-    private static int LotusCount => 2500;
+    private static int LotusCount => 5400;
 
     private static readonly Asset<Texture2D> redLotus = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Subworlds/RedLotus");
 
@@ -28,7 +27,7 @@ public class ForgottenShrineLotusSystem : ModSystem
         {
             Main.QueueMainThreadAction(() =>
             {
-                lotusParticleSystem = new FramedFastParticleSystem(2, LotusCount, PrepareLotusParticleRendering, UpdateLotusParticles);
+                lotusParticleSystem = new FramedFastParticleSystem(8, LotusCount, PrepareLotusParticleRendering, UpdateLotusParticles);
             });
         }
 
@@ -47,11 +46,10 @@ public class ForgottenShrineLotusSystem : ModSystem
         int waterLevelY = groundLevelY - ForgottenShrineGenerationHelpers.WaterDepth;
         for (int i = 0; i < LotusCount; i++)
         {
-            float lotusSize = Main.rand.NextFloat(3f, 8.4f);
-            float squish = Main.rand.NextFloat(1.1f, 1.5f);
+            float lotusScale = Main.rand.NextFloat(0.85f, 1f);
             Vector2 lotusSpawnPosition = new Vector2(Main.rand.NextFloat(Main.maxTilesX * 16f), waterLevelY * 16f);
             if (!Collision.SolidCollision(lotusSpawnPosition - Vector2.One * 8f, 16, 16) && lotusSpawnPosition.X >= BaseBridgePass.BridgeGenerator.Left * 16f)
-                lotusParticleSystem.CreateNew(lotusSpawnPosition, Vector2.Zero, new Vector2(squish, 1f) * lotusSize, Color.Wheat);
+                lotusParticleSystem.CreateNew(lotusSpawnPosition, Vector2.Zero, new Vector2(18f, 14f) * lotusScale * 0.5f, Color.Wheat);
         }
     }
 
@@ -65,7 +63,7 @@ public class ForgottenShrineLotusSystem : ModSystem
 
     private static void PrepareLotusParticleRendering()
     {
-        Matrix world = Matrix.CreateTranslation(-Main.screenPosition.X, -Main.screenPosition.Y, 0f);
+        Matrix world = Matrix.CreateTranslation(-Main.screenPosition.X, 2f - Main.screenPosition.Y, 0f);
         Matrix projection = Matrix.CreateOrthographicOffCenter(0f, Main.screenWidth, Main.screenHeight, 0f, -400f, 400f);
 
         Main.instance.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
@@ -100,7 +98,7 @@ public class ForgottenShrineLotusSystem : ModSystem
         particle.Velocity += pushForce;
         particle.Velocity *= 0.99f;
 
-        particle.Rotation = particle.Velocity.X * 0.3f + MathF.Sin(particle.Position.X * 0.14f) * 0.2f;
+        particle.Rotation = particle.Velocity.X * 0.3f;
     }
 
     public override void PreUpdateEntities() => lotusParticleSystem.UpdateAll();

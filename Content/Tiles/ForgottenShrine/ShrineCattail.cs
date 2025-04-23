@@ -14,7 +14,7 @@ public class ShrineCattail : ModTile
 
         // Prepare necessary setups to ensure that this tile is treated like grass.
         TileID.Sets.ReplaceTileBreakUp[Type] = true;
-        TileID.Sets.SwaysInWindBasic[Type] = true;
+        TileID.Sets.MultiTileSway[Type] = true;
         TileMaterials.SetForTileId(Type, TileMaterials._materialsByName["Plant"]);
 
         // Use plant destruction visuals and sounds.

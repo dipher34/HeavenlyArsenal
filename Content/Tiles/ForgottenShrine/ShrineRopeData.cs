@@ -219,15 +219,10 @@ public class ShrineRopeData
         DrawProjectionButItActuallyWorks(MiscTexturesRegistry.Pixel.Value, -Main.screenPosition, false, ropeColorFunction, widthFactor: 2f);
 
         Vector2[] curveControlPoints = new Vector2[VerletRope.segments.Length];
-        Vector2[] curveVelocities = new Vector2[VerletRope.segments.Length];
         for (int i = 0; i < curveControlPoints.Length; i++)
-        {
             curveControlPoints[i] = VerletRope.segments[i].position;
-            curveVelocities[i] = VerletRope.segments[i].velocity;
-        }
 
         DeCasteljauCurve positionCurve = new DeCasteljauCurve(curveControlPoints);
-        DeCasteljauCurve velocityCurve = new DeCasteljauCurve(curveVelocities);
 
         Main.instance.LoadProjectile(ProjectileID.ReleaseLantern);
 
@@ -237,7 +232,6 @@ public class ShrineRopeData
         {
             float sampleInterpolant = MathHelper.Lerp(0.06f, 0.8f, i / (float)(ornamentCount - 1f));
             Vector2 ornamentWorldPosition = positionCurve.Evaluate(sampleInterpolant);
-            Vector2 velocity = velocityCurve.Evaluate(sampleInterpolant) * 0.3f;
 
             // Emit light at the point of the ornament.
             if (emitLight)
@@ -254,12 +248,12 @@ public class ShrineRopeData
             float windForce = windForceWave * LumUtils.InverseLerp(0f, 0.75f, MathF.Abs(Main.windSpeedCurrent)) * 0.4f;
             float spiralRotation = WindTime + ornamentWorldPosition.X * 0.02f;
             Vector2 spiralDrawPosition = ornamentWorldPosition - Main.screenPosition + Vector2.UnitY * 3f;
-            Main.spriteBatch.Draw(spiralTexture.Value, spiralDrawPosition, null, colorModifier, spiralRotation, spiralTexture.Size() * 0.5f, 0.5f, 0, 0f);
+            Main.spriteBatch.Draw(spiralTexture.Value, spiralDrawPosition, null, colorModifier, spiralRotation, spiralTexture.Size() * 0.5f, 1f, 0, 0f);
 
             // Draw lanterns.
             Texture2D lanternTexture = TextureAssets.Projectile[ProjectileID.ReleaseLantern].Value;
             sampleInterpolant = MathHelper.Lerp(0.06f, 0.8f, (i + 0.5f) / (float)(ornamentCount - 1f));
-            float lanternRotation = LumUtils.AperiodicSin(WindTime * 0.23f + ornamentWorldPosition.X * 0.01f) * 0.45f + windGridRotation;
+            float lanternRotation = LumUtils.AperiodicSin(WindTime * 0.23f) * 0.45f + windGridRotation + (positionCurve.Evaluate(sampleInterpolant + 0.001f) - positionCurve.Evaluate(sampleInterpolant)).ToRotation();
             Vector2 lanternWorldPosition = positionCurve.Evaluate(sampleInterpolant);
             Vector2 lanternDrawPosition = lanternWorldPosition - Main.screenPosition;
             Vector2 lanternGlowDrawPosition = lanternDrawPosition + Vector2.UnitY.RotatedBy(lanternRotation) * 8f;
