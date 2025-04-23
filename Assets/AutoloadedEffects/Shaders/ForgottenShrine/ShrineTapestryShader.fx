@@ -1,6 +1,7 @@
 ﻿sampler baseTexture : register(s1);
 
 float opacity;
+float2 textureZoom;
 matrix transform;
 
 struct VertexShaderInput
@@ -33,7 +34,7 @@ VertexShaderOutput VertexShaderFunction(in VertexShaderInput input)
 
 float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 {
-    return tex2D(baseTexture, input.TextureCoordinates);
+    return tex2D(baseTexture, input.TextureCoordinates * textureZoom);
 }
 
 technique Technique1

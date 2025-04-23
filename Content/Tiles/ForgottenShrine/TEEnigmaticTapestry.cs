@@ -20,12 +20,17 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
 {
     private ClothSimulation cloth;
 
-    private static bool tapestriesAreSettling;
-
     /// <summary>
     /// The position at which this cloth is anchored, essentially its top-center in world coordinates.
     /// </summary>
     private Vector3 AnchorPosition => new Vector3(Position.ToWorldCoordinates(0f, 0f), 0f);
+
+    /// <summary>
+    /// The variant of this tapestry.
+    /// </summary>
+    public int TapestryVariant => ((int)(ID / MathHelper.PiOver2) + Position.X * 11) % tapestryTextures.Length;
+
+    private static bool tapestriesAreSettling;
 
     private static float ClothPointSpacing => 13f;
 
@@ -100,7 +105,7 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
 
     public void ClientSideUpdate()
     {
-        if (!Main.LocalPlayer.WithinRange(Position.ToWorldCoordinates(), 3000f))
+        if (!Main.LocalPlayer.WithinRange(Position.ToWorldCoordinates(), 3000f) || tapestriesAreSettling)
             return;
 
         for (int i = 0; i < 8; i++)
@@ -112,7 +117,7 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
     /// </summary>
     public void ApplySimulationStep()
     {
-        cloth ??= new ClothSimulation(AnchorPosition, 21, 13, ClothPointSpacing, 50f, 0.0051f);
+        cloth ??= new ClothSimulation(AnchorPosition, 21, 13, ClothPointSpacing, 80f, 0.0061f);
 
         for (int x = 0; x < cloth.Width; x++)
         {
@@ -165,13 +170,17 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
         if (cloth is null)
             return;
 
-        int tapestryVariant = ((int)(ID / MathHelper.PiOver2) + Position.X * 11) % tapestryTextures.Length;
-        Texture2D texture = tapestryTextures[tapestryVariant].Value;
-        RenderTapestry(texture);
+        RenderTapestry();
     }
 
-    private void RenderTapestry(Texture2D texture)
+    private void RenderTapestry()
     {
+        bool newVariant = TapestryVariant == 1;
+        Texture2D texture = tapestryTextures[TapestryVariant].Value;
+        Vector2 textureZoom = Vector2.One;
+        if (newVariant)
+            textureZoom = new Vector2(cloth.Width / (float)cloth.Height, 1f) * 1.5f;
+
         EnigmaticTapestryRenderer.TapestryTarget.Request(400, 400, ID, () =>
         {
             Vector2 drawOffset = -Position.ToWorldCoordinates(0f, 0f) + WotGUtils.ViewportSize * 0.5f;
@@ -179,7 +188,8 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
             Matrix projection = Matrix.CreateOrthographicOffCenter(0f, WotGUtils.ViewportSize.X, WotGUtils.ViewportSize.Y, 0f, -1000f, 1000f);
 
             ManagedShader clothShader = ShaderManager.GetShader("HeavenlyArsenal.ShrineTapestryShader");
-            clothShader.SetTexture(texture, 1, SamplerState.LinearWrap);
+            clothShader.SetTexture(texture, 1, SamplerState.PointWrap);
+            clothShader.TrySetParameter("textureZoom", textureZoom);
             clothShader.TrySetParameter("transform", world * projection);
             clothShader.Apply();
 
@@ -187,12 +197,24 @@ public class TEEnigmaticTapestry : ModTileEntity, IClientSideTileEntityUpdater
         });
         if (EnigmaticTapestryRenderer.TapestryTarget.TryGetTarget(ID, out RenderTarget2D? target) && target is not null)
         {
-            ManagedShader pixelationShader = ShaderManager.GetShader("HeavenlyArsenal.ShrineTapestryPostProcessingShader");
-            pixelationShader.TrySetParameter("zoom", Main.GameViewMatrix.Zoom);
-            pixelationShader.TrySetParameter("screenSize", WotGUtils.ViewportSize);
-            pixelationShader.TrySetParameter("pixelationFactor", Vector2.One * 1.5f / target.Size());
-            pixelationShader.SetTexture(LightingMaskTargetManager.LightTarget, 1);
-            pixelationShader.Apply();
+            if (newVariant)
+            {
+                ManagedShader pixelationShader = ShaderManager.GetShader("HeavenlyArsenal.ShrineTapestryPostProcessingNewShader");
+                pixelationShader.TrySetParameter("gameZoom", Main.GameViewMatrix.Zoom);
+                pixelationShader.TrySetParameter("screenSize", WotGUtils.ViewportSize);
+                pixelationShader.TrySetParameter("pixelationFactor", Vector2.One * 2f / target.Size());
+                pixelationShader.SetTexture(LightingMaskTargetManager.LightTarget, 1);
+                pixelationShader.Apply();
+            }
+            else
+            {
+                ManagedShader pixelationShader = ShaderManager.GetShader("HeavenlyArsenal.ShrineTapestryPostProcessingShader");
+                pixelationShader.TrySetParameter("zoom", Main.GameViewMatrix.Zoom);
+                pixelationShader.TrySetParameter("screenSize", WotGUtils.ViewportSize);
+                pixelationShader.TrySetParameter("pixelationFactor", Vector2.One * 1.5f / target.Size());
+                pixelationShader.SetTexture(LightingMaskTargetManager.LightTarget, 1);
+                pixelationShader.Apply();
+            }
 
             Vector2 drawPosition = Position.ToWorldCoordinates() - Main.screenPosition + Vector2.UnitX * 4f;
             Main.spriteBatch.Draw(target, drawPosition, null, Color.White, 0f, target.Size() * 0.5f, 1f, 0, 0f);

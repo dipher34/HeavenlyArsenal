@@ -17,7 +17,7 @@ public class ForgottenShrineLotusSystem : ModSystem
 {
     private static FastParticleSystem lotusParticleSystem;
 
-    private static int LotusCount => 5400;
+    private static int LotusCount => 2600;
 
     private static readonly Asset<Texture2D> redLotus = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Subworlds/RedLotus");
 
