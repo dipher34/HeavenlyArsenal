@@ -234,8 +234,9 @@ public class ForgottenShrineLiquidVisualsSystem : ModSystem
             for (float y = Main.screenPosition.Y; y < Main.screenPosition.Y + Main.screenHeight + 32f; y += 16f)
             {
                 int tileY = (int)(y / 16f);
-                bool solidTile = Main.tile[x, tileY].HasTile && Main.tileSolid[Main.tile[x, tileY].TileType];
-                if (Main.tile[x, tileY].LiquidAmount >= 100 && !solidTile)
+                Tile t = Framing.GetTileSafely(x, tileY);
+                bool solidTile = t.HasTile && Main.tileSolid[t.TileType];
+                if (t.LiquidAmount >= 100 && !solidTile)
                 {
                     waterLineY = tileY;
                     waterLines[i] = LumUtils.InverseLerp(Main.screenPosition.Y, Main.screenPosition.Y + Main.screenHeight, y);
@@ -248,7 +249,8 @@ public class ForgottenShrineLiquidVisualsSystem : ModSystem
                 for (int dy = 0; dy < tileArea.Height; dy++)
                 {
                     int y = waterLineY + dy;
-                    bool solidTile = Main.tile[x, y].HasTile && Main.tileSolid[Main.tile[x, y].TileType];
+                    Tile t = Framing.GetTileSafely(x, y);
+                    bool solidTile = t.HasTile && Main.tileSolid[t.TileType];
                     if (solidTile)
                     {
                         tileLines[i] = LumUtils.InverseLerp(0f, Main.screenHeight / 16f, dy);
