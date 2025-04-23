@@ -115,7 +115,7 @@ public class ForgottenShrineLiquidVisualsSystem : ModSystem
         {
             liquidDistanceTarget.Request(Main.instance.GraphicsDevice.Viewport.Width, Main.instance.GraphicsDevice.Viewport.Height, 0, () =>
             {
-                int padding = 3;
+                int padding = 0;
                 int left = (int)(Main.screenPosition.X / 16f - padding);
                 int top = (int)(Main.screenPosition.Y / 16f - padding);
                 int right = (int)(left + Main.instance.GraphicsDevice.Viewport.Width / 16f + padding);
@@ -139,19 +139,35 @@ public class ForgottenShrineLiquidVisualsSystem : ModSystem
                 for (int i = 0; i < horizontalSamples * 2; i++)
                 {
                     int x = tileArea.X + i;
-                    float? waterLine = null;
-                    float? tileLine = null;
-                    for (int y = tileArea.Top - 5; y < tileArea.Bottom + 5; y++)
+                    int waterLineY = 0;
+                    waterLines[i] = 1f;
+                    for (float y = Main.screenPosition.Y; y < Main.screenPosition.Y + Main.screenHeight + 32f; y += 16f)
                     {
-                        bool solidTile = Main.tile[x, y].HasTile && Main.tileSolid[Main.tile[x, y].TileType];
-                        if (Main.tile[x, y].LiquidAmount >= 200 && !solidTile && waterLine is null)
-                            waterLine = LumUtils.InverseLerp(tileArea.Top, tileArea.Bottom - 1f, y);
-                        if (solidTile && tileLine is null && waterLine is not null)
-                            tileLine = LumUtils.InverseLerp(tileArea.Top, tileArea.Bottom - 1f, y);
+                        int tileY = (int)(y / 16f);
+                        bool solidTile = Main.tile[x, tileY].HasTile && Main.tileSolid[Main.tile[x, tileY].TileType];
+                        if (Main.tile[x, tileY].LiquidAmount >= 100 && !solidTile)
+                        {
+                            waterLineY = tileY;
+                            waterLines[i] = LumUtils.InverseLerp(Main.screenPosition.Y, Main.screenPosition.Y + Main.screenHeight, y);
+                            break;
+                        }
                     }
 
-                    waterLines[i] = waterLine ?? 1f;
-                    tileLines[i] = tileLine ?? 2f;
+                    if (waterLineY >= 1)
+                    {
+                        for (int dy = 0; dy < tileArea.Height; dy++)
+                        {
+                            int y = waterLineY + dy;
+                            bool solidTile = Main.tile[x, y].HasTile && Main.tileSolid[Main.tile[x, y].TileType];
+                            if (solidTile)
+                            {
+                                tileLines[i] = LumUtils.InverseLerp(0f, Main.screenHeight / 16f, dy);
+                                break;
+                            }
+                        }
+                    }
+                    else
+                        tileLines[i] = 2f;
                 }
 
                 for (int j = 0; j < verticalSamples; j++)
@@ -160,18 +176,20 @@ public class ForgottenShrineLiquidVisualsSystem : ModSystem
                     float nextYInterpolant = (j + 0.5f) / (float)(verticalSamples - 1f);
                     for (int i = 0; i < horizontalSamples; i++)
                     {
-                        float topLeftDistance = waterLines[i * 2] - yInterpolant;
-                        float topRightDistance = waterLines[i * 2 + 1] - yInterpolant;
-                        float bottomLeftDistance = waterLines[i * 2] - nextYInterpolant;
-                        float bottomRightDistance = waterLines[i * 2 + 1] - nextYInterpolant;
+                        float leftLine = waterLines[i * 2];
+                        float rightLine = waterLines[i * 2 + 1];
+                        float topLeftDistance = leftLine - yInterpolant;
+                        float topRightDistance = rightLine - yInterpolant;
+                        float bottomLeftDistance = leftLine - nextYInterpolant;
+                        float bottomRightDistance = rightLine - nextYInterpolant;
 
-                        float depthToGroundLeft = tileLines[i * 2] - waterLines[i * 2];
-                        float depthToGroundRight = tileLines[i * 2 + 1] - waterLines[i * 2 + 1];
+                        float depthToGroundLeft = tileLines[i * 2];
+                        float depthToGroundRight = tileLines[i * 2 + 1];
 
-                        Vector4 topLeftColor = new Vector4(topLeftDistance, depthToGroundLeft, 0f, 1f);
-                        Vector4 topRightColor = new Vector4(topRightDistance, depthToGroundRight, 0f, 1f);
-                        Vector4 bottomLeftColor = new Vector4(bottomLeftDistance, depthToGroundLeft, 0f, 1f);
-                        Vector4 bottomRightColor = new Vector4(bottomRightDistance, depthToGroundRight, 0f, 1f);
+                        Vector4 topLeftColor = new Vector4(topLeftDistance, depthToGroundLeft, leftLine, 1f);
+                        Vector4 topRightColor = new Vector4(topRightDistance, depthToGroundRight, rightLine, 1f);
+                        Vector4 bottomLeftColor = new Vector4(bottomLeftDistance, depthToGroundLeft, leftLine, 1f);
+                        Vector4 bottomRightColor = new Vector4(bottomRightDistance, depthToGroundRight, rightLine, 1f);
 
                         bool rightEdge = i * 2 == tileArea.Width;
                         bool bottomEdge = j * 2 == tileArea.Height;
