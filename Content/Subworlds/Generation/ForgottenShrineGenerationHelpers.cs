@@ -48,7 +48,17 @@ public static class ForgottenShrineGenerationHelpers
     /// <summary>
     /// The width of the shrine island.
     /// </summary>
-    public static int ShrineIslandWidth => (int)(Main.maxTilesX * 0.15f);
+    public static int ShrineIslandWidth => (int)(Main.maxTilesX * 0.25f);
+
+    /// <summary>
+    /// The width of the subworld.
+    /// </summary>
+    public static int SubworldWidth => 3372;
+
+    /// <summary>
+    /// The height of the subworld.
+    /// </summary>
+    public static int SubworldHeight => 554;
 
     /// <summary>
     /// Calculates the point at which a starting point reaches open air upon moving downward.

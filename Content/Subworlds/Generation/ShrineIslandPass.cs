@@ -23,7 +23,7 @@ public class ShrineIslandPass : GenPass
         int left = BaseBridgePass.BridgeGenerator.Right + ForgottenShrineGenerationHelpers.LakeWidth + bridgeSettings.DockWidth;
         int right = left + ForgottenShrineGenerationHelpers.ShrineIslandWidth;
         int bottom = Main.maxTilesY - ForgottenShrineGenerationHelpers.GroundDepth;
-        int baseElevationAboveSeaLevel = 13;
+        int baseElevationAboveSeaLevel = 24;
         int maxBaseElevation = ForgottenShrineGenerationHelpers.WaterDepth + baseElevationAboveSeaLevel;
         int basinDepth = 12;
         ushort grassID = (ushort)ModContent.TileType<SacredGrass>();

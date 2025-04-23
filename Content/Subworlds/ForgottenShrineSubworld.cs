@@ -24,9 +24,9 @@ public class ForgottenShrineSubworld : Subworld
         internal set;
     }
 
-    public override int Width => 2485;
+    public override int Width => ForgottenShrineGenerationHelpers.SubworldWidth;
 
-    public override int Height => 524;
+    public override int Height => ForgottenShrineGenerationHelpers.SubworldHeight;
 
     public override List<GenPass> Tasks =>
     [

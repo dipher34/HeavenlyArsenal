@@ -64,7 +64,7 @@ public class BaseBridgePass : GenPass
     private static BridgeSetGenerator CreateBridgeGenerator()
     {
         int left = 400;
-        int right = left + BridgeWidth * 12;
+        int right = left + BridgeWidth * 16;
         return new BridgeSetGenerator(left, right, GenerationSettings);
     }
 
