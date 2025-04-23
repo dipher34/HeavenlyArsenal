@@ -4,7 +4,6 @@ sampler lightMapTexture : register(s1);
 float2 pixelationFactor;
 float2 screenSize;
 float2 gameZoom;
-float2 textureZoom;
 
 float4 Sample(float2 coords)
 {
@@ -26,11 +25,10 @@ bool AtEdge(float2 coords)
 
 float4 PixelFunction(float2 coords : TEXCOORD0, float4 color : COLOR0, float4 position : SV_Position) : COLOR0
 {
-    float2 pixelatedCoords = (coords - 0.5) * textureZoom + 0.5;
-    float4 baseColor = Sample(pixelatedCoords);
+    float4 baseColor = Sample(coords);
     float4 lightData = tex2D(lightMapTexture, (position.xy / screenSize - 0.5) / gameZoom + 0.5);
     
-    bool atEdge = AtEdge(pixelatedCoords);
+    bool atEdge = AtEdge(coords);
     baseColor.rgb *= lerp(1, 0.4, atEdge);
     
     return baseColor * float4(lightData.rgb, 1);
