@@ -108,7 +108,7 @@ public class TEPlacedOfuda : ModTileEntity, IClientSideTileEntityUpdater
             pixelationShader.TrySetParameter("pixelationFactor", Vector2.One * 1.5f / target.Size());
             pixelationShader.Apply();
 
-            Vector2 drawPosition = Position.ToWorldCoordinates() - Main.screenPosition - Vector2.One * 8f;
+            Vector2 drawPosition = Position.ToWorldCoordinates() - Main.screenPosition - Vector2.UnitY * 8f;
             Main.spriteBatch.Draw(target, drawPosition, null, Color.White, 0f, target.Size() * 0.5f, 1f, 0, 0f);
         }
     }
