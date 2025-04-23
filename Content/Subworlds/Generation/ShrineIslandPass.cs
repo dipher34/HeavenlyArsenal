@@ -47,5 +47,18 @@ public class ShrineIslandPass : GenPass
                     t.TileType = TileID.Stone;
             }
         }
+
+        // Place a ton of lillies.
+        int lilyCount = ForgottenShrineGenerationHelpers.ShrineIslandLilyCount;
+        for (int i = 0; i < lilyCount; i++)
+        {
+            int lilyX = (int)(WorldGen.genRand.NextFloat(left, right) * 16f);
+            int lilyY = (int)(LumUtils.FindGroundVertical(new Point((int)(lilyX / 16f), Main.maxTilesY - 10)).Y * 16f);
+            Point tileAbove = new Point(lilyX / 16, lilyY / 16 - 1);
+            if (Framing.GetTileSafely(tileAbove).LiquidAmount >= 20)
+                continue;
+
+            SpiderLilyRenderer.Register(new SpiderLilyData(new Point(lilyX, lilyY)));
+        }
     }
 }

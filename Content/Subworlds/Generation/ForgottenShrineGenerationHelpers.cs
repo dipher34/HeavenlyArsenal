@@ -51,6 +51,11 @@ public static class ForgottenShrineGenerationHelpers
     public static int ShrineIslandWidth => (int)(Main.maxTilesX * 0.25f);
 
     /// <summary>
+    /// The amount of lilies on the shrine island.
+    /// </summary>
+    public static int ShrineIslandLilyCount => 2400;
+
+    /// <summary>
     /// The width of the subworld.
     /// </summary>
     public static int SubworldWidth => 3372;
