@@ -390,7 +390,7 @@ public class ForgottenShrineLiquidVisualsSystem : ModSystem
         reflectionShader.TrySetParameter("oldScreenPosition", Main.screenLastPosition);
         reflectionShader.TrySetParameter("zoom", Main.GameViewMatrix.Zoom);
         reflectionShader.TrySetParameter("reflectionStrength", 0.47f);
-        reflectionShader.TrySetParameter("reflectionMaxDepth", 146f);
+        reflectionShader.TrySetParameter("reflectionMaxDepth", 276f);
         reflectionShader.TrySetParameter("reflectionWaviness", 0.0023f);
         reflectionShader.TrySetParameter("ripplePerspectiveSquishFactor", 2.36f);
         reflectionShader.SetTexture(TileTargetManagers.LiquidTarget, 2, SamplerState.LinearClamp);
