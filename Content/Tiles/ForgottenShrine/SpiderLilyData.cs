@@ -45,7 +45,7 @@ public class SpiderLilyData : WorldOrientedTileObject
 
     public SpiderLilyData(Point position) : base(position)
     {
-        Scale = MathHelper.Lerp(0.33f, 1f, MathF.Pow(Main.rand.NextFloat(), 4f));
+        Scale = MathHelper.Lerp(0.8f, 1f, MathF.Pow(Main.rand.NextFloat(), 4f));
         Direction = Main.rand.NextFromList(SpriteEffects.None, SpriteEffects.FlipHorizontally);
     }
 
@@ -68,8 +68,8 @@ public class SpiderLilyData : WorldOrientedTileObject
         if (!Main.LocalPlayer.WithinRange(Position.ToVector2(), 2350f))
             return;
 
+        int frameY = (Position.X + Position.Y * 13) % 3;
         Color color = Lighting.GetColor(Position.ToVector2().ToTileCoordinates());
-        Vector2 drawOffset = Main.drawToScreen ? Vector2.Zero : new Vector2(Main.offScreenRange);
 
         int windPushTime = 30;
         Main.instance.TilesRenderer.Wind.GetWindTime(Position.X / 16, Position.Y / 16, windPushTime, out int windTimeLeft, out int direction, out _);
@@ -77,8 +77,9 @@ public class SpiderLilyData : WorldOrientedTileObject
         float rotation = LumUtils.AperiodicSin(WindTime + Position.X * 10f + Position.Y * 20f) * 0.3f + direction * windGrindPush * 0.45f;
 
         Texture2D texture = lilyTexture.Value;
-        Vector2 lilyDrawPosition = Position.ToVector2() - Main.screenPosition + Vector2.UnitY * 2f + drawOffset;
-        Main.spriteBatch.Draw(texture, lilyDrawPosition, null, color, rotation, texture.Size() * new Vector2(0.5f, 1f), Scale, 0, 0f);
+        Rectangle frame = texture.Frame(1, 3, 0, frameY);
+        Vector2 lilyDrawPosition = Position.ToVector2() - Main.screenPosition + Vector2.UnitY * 4f;
+        Main.spriteBatch.Draw(texture, lilyDrawPosition, frame, color, rotation, frame.Size() * new Vector2(0.5f, 1f), Scale, 0, 0f);
     }
 
     /// <summary>
