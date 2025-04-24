@@ -3,6 +3,8 @@ using HeavenlyArsenal.Content.Tiles.ForgottenShrine;
 using Luminance.Common.Utilities;
 using Microsoft.Xna.Framework;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Terraria;
 using Terraria.ID;
 using Terraria.IO;
@@ -49,8 +51,17 @@ public class ShrineIslandPass : GenPass
             }
         }
 
-        // Place a ton of lillies.
         int lilyCount = ForgottenShrineGenerationHelpers.ShrineIslandLilyCount;
+        PlaceLillies(lilyCount, left, right);
+
+        int pillarCount = ForgottenShrineGenerationHelpers.ShrineIslandPillarCount;
+        PlacePillars(pillarCount, left, right);
+
+        AttachPillars();
+    }
+
+    private static void PlaceLillies(int lilyCount, int left, int right)
+    {
         SpiderLilyManager spiderLilies = ModContent.GetInstance<SpiderLilyManager>();
         for (int i = 0; i < lilyCount; i++)
         {
@@ -62,10 +73,11 @@ public class ShrineIslandPass : GenPass
 
             spiderLilies.Register(new SpiderLilyData(new Point(lilyX, lilyY)));
         }
+    }
 
-        // Place pillars.
-        int pillarCount = ForgottenShrineGenerationHelpers.ShrineIslandPillarCount;
-        ShrinePillarManager pillars = ModContent.GetInstance<ShrinePillarManager>();
+    private static void PlacePillars(int pillarCount, int left, int right)
+    {
+        ShrinePillarManager pillarsManager = ModContent.GetInstance<ShrinePillarManager>();
         for (int i = 0; i < pillarCount; i++)
         {
             int pillarX = (int)(WorldGen.genRand.NextFloat(left, right) * 16f);
@@ -73,8 +85,27 @@ public class ShrineIslandPass : GenPass
 
             Point pillarSpawnPosition = new Point(pillarX, pillarY);
             float pillarRotation = WorldGen.genRand.NextFloatDirection() * 0.23f;
-            float pillarScale = WorldGen.genRand.NextFloat(0.6f, 1.3f);
-            pillars.Register(new ShrinePillarData(pillarSpawnPosition, pillarRotation, pillarScale));
+            float pillarHeight = WorldGen.genRand.NextFloat(100f, 250f);
+            pillarsManager.Register(new ShrinePillarData(pillarSpawnPosition, pillarRotation, pillarHeight));
+        }
+    }
+
+    private static void AttachPillars()
+    {
+        ShrinePillarManager pillarsManager = ModContent.GetInstance<ShrinePillarManager>();
+        List<ShrinePillarData> pillarsByXPosition = pillarsManager.TileObjects.OrderBy(o => o.Position.X).ToList();
+
+        for (int i = 1; i < pillarsByXPosition.Count; i++)
+        {
+            ShrinePillarData previousPillar = pillarsByXPosition[i - 1];
+            ShrinePillarData currentPillar = pillarsByXPosition[i];
+            float distanceBetweenPillars = MathHelper.Distance(previousPillar.Position.X, currentPillar.Position.X);
+
+            if (distanceBetweenPillars <= ForgottenShrineGenerationHelpers.MaxPillarAttachmentDistance)
+            {
+                previousPillar.RopeAnchorYInterpolant = WorldGen.genRand.NextFloat(0.55f, 0.8f);
+                currentPillar.RopeAnchorYInterpolant = WorldGen.genRand.NextFloat(0.55f, 0.8f);
+            }
         }
     }
 }

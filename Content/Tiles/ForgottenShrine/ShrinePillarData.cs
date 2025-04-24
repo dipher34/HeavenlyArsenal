@@ -14,6 +14,17 @@ public class ShrinePillarData : WorldOrientedTileObject
 
     private static readonly Asset<Texture2D> pillarTopTexture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Tiles/ForgottenShrine/ShrinePillarTop");
 
+    private static readonly Asset<Texture2D> ropeAnchorTexture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Tiles/ForgottenShrine/ShrinePillarRopeAnchor");
+
+    /// <summary>
+    /// The relative Y interpolant of the rope anchor on this pillar.
+    /// </summary>
+    public float RopeAnchorYInterpolant
+    {
+        get;
+        set;
+    }
+
     /// <summary>
     /// The rotation of this pillar.
     /// </summary>
@@ -24,20 +35,39 @@ public class ShrinePillarData : WorldOrientedTileObject
     }
 
     /// <summary>
-    /// The scale of this pillar.
+    /// The height of this pillar.
     /// </summary>
-    public float Scale
+    public float Height
     {
         get;
         set;
     }
 
+    /// <summary>
+    /// Whether this pillar has a rope anchor or not.
+    /// </summary>
+    public bool HasRopeAnchor => RopeAnchorYInterpolant > 0f && RopeAnchorYInterpolant < 1f;
+
+    /// <summary>
+    /// The position of this rope's anchor in world coordinates, or null if there is no anchor.
+    /// </summary>
+    public Vector2? RopeAnchorPosition
+    {
+        get
+        {
+            if (!HasRopeAnchor)
+                return null;
+
+            return Position.ToVector2() - Vector2.UnitY.RotatedBy(Rotation) * Height * RopeAnchorYInterpolant;
+        }
+    }
+
     public ShrinePillarData() { }
 
-    public ShrinePillarData(Point position, float rotation, float scale) : base(position)
+    public ShrinePillarData(Point position, float rotation, float height) : base(position)
     {
         Rotation = rotation;
-        Scale = scale;
+        Height = height;
     }
 
     public override void Update()
@@ -53,10 +83,17 @@ public class ShrinePillarData : WorldOrientedTileObject
         Texture2D pillar = pillarTexture.Value;
         Texture2D pillarTop = pillarTopTexture.Value;
         Vector2 bottom = Position.ToVector2() - Main.screenPosition;
-        Main.spriteBatch.Draw(pillar, bottom, null, Color.White, Rotation, pillar.Size() * new Vector2(0.5f, 1f), Scale, 0, 0f);
+        Main.spriteBatch.Draw(pillar, bottom, null, Color.White, Rotation, pillar.Size() * new Vector2(0.5f, 1f), new Vector2(1f, Height), 0, 0f);
 
-        Vector2 pillarBottom = bottom - Vector2.UnitY.RotatedBy(Rotation) * pillar.Height * Scale;
-        Main.spriteBatch.Draw(pillarTop, pillarBottom, null, Color.White, Rotation, pillarTop.Size() * new Vector2(0.5f, 1f), Scale, 0, 0f);
+        Vector2 pillarBottom = bottom - Vector2.UnitY.RotatedBy(Rotation) * pillar.Height * Height;
+        Main.spriteBatch.Draw(pillarTop, pillarBottom, null, Color.White, Rotation, pillarTop.Size() * new Vector2(0.5f, 1f), 1f, 0, 0f);
+
+        if (HasRopeAnchor)
+        {
+            Texture2D ropeAnchor = ropeAnchorTexture.Value;
+            Vector2 ropePosition = RopeAnchorPosition.Value - Main.screenPosition;
+            Main.spriteBatch.Draw(ropeAnchor, ropePosition, null, Color.White, Rotation, ropeAnchor.Size() * new Vector2(0.5f, 1f), 1f, 0, 0f);
+        }
     }
 
     public override TagCompound Serialize()
@@ -65,13 +102,17 @@ public class ShrinePillarData : WorldOrientedTileObject
         {
             ["Start"] = Position,
             ["Rotation"] = Rotation,
-            ["Scale"] = Scale
+            ["Height"] = Height,
+            ["RopeAnchorYInterpolant"] = RopeAnchorYInterpolant
         };
     }
 
     public override ShrinePillarData Deserialize(TagCompound tag)
     {
-        ShrinePillarData shrine = new ShrinePillarData(tag.Get<Point>("Start"), tag.GetFloat("Rotation"), tag.GetFloat("Scale"));
+        ShrinePillarData shrine = new ShrinePillarData(tag.Get<Point>("Start"), tag.GetFloat("Rotation"), tag.GetFloat("Height"))
+        {
+            RopeAnchorYInterpolant = tag.GetFloat("RopeAnchorYInterpolant")
+        };
         return shrine;
     }
 }

@@ -66,6 +66,11 @@ public static class ForgottenShrineGenerationHelpers
     public static int ShrineIslandPillarCount => 20;
 
     /// <summary>
+    /// The maximum horizontal distance pillars can be from each other before it becomes impossible for them to have attached ropes.
+    /// </summary>
+    public static float MaxPillarAttachmentDistance => 332f;
+
+    /// <summary>
     /// The width of the subworld.
     /// </summary>
     public static int SubworldWidth => 3372;

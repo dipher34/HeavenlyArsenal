@@ -10,10 +10,10 @@ public class ShrinePillarManager : WorldOrientedTileObjectManager<ShrinePillarDa
 
     private void RenderPillars(On_Main.orig_DoDraw_Tiles_Solid orig, Main self)
     {
-        if (tileObjects.Count >= 1)
+        if (TileObjects.Count >= 1)
         {
             Main.spriteBatch.ResetToDefault(false);
-            foreach (ShrinePillarData lily in tileObjects)
+            foreach (ShrinePillarData lily in TileObjects)
                 lily.Render();
             Main.spriteBatch.End();
         }

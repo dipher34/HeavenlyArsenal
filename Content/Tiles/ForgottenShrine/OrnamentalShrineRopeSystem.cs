@@ -21,7 +21,7 @@ public class OrnamentalShrineRopeSystem : WorldOrientedTileObjectManager<Ornamen
 
     private void SettleRopesOnEnteringWorld()
     {
-        foreach (OrnamentalShrineRopeData rope in tileObjects)
+        foreach (OrnamentalShrineRopeData rope in TileObjects)
         {
             for (int i = 0; i < 4; i++)
                 rope.VerletRope.Settle();
@@ -33,7 +33,7 @@ public class OrnamentalShrineRopeSystem : WorldOrientedTileObjectManager<Ornamen
     /// </summary>
     public override void Register(OrnamentalShrineRopeData rope)
     {
-        bool ropeAlreadyExists = tileObjects.Any(r => (r.Start == rope.Start && r.End == rope.End) ||
+        bool ropeAlreadyExists = TileObjects.Any(r => (r.Start == rope.Start && r.End == rope.End) ||
                                                       (r.Start == rope.End && r.End == rope.Start));
         if (ropeAlreadyExists)
             return;
@@ -43,11 +43,11 @@ public class OrnamentalShrineRopeSystem : WorldOrientedTileObjectManager<Ornamen
 
     public override void PostDrawTiles()
     {
-        if (tileObjects.Count <= 0)
+        if (TileObjects.Count <= 0)
             return;
 
         Main.spriteBatch.ResetToDefault(false);
-        foreach (OrnamentalShrineRopeData rope in tileObjects)
+        foreach (OrnamentalShrineRopeData rope in TileObjects)
             rope.Render();
 
         Main.spriteBatch.End();

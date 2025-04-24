@@ -10,10 +10,10 @@ public class SpiderLilyManager : WorldOrientedTileObjectManager<SpiderLilyData>
     private void RenderLilies(On_TileDrawing.orig_ClearLegacyCachedDraws orig, TileDrawing self)
     {
         orig(self);
-        if (tileObjects.Count <= 0)
+        if (TileObjects.Count <= 0)
             return;
 
-        foreach (SpiderLilyData lily in tileObjects)
+        foreach (SpiderLilyData lily in TileObjects)
             lily.Render();
     }
 }
