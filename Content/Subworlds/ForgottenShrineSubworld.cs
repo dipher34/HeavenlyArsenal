@@ -71,6 +71,8 @@ public class ForgottenShrineSubworld : Subworld
         int shrineIslandLeft = BaseBridgePass.BridgeGenerator.Right + ForgottenShrineGenerationHelpers.LakeWidth + BaseBridgePass.GenerationSettings.DockWidth;
         int shrineIslandWidth = ForgottenShrineGenerationHelpers.ShrineIslandWidth;
         float islandInterpolant = LumUtils.InverseLerpBump(0f, 16f, shrineIslandWidth - 16f, shrineIslandWidth, x - shrineIslandLeft);
+
+        // Lucille's swag shadows ACTIVATE!
         if (islandInterpolant > 0f && Main.tile[x, y].HasTile)
         {
             int distanceToSurface = 4;
