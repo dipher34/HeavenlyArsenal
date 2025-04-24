@@ -32,10 +32,4 @@ public class SacredGrass : ModTile
     {
         Type = fail ? 1 : 3;
     }
-
-    public override void KillTile(int i, int j, ref bool fail, ref bool effectOnly, ref bool noItem)
-    {
-        if (fail && !effectOnly)
-            Main.tile[i, j].TileType = TileID.Dirt;
-    }
 }
