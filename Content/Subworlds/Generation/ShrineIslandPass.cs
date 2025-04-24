@@ -71,13 +71,16 @@ public class ShrineIslandPass : GenPass
 
     private static void PlaceLillies(int lilyCount, int left, int right)
     {
+        int shrineX = (left + right) * 8;
         SpiderLilyManager spiderLilies = ModContent.GetInstance<SpiderLilyManager>();
         for (int i = 0; i < lilyCount; i++)
         {
             int lilyX = (int)(WorldGen.genRand.NextFloat(left, right) * 16f);
             int lilyY = (int)(LumUtils.FindGroundVertical(new Point((int)(lilyX / 16f), 10)).Y * 16f);
+            float distanceFromShrine = MathHelper.Distance(lilyX, shrineX);
+            float placementProbability = MathF.Pow(LumUtils.InverseLerp(210f, 750f, distanceFromShrine), 1.6f);
             Point tileAbove = new Point(lilyX / 16, lilyY / 16);
-            if (Framing.GetTileSafely(tileAbove).LiquidAmount >= 20)
+            if (Framing.GetTileSafely(tileAbove).LiquidAmount >= 20 || !WorldGen.genRand.NextBool(placementProbability))
                 continue;
 
             spiderLilies.Register(new SpiderLilyData(new Point(lilyX, lilyY + 18)));
