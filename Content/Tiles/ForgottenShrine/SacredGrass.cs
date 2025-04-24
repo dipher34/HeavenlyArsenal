@@ -54,7 +54,7 @@ public class SacredGrass : ModTile
         if (distanceToLiquid != -1)
         {
             t.TileFrameX = (short)(WorldGen.genRand.Next(3) * 18);
-            t.TileFrameY = (short)(108 - (distanceToLiquid - 1) * 18);
+            t.TileFrameY = (short)(90 - (distanceToLiquid - 1) * 18);
         }
         else if (isLeftEdge)
         {
@@ -71,7 +71,7 @@ public class SacredGrass : ModTile
             Tile above = Framing.GetTileSafely(i, j - 1);
             bool grassAbove = above.HasTile && above.TileType == Type;
             bool somethingNotGrassAbove = above.HasTile && above.TileType != Type;
-            t.TileFrameX = (short)(horizontalChoiceX * 18 + 18);
+            t.TileFrameX = (short)(horizontalChoiceX * 18);
             t.TileFrameY = 0;
             if (grassAbove)
             {
