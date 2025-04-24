@@ -22,10 +22,10 @@ public class SacredGrass : ModTile
         AddMapEntry(new Color(94, 51, 128));
 
         TileID.Sets.Grass[Type] = true;
-        TileID.Sets.Conversion.Grass[Type] = true;
         TileID.Sets.NeedsGrassFraming[Type] = true;
         TileID.Sets.NeedsGrassFramingDirt[Type] = TileID.Dirt;
         TileID.Sets.CanBeDugByShovel[Type] = true;
+        TileID.Sets.Conversion.Grass[Type] = true;
     }
 
     public override void NumDust(int i, int j, bool fail, ref int Type)
