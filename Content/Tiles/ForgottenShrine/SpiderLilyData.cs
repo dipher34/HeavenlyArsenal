@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using HeavenlyArsenal.Content.Tiles.Generic;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using System;
@@ -9,7 +10,7 @@ using Terraria.ModLoader.IO;
 
 namespace HeavenlyArsenal.Content.Tiles.ForgottenShrine;
 
-public class SpiderLilyData
+public class SpiderLilyData : WorldOrientedTileObject
 {
     private static readonly Asset<Texture2D> lilyTexture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Tiles/ForgottenShrine/SpiderLily");
 
@@ -40,14 +41,10 @@ public class SpiderLilyData
         set;
     }
 
-    /// <summary>
-    /// The position of the lily, in world coordinates.
-    /// </summary>
-    public readonly Point Position;
+    public SpiderLilyData() { }
 
-    public SpiderLilyData(Point position)
+    public SpiderLilyData(Point position) : base(position)
     {
-        Position = position;
         Scale = MathHelper.Lerp(0.33f, 1f, MathF.Pow(Main.rand.NextFloat(), 4f));
         Direction = Main.rand.NextFromList(SpriteEffects.None, SpriteEffects.FlipHorizontally);
     }
@@ -55,18 +52,18 @@ public class SpiderLilyData
     /// <summary>
     /// Updates this lily.
     /// </summary>
-    public void Update()
+    public override void Update()
     {
         WindTime = (WindTime + MathF.Abs(Main.windSpeedCurrent) * 0.11f) % (MathHelper.TwoPi * 5000f);
         Point tilePosition = new Point(Position.X / 16, Position.Y / 16);
         if (!WorldGen.SolidTile(tilePosition) || Main.tile[tilePosition].Slope != SlopeType.Solid)
-            SpiderLilyRenderer.Remove(this);
+            ModContent.GetInstance<SpiderLilyManager>().Remove(this);
     }
 
     /// <summary>
     /// Renders this lily.
     /// </summary>
-    public void Render()
+    public override void Render()
     {
         if (!Main.LocalPlayer.WithinRange(Position.ToVector2(), 2350f))
             return;
@@ -87,7 +84,7 @@ public class SpiderLilyData
     /// <summary>
     /// Serializes this lily data as a tag compound for world saving.
     /// </summary>
-    public TagCompound Serialize()
+    public override TagCompound Serialize()
     {
         return new TagCompound()
         {
@@ -98,7 +95,7 @@ public class SpiderLilyData
     /// <summary>
     /// Deserializes a tag compound containing data for a lily back into said lily.
     /// </summary>
-    public static SpiderLilyData Deserialize(TagCompound tag)
+    public override SpiderLilyData Deserialize(TagCompound tag)
     {
         SpiderLilyData lily = new SpiderLilyData(tag.Get<Point>("Start"));
         return lily;

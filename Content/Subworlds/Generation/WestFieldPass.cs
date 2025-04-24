@@ -79,6 +79,7 @@ public class WestFieldPass : GenPass
 
         // Place a ton of lillies.
         int lilyCount = ForgottenShrineGenerationHelpers.WestIslandLilyCount;
+        SpiderLilyManager spiderLilies = ModContent.GetInstance<SpiderLilyManager>();
         for (int i = 0; i < lilyCount; i++)
         {
             int lilyX = (int)(WorldGen.genRand.NextFloat(left, right) * 16f);
@@ -87,7 +88,7 @@ public class WestFieldPass : GenPass
             if (Framing.GetTileSafely(tileAbove).LiquidAmount >= 20)
                 continue;
 
-            SpiderLilyRenderer.Register(new SpiderLilyData(new Point(lilyX, lilyY)));
+            spiderLilies.Register(new SpiderLilyData(new Point(lilyX, lilyY)));
         }
     }
 
