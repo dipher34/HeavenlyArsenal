@@ -139,7 +139,7 @@ public class OrnamentalShrineRopeData : WorldOrientedTileObject
 
             foreach (Player player in Main.ActivePlayers)
             {
-                float playerProximityInterpolant = LumUtils.InverseLerp(50f, 10f, player.Distance(ropeSegment.position));
+                float playerProximityInterpolant = LumUtils.InverseLerp(30f, 10f, player.Distance(ropeSegment.position));
                 ropeSegment.position += player.velocity * playerProximityInterpolant * 0.4f;
             }
         }
