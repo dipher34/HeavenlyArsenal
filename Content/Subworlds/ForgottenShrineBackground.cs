@@ -1,4 +1,5 @@
-﻿using Luminance.Assets;
+﻿using HeavenlyArsenal.Common.Graphics;
+using Luminance.Assets;
 using Luminance.Common.Utilities;
 using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;

@@ -7,9 +7,8 @@ using Terraria.ModLoader;
 using MatrixSIMD = System.Numerics.Matrix4x4;
 using Vector2SIMD = System.Numerics.Vector2;
 
-namespace HeavenlyArsenal.Content.Subworlds;
+namespace HeavenlyArsenal.Common.Graphics;
 
-// TODO -- Move this file somewhere else, it should not be in the Subworlds directory.
 [Autoload(Side = ModSide.Client)]
 public class FramedFastParticleSystem(int totalFrames, int maxParticles, Action renderPreparations, FastParticleSystem.ParticleUpdateAction extraUpdates = null) :
     FastParticleSystem(maxParticles, renderPreparations, extraUpdates)
