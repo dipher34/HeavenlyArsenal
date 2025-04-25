@@ -23,11 +23,14 @@ public class ShrinePass : GenPass
         progress.Message = "Creating a sacred shrine.";
 
         BridgeGenerationSettings bridgeSettings = BaseBridgePass.BridgeGenerator.Settings;
+        int pillarDistance = ForgottenShrineGenerationHelpers.ShrineIslandGatePillarDistance;
+        int brickGroundDistance = (int)(pillarDistance * 1.5f);
+        int pillarHeight = (int)(pillarDistance * 2.3f);
         int left = BaseBridgePass.BridgeGenerator.Right + ForgottenShrineGenerationHelpers.LakeWidth + bridgeSettings.DockWidth;
         int right = left + ForgottenShrineGenerationHelpers.ShrineIslandWidth;
         int gateCenterX = (left + right) / 2;
-        TransformGroundIntoBricks(gateCenterX - 27, gateCenterX + 27);
-        ConstructToriiGate(gateCenterX - 18, gateCenterX + 18, 41);
+        TransformGroundIntoBricks(gateCenterX - brickGroundDistance, gateCenterX + brickGroundDistance);
+        ConstructToriiGate(gateCenterX - pillarDistance, gateCenterX + pillarDistance, pillarHeight);
     }
 
     private static void TransformGroundIntoBricks(int left, int right)
@@ -47,7 +50,6 @@ public class ShrinePass : GenPass
         }
     }
 
-    // TODO -- Calculations pertaining to this gate and its shrine are littered with hardcoded numbers that do not generalize. Create new constants and replace such math with them.
     private static void ConstructToriiGate(int leftX, int rightX, int gateHeight)
     {
         int leftY = LumUtils.FindGroundVertical(new Point(leftX, 10)).Y + 1;
@@ -158,27 +160,34 @@ public class ShrinePass : GenPass
         Vector2 gateCenterWorldCoords = new Vector2(gateCenterX, gateCenterY).ToWorldCoordinates();
 
         int tries = 0;
-        int candleCount = 67;
+        int candleCount = ForgottenShrineGenerationHelpers.ShrineIslandCandleCount;
         List<Vector2> placedCandlePositions = new List<Vector2>(candleCount);
         for (int i = 0; i < candleCount; i++)
         {
             tries++;
 
-            float coverage = tries * 5f + 750f;
-            Vector2 candleSpawnPosition = gateCenterWorldCoords - Vector2.UnitY * 140f + WorldGen.genRand.NextVector2Circular(coverage, coverage * 0.17f);
+            float horizontalCoverage = tries * 5f + 750f;
+            Vector2 candleSpawnPosition = gateCenterWorldCoords - Vector2.UnitY * 140f + WorldGen.genRand.NextVector2Circular(horizontalCoverage, 125f);
+
+            // Make sure candles do not spawn inside of tiles or water by shoving the spawn position out of such things if necessary.
             while (Collision.SolidCollision(candleSpawnPosition, 16, 12) || Collision.WetCollision(candleSpawnPosition, 16, 32))
                 candleSpawnPosition.Y -= 16f;
 
             float candleSocialDistancing = 36f;
             float candleGroundY = LumUtils.FindGroundVertical(candleSpawnPosition.ToTileCoordinates()).Y * 16f;
-            if (MathHelper.Distance(candleSpawnPosition.X, gateCenterWorldCoords.X) <= 270f)
+
+            // Ensure that candles underneath the gates spawn on the ground. These candles can be more compact than normal.
+            if (MathHelper.Distance(candleSpawnPosition.X, gateCenterWorldCoords.X) <= ForgottenShrineGenerationHelpers.ShrineIslandGatePillarDistance * 16f)
             {
                 candleSpawnPosition.Y = candleGroundY + 7f;
                 candleSocialDistancing = 18f;
             }
+
+            // Otherwise, only partially ground the candles.
             else
                 candleSpawnPosition.Y = MathHelper.Lerp(candleSpawnPosition.Y, candleGroundY, 0.5f);
 
+            // Try again if the candle position is too close to a candle that was already placed.
             if (placedCandlePositions.Any(p => p.WithinRange(candleSpawnPosition, candleSocialDistancing)))
             {
                 i--;
@@ -190,9 +199,9 @@ public class ShrinePass : GenPass
             SpiritCandleParticle candle = SpiritCandleParticle.Pool.RequestParticle();
             candle.Behavior = SpiritCandleParticle.AIType.DanceInAir;
             candle.Prepare(candleSpawnPosition, Vector2.Zero, 0f, color, Vector2.One * MathHelper.Lerp(1f, 0.65f, backgroundInterpolant));
-            placedCandlePositions.Add(candleSpawnPosition);
-
             ParticleEngine.Particles.Add(candle);
+
+            placedCandlePositions.Add(candleSpawnPosition);
         }
     }
 }

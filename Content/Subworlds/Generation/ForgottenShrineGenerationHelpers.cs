@@ -66,6 +66,16 @@ public static class ForgottenShrineGenerationHelpers
     public static int ShrineIslandPillarCount => ShrineIslandWidth / 44;
 
     /// <summary>
+    /// The distance pillars of the gate surrounding the island shrine have from the horizontal center point.
+    /// </summary>
+    public static int ShrineIslandGatePillarDistance => 18;
+
+    /// <summary>
+    /// The amount of candles to generate on the shrine island, near the shrine itself.
+    /// </summary>
+    public static int ShrineIslandCandleCount => 71;
+
+    /// <summary>
     /// The minimum horizontal distance pillars can be from each other before it becomes impossible for them to have attached ropes.
     /// </summary>
     public static float MinPillarAttachmentDistance => 111f;
