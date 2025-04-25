@@ -1,6 +1,5 @@
 ﻿using HeavenlyArsenal.Common.Graphics;
 using HeavenlyArsenal.Common.utils;
-using HeavenlyArsenal.Content.Items.Weapons.Summon.AntishadowAssassin;
 using HeavenlyArsenal.Content.Particles;
 using HeavenlyArsenal.Content.Tiles.Generic;
 using Luminance.Core.Graphics;
@@ -14,6 +13,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Terraria;
 using Terraria.Audio;
+using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 
@@ -222,7 +222,7 @@ public class ShimenawaRopeData : WorldOrientedTileObject
 
         if (ornament.InteractionTimer >= 45)
         {
-            SoundEngine.PlaySound(AntishadowAssassin.ChimeSound with { Pitch = 0f, MaxInstances = 3, SoundLimitBehavior = SoundLimitBehavior.IgnoreNew }, ornament.Position);
+            SoundEngine.PlaySound(SoundID.Item35 with { Pitch = 0f, MaxInstances = 3, SoundLimitBehavior = SoundLimitBehavior.IgnoreNew }, ornament.Position);
 
             for (int i = -1; i <= 1; i += 2)
             {

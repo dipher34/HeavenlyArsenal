@@ -95,7 +95,7 @@ public class ForgottenShrineSubworld : Subworld
                 }
             }
 
-            float baseShadow = LumUtils.InverseLerp(4f, 1f, distanceToSurface);
+            float baseShadow = LumUtils.InverseLerp(3.5f, 0.5f, distanceToSurface);
             float easedShadow = MathF.Pow(baseShadow, 2.3f);
             color = Vector3.One * easedShadow * islandInterpolant * 0.6f;
         }
