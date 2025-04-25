@@ -1,5 +1,7 @@
-﻿using HeavenlyArsenal.Common.utils;
+﻿using HeavenlyArsenal.Common.Graphics;
+using HeavenlyArsenal.Common.utils;
 using HeavenlyArsenal.Content.Items.Weapons.Summon.AntishadowAssassin;
+using HeavenlyArsenal.Content.Particles;
 using HeavenlyArsenal.Content.Tiles.Generic;
 using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
@@ -21,6 +23,15 @@ public class ShimenawaRopeData : WorldOrientedTileObject
 {
     public class ShimenawaRopeOrnament
     {
+        /// <summary>
+        /// How many frames it's been since this ornament was last interacted with.
+        /// </summary>
+        public int InteractionTimer
+        {
+            get;
+            set;
+        }
+
         /// <summary>
         /// The position of this rope ornament.
         /// </summary>
@@ -87,6 +98,7 @@ public class ShimenawaRopeData : WorldOrientedTileObject
             AngularVelocity -= Rotation * 0.015f;
             AngularVelocity *= 0.96f - MathF.Abs(Rotation * 0.08f);
             Rotation += AngularVelocity;
+            InteractionTimer++;
         }
 
         /// <summary>
@@ -191,13 +203,24 @@ public class ShimenawaRopeData : WorldOrientedTileObject
 
     private static void StandardOrnamentInteraction(ShimenawaRopeOrnament ornament, Player player, float playerProximityInterpolant)
     {
-        ornament.AngularVelocity -= player.velocity.X * playerProximityInterpolant * 0.005f;
+        ornament.AngularVelocity -= player.velocity.X * playerProximityInterpolant * 0.0051f;
     }
 
     private static void BellOrnamentInteraction(ShimenawaRopeOrnament ornament, Player player, float playerProximityInterpolant)
     {
         StandardOrnamentInteraction(ornament, player, playerProximityInterpolant);
-        SoundEngine.PlaySound(AntishadowAssassin.ChimeSound with { Pitch = 0f, MaxInstances = 1, SoundLimitBehavior = SoundLimitBehavior.IgnoreNew }, ornament.Position);
+
+        if (ornament.InteractionTimer >= 45)
+        {
+            SoundEngine.PlaySound(AntishadowAssassin.ChimeSound with { Pitch = 0f, MaxInstances = 3, SoundLimitBehavior = SoundLimitBehavior.IgnoreNew }, ornament.Position);
+
+            for (int i = -1; i <= 1; i += 2)
+            {
+                CartoonWaveParticle wave = CartoonWaveParticle.Pool.RequestParticle();
+                wave.Prepare(ornament.Position + Vector2.UnitY * 12f, Vector2.UnitX * i * 6f, 54, new Color(255, 175, 50), Vector2.One * 0.65f);
+                ParticleEngine.Particles.Add(wave);
+            }
+        }
     }
 
     /// <summary>
@@ -233,7 +256,10 @@ public class ShimenawaRopeData : WorldOrientedTileObject
             {
                 float playerProximityInterpolant = LumUtils.InverseLerp(45f, 10f, player.Distance(ornamentPosition));
                 if (playerProximityInterpolant > 0f && player.velocity.Length() >= 1f)
+                {
                     ornament.InteractionAction(ornament, player, playerProximityInterpolant);
+                    ornament.InteractionTimer = 0;
+                }
             }
             ornament.Update();
         }
