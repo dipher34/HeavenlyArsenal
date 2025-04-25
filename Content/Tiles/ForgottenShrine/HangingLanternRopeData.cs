@@ -142,7 +142,7 @@ public class HangingLanternRopeData : WorldOrientedTileObject
         Main.spriteBatch.Draw(knot, knotBottom - Main.screenPosition, null, knotColor, 0f, knot.Size() * new Vector2(0.5f, 1f), 1f, 0, 0f);
 
         // Make the glow target affected by the light emitted by the lantern.
-        ForgottenShrineDarknessSystem.GlowActionsQueue.Enqueue(() =>
+        ForgottenShrineDarknessSystem.QueueGlowAction(() =>
         {
             Main.spriteBatch.Draw(glowTexture, lanternDrawPosition, null, lanternGlowColor * 0.9f, 0f, glowTexture.Size() * 0.5f, glowScale * 2.34f, 0, 0f);
         });

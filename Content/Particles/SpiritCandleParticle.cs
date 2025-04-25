@@ -138,6 +138,9 @@ public class SpiritCandleParticle : BaseParticle
 
     public override void Draw(ref ParticleRendererSettings settings, SpriteBatch spritebatch)
     {
+        if (!Main.LocalPlayer.WithinRange(Position, 3000f))
+            return;
+
         Texture2D texture = candleTexture.Value;
         float lightExposureFactor = Utils.Remap(Scale.Y / BaseScale.Y, 0f, 1.2f, 0.75f, 1.5f);
         Color light = Lighting.GetColor(Position.ToTileCoordinates()) * lightExposureFactor;
@@ -151,7 +154,7 @@ public class SpiritCandleParticle : BaseParticle
         Main.spriteBatch.Draw(glow, glowDrawPosition, null, new Color(1f, 0.95f, 0.4f, 0f) * 0.6f, Rotation, glowOrigin, glowFlicker * 0.4f, 0, 0f);
         Main.spriteBatch.Draw(glow, glowDrawPosition, null, new Color(1f, 0.61f, 0.2f, 0f) * 0.4f, Rotation, glowOrigin, glowFlicker * 0.7f, 0, 0f);
 
-        ForgottenShrineDarknessSystem.GlowActionsQueue.Enqueue(() =>
+        ForgottenShrineDarknessSystem.QueueGlowAction(() =>
         {
             Main.spriteBatch.Draw(glow, glowDrawPosition, null, new Color(1f, 1f, 1f, 0f) * 0.9f, Rotation, glowOrigin, glowFlicker * 1.1f, 0, 0f);
         });

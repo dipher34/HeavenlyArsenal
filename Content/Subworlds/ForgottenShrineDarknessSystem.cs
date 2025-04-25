@@ -27,7 +27,7 @@ public class ForgottenShrineDarknessSystem : ModSystem
     /// <summary>
     /// A queue that represents the set of draw actions that should be render into the glow target.
     /// </summary>
-    public static Queue<Action> GlowActionsQueue
+    internal static Queue<Action> GlowActionsQueue
     {
         get;
         private set;
@@ -47,7 +47,7 @@ public class ForgottenShrineDarknessSystem : ModSystem
 
     private void ConsumeGlowActions()
     {
-        GlowTarget.Request((int)WotGUtils.ViewportSize.X, (int)WotGUtils.ViewportSize.Y, 0, () =>
+        GlowTarget?.Request((int)WotGUtils.ViewportSize.X, (int)WotGUtils.ViewportSize.Y, 0, () =>
         {
             if (GlowActionsQueue.Count <= 0)
                 return;
@@ -87,6 +87,15 @@ public class ForgottenShrineDarknessSystem : ModSystem
             darknessShader.SetTexture(glowTarget, 1, SamplerState.LinearClamp);
             darknessShader.Activate();
         }
+    }
+
+    /// <summary>
+    /// Queues a new action to be performed by the glow queue.
+    /// </summary>
+    public static void QueueGlowAction(Action action)
+    {
+        if (EffectShouldBeActive)
+            GlowActionsQueue.Enqueue(action);
     }
 
     public override void PostUpdatePlayers() => UpdateDarknessOverlay();

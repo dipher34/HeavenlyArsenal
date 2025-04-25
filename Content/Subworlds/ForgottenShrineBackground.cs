@@ -55,7 +55,10 @@ public class ForgottenShrineBackground : Background
         ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Subworlds/BackgroundBack"),
     ];
 
-    private static Vector2 MoonPosition => WotGUtils.ViewportSize * new Vector2(0.67f, 0.15f);
+    /// <summary>
+    /// The position of the moon in the background.
+    /// </summary>
+    public static Vector2 MoonPosition => WotGUtils.ViewportSize * new Vector2(0.67f, 0.15f);
 
     public override float Priority => 1f;
 
@@ -87,9 +90,15 @@ public class ForgottenShrineBackground : Background
 
         GraphicalUniverseImagerOption option = new GraphicalUniverseImagerOption("Mods.HeavenlyArsenal.UI.GraphicalUniverseImager.ForgottenShrineBackground", true, icon, RenderGUIPortrait, RenderGUIBackground);
         GraphicalUniverseImagerOptionManager.RegisterNew(option);
+
+        Main.OnPreDraw += RenderMoonToDarknessGlowTarget;
     }
 
-    public override void Unload() => Main.QueueMainThreadAction(lanternSystem.Dispose);
+    public override void Unload()
+    {
+        Main.QueueMainThreadAction(lanternSystem.Dispose);
+        Main.OnPreDraw -= RenderMoonToDarknessGlowTarget;
+    }
 
     private static void PrepareLanternParticleRendering()
     {
@@ -117,6 +126,21 @@ public class ForgottenShrineBackground : Background
         particle.ExtraData -= moveSpeedInterpolant * spinSpeed;
         particle.Velocity = particle.Velocity.RotatedBy(spinSpeed * -25f);
         particle.Rotation = particle.Velocity.ToRotation() - MathHelper.PiOver2;
+    }
+
+    private static void RenderMoonToDarknessGlowTarget(GameTime _)
+    {
+        ForgottenShrineDarknessSystem.QueueGlowAction(() =>
+        {
+            Main.spriteBatch.End();
+            Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.NonPremultiplied, Main.DefaultSamplerState, DepthStencilState.None, RasterizerState.CullNone, null, Matrix.Identity);
+
+            Vector2 scale = Vector2.One * 0.8f;
+            Texture2D moon = scarletMoon.Value;
+            Main.spriteBatch.Draw(moon, MoonPosition + Main.screenPosition - Main.screenLastPosition, null, Color.White, 0f, moon.Size() * 0.5f, scale, 0, 0f);
+
+            Main.spriteBatch.ResetToDefault();
+        });
     }
 
     public override void Render(Vector2 backgroundSize, float minDepth, float maxDepth)
