@@ -90,7 +90,7 @@ public class WestFieldPass : GenPass
 
             spiderLilies.Register(new SpiderLilyData(new Point(lilyX, lilyY))
             {
-                ZPosition = 1.75f
+                ZPosition = 3.74f
             });
         }
     }
