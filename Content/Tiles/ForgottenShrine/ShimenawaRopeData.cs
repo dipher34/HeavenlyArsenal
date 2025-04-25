@@ -105,7 +105,10 @@ public class ShimenawaRopeData : WorldOrientedTileObject
 
         public void Update()
         {
+            // An ODE of the form d^2u/dt^2 = -au (aka acceleration being determined by the negative of current angle) results in oscillating sinusoidal motion, which is
+            // ideal for swaying rope ornaments that respond to the environment.
             AngularVelocity -= Rotation * 0.015f;
+
             AngularVelocity *= 0.96f - MathF.Abs(Rotation * 0.08f);
             Rotation += AngularVelocity;
             InteractionTimer++;
