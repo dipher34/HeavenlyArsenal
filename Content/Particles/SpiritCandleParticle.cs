@@ -120,14 +120,17 @@ public class SpiritCandleParticle : BaseParticle
             Scale = BaseScale;
             float timeOffset = MathHelper.TwoPi * FlickerTimeOffset;
             float squishRate = 54f;
+            float spinRate = 127f;
             float squishWave = MathF.Sin(MathHelper.TwoPi * Time / squishRate + timeOffset);
             float horizontalSquish = MathF.Pow(squishWave * 0.5f + 0.5f, 2.3f) * 0.75f;
             horizontalSquish -= LumUtils.InverseLerp(0.4f, 0f, horizontalSquish) * 0.55f;
             horizontalSquish *= 0.225f;
 
+            float spin = MathF.Sin(MathHelper.TwoPi * Time / spinRate + timeOffset);
+
             Scale = new Vector2(1f + horizontalSquish, 1f - horizontalSquish) * BaseScale;
-            Velocity = Vector2.UnitY * squishWave * -0.7f;
-            Rotation = squishWave * 0.04f;
+            Velocity = new Vector2(spin * 1.12f, squishWave * -0.9f);
+            Rotation = spin * 0.18f + squishWave * 0.04f;
         }
 
         Time++;
@@ -141,7 +144,7 @@ public class SpiritCandleParticle : BaseParticle
         Main.spriteBatch.Draw(texture, Position + settings.AnchorPosition, texture.Frame(), Color.MultiplyRGB(light), Rotation, texture.Size() * new Vector2(0.5f, 1f), Scale, 0, 0);
 
         Vector2 glowDrawPosition = Position + settings.AnchorPosition - Vector2.UnitY.RotatedBy(Rotation) * Scale.Y * 38f;
-        float glowFlicker = MathHelper.Lerp(0.9f, 1.1f, LumUtils.Cos01(Main.GlobalTimeWrappedHourly * 20f + MathHelper.TwoPi * FlickerTimeOffset)) * LumUtils.Saturate(1f - (1f - Scale.Y / BaseScale.Y) * 3.3f) * 0.7f;
+        float glowFlicker = MathHelper.Lerp(0.9f, 1f, LumUtils.Cos01(Main.GlobalTimeWrappedHourly * 20f + MathHelper.TwoPi * FlickerTimeOffset)) * LumUtils.Saturate(1f - (1f - Scale.Y / BaseScale.Y) * 3.3f) * 0.7f;
         Texture2D glow = GennedAssets.Textures.GreyscaleTextures.BloomCirclePinpoint.Value;
         Vector2 glowOrigin = glow.Size() * 0.5f;
         Main.spriteBatch.Draw(glow, glowDrawPosition, null, new Color(1f, 0.97f, 0.9f, 0f) * 0.9f, Rotation, glowOrigin, new Vector2(0.5f, Scale.Y * 1.2f) * glowFlicker * 0.2f, 0, 0f);

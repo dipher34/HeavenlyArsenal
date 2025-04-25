@@ -157,14 +157,14 @@ public class ShrinePass : GenPass
         Vector2 gateCenterWorldCoords = new Vector2(gateCenterX, gateCenterY).ToWorldCoordinates();
 
         int tries = 0;
-        int candleCount = 108; // This number is specially selected for its signifiance in Buddhism.
+        int candleCount = 67;
         List<Vector2> placedCandlePositions = new List<Vector2>(candleCount);
         for (int i = 0; i < candleCount; i++)
         {
             tries++;
 
             float coverage = tries * 5f + 750f;
-            Vector2 candleSpawnPosition = gateCenterWorldCoords - Vector2.UnitY * 140f + WorldGen.genRand.NextVector2Circular(coverage, coverage * 0.22f);
+            Vector2 candleSpawnPosition = gateCenterWorldCoords - Vector2.UnitY * 140f + WorldGen.genRand.NextVector2Circular(coverage, coverage * 0.17f);
             while (Collision.SolidCollision(candleSpawnPosition, 16, 12) || Collision.WetCollision(candleSpawnPosition, 16, 32))
                 candleSpawnPosition.Y -= 16f;
 
@@ -176,7 +176,7 @@ public class ShrinePass : GenPass
                 candleSocialDistancing = 18f;
             }
             else
-                candleSpawnPosition.Y = MathHelper.Lerp(candleSpawnPosition.Y, candleGroundY, 0.67f);
+                candleSpawnPosition.Y = MathHelper.Lerp(candleSpawnPosition.Y, candleGroundY, 0.5f);
 
             if (placedCandlePositions.Any(p => p.WithinRange(candleSpawnPosition, candleSocialDistancing)))
             {
