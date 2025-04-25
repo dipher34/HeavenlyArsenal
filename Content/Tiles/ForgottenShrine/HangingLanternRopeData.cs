@@ -7,10 +7,12 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
 using NoxusBoss.Core.Graphics.LightingMask;
+using ReLogic.Content;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Terraria;
+using Terraria.ModLoader;
 using Terraria.ModLoader.IO;
 
 namespace HeavenlyArsenal.Content.Tiles.ForgottenShrine;
@@ -54,6 +56,11 @@ public class HangingLanternRopeData : WorldOrientedTileObject
     /// </summary>
     public static float Gravity => 0.6f;
 
+    /// <summary>
+    /// The asset for the knot texture used by this rope.
+    /// </summary>
+    public static readonly Asset<Texture2D> KnotTexture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Tiles/ForgottenShrine/HangingLanternRopeKnot");
+
     public HangingLanternRopeData() { }
 
     public HangingLanternRopeData(Point anchorPosition, float ropeLength)
@@ -89,7 +96,7 @@ public class HangingLanternRopeData : WorldOrientedTileObject
             foreach (Player player in Main.ActivePlayers)
             {
                 float playerProximityInterpolant = LumUtils.InverseLerp(30f, 10f, player.Distance(ropeSegment.position));
-                ropeSegment.position += player.velocity * playerProximityInterpolant * 0.19f;
+                ropeSegment.position += player.velocity * playerProximityInterpolant * 0.21f;
             }
         }
 
@@ -113,6 +120,7 @@ public class HangingLanternRopeData : WorldOrientedTileObject
         PrimitiveSettings settings = new PrimitiveSettings((float _) => 2f, colorFunction.Invoke, (float _) => drawOffset + Main.screenPosition, Smoothen: true, Pixelate: false, overlayShader, projectionWidth, projectionHeight, unscaledMatrix);
         PrimitiveRenderer.RenderTrail(positions, settings, 36);
 
+        // Draw the lantern at the bottom of the rope.
         Texture2D lantern = OrnamentalShrineRopeData.PaperLanternTexture.Value;
         Texture2D glowTexture = GennedAssets.Textures.GreyscaleTextures.BloomCirclePinpoint;
         float lanternScale = 0.8f;
@@ -122,6 +130,12 @@ public class HangingLanternRopeData : WorldOrientedTileObject
         Main.spriteBatch.Draw(lantern, lanternDrawPosition, null, Color.White, lanternRotation + MathHelper.PiOver2, lantern.Size() * 0.5f, lanternScale, Direction.ToSpriteDirection(), 0f);
         Main.spriteBatch.Draw(glowTexture, lanternDrawPosition, null, lanternGlowColor, 0f, glowTexture.Size() * 0.5f, lanternScale * 1.05f, 0, 0f);
         Main.spriteBatch.Draw(glowTexture, lanternDrawPosition, null, lanternGlowColor * 0.6f, 0f, glowTexture.Size() * 0.5f, lanternScale * 1.4f, 0, 0f);
+
+        // Draw the knot above the rope.
+        Texture2D knot = KnotTexture.Value;
+        Vector2 knotBottom = VerletRope.segments[0].position;
+        Color knotColor = Lighting.GetColor(knotBottom.ToTileCoordinates());
+        Main.spriteBatch.Draw(knot, knotBottom - Main.screenPosition, null, knotColor, 0f, knot.Size() * new Vector2(0.5f, 1f), 1f, 0, 0f);
     }
 
     /// <summary>
