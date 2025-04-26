@@ -1,14 +1,16 @@
 ﻿using HeavenlyArsenal.Content.Subworlds;
-using NoxusBoss.Content.Items.Debugging;
 using NoxusBoss.Core.World.Subworlds;
 using SubworldLibrary;
 using Terraria;
 using Terraria.ID;
+using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Items.Misc
 {
-    public class ForgottenShrineTeleporter : DebugItem
+    public class ForgottenShrineTeleporter : ModItem
     {
+        public override void SetStaticDefaults() => Item.ResearchUnlockCount = 0;
+
         public override void SetDefaults()
         {
             Item.width = 36;

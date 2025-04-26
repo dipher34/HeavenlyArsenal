@@ -444,7 +444,12 @@ Mods: {
 			}
 
 			ForgottenShrineTeleporter: {
-				DisplayName: Forgotten Shrine Teleporter (DEBUG)
+				DisplayName: Forgotten Shrine Teleporter [DEBUG]
+				Tooltip: ""
+			}
+
+			IdolSummoner: {
+				DisplayName: Idol of Madder Crimson Summoner [DEBUG]
 				Tooltip: ""
 			}
 
