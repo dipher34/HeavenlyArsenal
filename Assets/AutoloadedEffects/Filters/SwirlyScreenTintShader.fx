@@ -5,7 +5,17 @@ float opacity;
 float globalTime;
 float swirlVariance;
 float windDirection;
+float moonGlowDistance;
+float2 screenSize;
+float2 moonPosition;
 float4 additiveLight;
+
+float2 ResolutionCorrectiveDistance(float2 a, float2 b)
+{
+    a.y *= screenSize.y / screenSize.x;
+    b.y *= screenSize.y / screenSize.x;
+    return distance(a, b);
+}
 
 float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD0) : COLOR0
 {
@@ -27,7 +37,10 @@ float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD
     float glowInterpolant = lerp(noise, 0.5, smoothstep(0.5, 0.15, distanceFromCenter)) + windNoise;
     float glowFactor = lerp(1 - swirlVariance, 1 + swirlVariance, glowInterpolant);
     
-    return tex2D(baseTexture, coords) + opacity * additiveLight * glowFactor;
+    float4 baseColor = tex2D(baseTexture, coords);
+    float moonException = smoothstep(0.04, 0.2, ResolutionCorrectiveDistance(coords, moonPosition) / moonGlowDistance);
+    
+    return baseColor + opacity * additiveLight * glowFactor * moonException;
 }
 
 technique Technique1

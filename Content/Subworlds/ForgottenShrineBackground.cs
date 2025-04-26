@@ -1,5 +1,6 @@
 ﻿using HeavenlyArsenal.Common.Graphics;
 using Luminance.Assets;
+using Luminance.Common.Easings;
 using Luminance.Common.Utilities;
 using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
@@ -60,6 +61,37 @@ public class ForgottenShrineBackground : Background
     /// A 0-1 interpolant which dictates the extent to which the sky gradient shifts.
     /// </summary>
     public static float AltSkyGradientInterpolant
+    {
+        get;
+        set;
+    }
+
+    /// <summary>
+    /// The current speed of lanterns in the sky.
+    /// </summary>
+    /// 
+    /// <remarks>
+    /// This value gradually regresses to one over time if disturbed.
+    /// </remarks>
+    public static float LanternSpeed
+    {
+        get;
+        set;
+    } = 1f;
+
+    /// <summary>
+    /// Whether lanterns should be able to spawn this frame.
+    /// </summary>
+    public static bool LanternsCanSpawn
+    {
+        get;
+        set;
+    } = true;
+
+    /// <summary>
+    /// The intensity of the moon's dark backglow.
+    /// </summary>
+    public static float MoonBackglow
     {
         get;
         set;
@@ -151,10 +183,13 @@ public class ForgottenShrineBackground : Background
         if (particle.Time / (float)lifetime >= 0.75f || pathInterpolant < 0.12f)
             particle.Size *= 0.93f;
 
-        float spinSpeed = 0.000072f;
+        float spinSpeed = LanternSpeed * 0.000072f;
         float moveSpeedInterpolant = LumUtils.Saturate(8f / particle.Size.X);
         particle.ExtraData -= moveSpeedInterpolant * spinSpeed;
         particle.Velocity = particle.Velocity.RotatedBy(spinSpeed * -25f);
+        if (LanternSpeed > 1f)
+            particle.Velocity += particle.Position.SafeDirectionTo(MoonPosition) * (LanternSpeed - 1f) * 0.04f;
+
         particle.Rotation = particle.Velocity.ToRotation() - MathHelper.PiOver2;
     }
 
@@ -274,14 +309,30 @@ public class ForgottenShrineBackground : Background
         if (squishToFitRT)
             scale.X *= 0.7f;
 
+        if (MoonBackglow > 0f)
+        {
+            Main.spriteBatch.End();
+            Main.spriteBatch.Begin(SpriteSortMode.Deferred, LumUtils.SubtractiveBlending, SamplerState.PointClamp, DepthStencilState.None, LumUtils.CullOnlyScreen, null, Matrix.Identity);
+
+            Texture2D glow = GennedAssets.Textures.GreyscaleTextures.BloomCirclePinpoint;
+            Main.spriteBatch.Draw(glow, MoonPosition, null, Color.White * MathF.Sqrt(MoonBackglow), 0f, glow.Size() * 0.5f, scale * MoonBackglow * 3f, 0, 0f);
+            Main.spriteBatch.Draw(glow, MoonPosition, null, Color.White * MathF.Sqrt(MoonBackglow) * 0.7f, 0f, glow.Size() * 0.5f, scale * MoonBackglow * 5f, 0, 0f);
+            Main.spriteBatch.Draw(glow, MoonPosition, null, Color.White * MathF.Sqrt(MoonBackglow) * 0.4f, 0f, glow.Size() * 0.5f, scale * MoonBackglow * 7f, 0, 0f);
+
+            ResetSpriteBatch();
+        }
+
         Texture2D moon = scarletMoon.Value;
         Main.spriteBatch.Draw(moon, MoonPosition, null, Color.White, 0f, moon.Size() * 0.5f, scale, 0, 0f);
     }
 
     private static void RenderLanternBackglowPath()
     {
+        float timeOffset = EasingCurves.Cubic.Evaluate(EasingType.InOut, 0f, 0.23f, LumUtils.Saturate(MoonBackglow));
         ManagedShader pathShader = ShaderManager.GetShader("HeavenlyArsenal.ShrineBackglowPathShader");
         pathShader.SetTexture(GennedAssets.Textures.Noise.PerlinNoise, 1, SamplerState.LinearWrap);
+        pathShader.TrySetParameter("endFadeoutTaper", MoonBackglow);
+        pathShader.TrySetParameter("manualTimeOffset", timeOffset);
 
         float widthFunction(float completionRatio) => MathHelper.Lerp(45f, 397.5f, MathF.Pow(completionRatio, 1.6f));
         Color colorFunction(float completionRatio) => new Color(141, 42, 70) * (1f - completionRatio) * LumUtils.InverseLerp(0.01f, 0.15f, completionRatio);
@@ -289,6 +340,7 @@ public class ForgottenShrineBackground : Background
 
         Main.screenWidth = (int)WotGUtils.ViewportSize.X;
         Main.screenHeight = (int)WotGUtils.ViewportSize.Y;
+        Main.instance.GraphicsDevice.BlendState = BlendState.AlphaBlend;
         PrimitiveRenderer.RenderTrail(lanternPathOffsets, settings, 100);
     }
 
@@ -297,17 +349,23 @@ public class ForgottenShrineBackground : Background
         SkyManager.Instance["Ambience"].Deactivate();
         SkyManager.Instance["Party"].Deactivate();
 
-        AltSkyGradientInterpolant = (AltSkyGradientInterpolant * 0.975f).StepTowards(0f, 0.005f);
-
-        for (int i = 0; i < 40; i++)
+        if (LanternsCanSpawn)
         {
-            float pathInterpolant = Main.rand.NextFloat(0.05f, 1f);
-            float size = MathHelper.Lerp(2.5f, 11.5f, MathF.Pow(Main.rand.NextFloat(), 5f)) * Main.rand.NextFloat(0.4f, 1.2f);
-            Vector2 spawnPosition = MoonPosition + lanternPositionPath.Evaluate(pathInterpolant) * 1.6f + Main.rand.NextVector2Circular(210f, 210f);
-            Vector2 velocity = lanternVelocityPath.Evaluate(pathInterpolant) * -Main.rand.NextFloat(0.007f, 0.03f);
-            lanternSystem?.CreateNew(spawnPosition, velocity, Vector2.One * size, new Color(255, Main.rand.Next(40, 150), 33) * 0.75f, pathInterpolant);
+            for (int i = 0; i < 40; i++)
+            {
+                float pathInterpolant = Main.rand.NextFloat(0.05f, 1f);
+                float size = MathHelper.Lerp(2.5f, 11.5f, MathF.Pow(Main.rand.NextFloat(), 5f)) * Main.rand.NextFloat(0.4f, 1.2f);
+                Vector2 spawnPosition = MoonPosition + lanternPositionPath.Evaluate(pathInterpolant) * 1.6f + Main.rand.NextVector2Circular(210f, 210f);
+                Vector2 velocity = lanternVelocityPath.Evaluate(pathInterpolant) * -Main.rand.NextFloat(0.007f, 0.03f) * LanternSpeed;
+                lanternSystem?.CreateNew(spawnPosition, velocity, Vector2.One * size, new Color(255, Main.rand.Next(40, 150), 33) * 0.75f, pathInterpolant);
+            }
         }
         lanternSystem.UpdateAll();
+
+        LanternsCanSpawn = true;
+        LanternSpeed = MathHelper.Lerp(LanternSpeed, 1f, 0.04f).StepTowards(1f, 0.01f);
+        MoonBackglow = (MoonBackglow * 0.97f).StepTowards(0f, 0.0132f);
+        AltSkyGradientInterpolant = (AltSkyGradientInterpolant * 0.975f).StepTowards(0f, 0.005f);
 
         base.Update();
     }
