@@ -443,6 +443,16 @@ Mods: {
 					'''
 			}
 
+			ForgottenShrineTeleporter: {
+				DisplayName: Forgotten Shrine Teleporter [DEBUG]
+				Tooltip: ""
+			}
+
+			IdolSummoner: {
+				DisplayName: Idol of Madder Crimson Summoner [DEBUG]
+				Tooltip: ""
+			}
+
 			Samsara: {
 				DisplayName: Samsara
 				Tooltip: ""
@@ -523,18 +533,89 @@ Mods: {
 			VambraceLightning.DisplayName: Vambrace Lightning
 		}
 
-		NPCs.AnAffrontToGod.DisplayName: Cravatar
+		NPCs: {
+			AnAffrontToGod.DisplayName: Cravatar
+
+			FadingSpirit: {
+				DisplayName: Spirit
+				BestiaryEntry: An impossibly old specter that was once blessed with the promise of an unending existence.
+				Name1: Fugen
+				Name2: Ozyymi
+				Name3: Opal
+				Name4: Roselle
+				Name5: Zyx
+				Name6: Elwyyr
+				Name7: Rayleigh
+				Name8: Kos
+				Name9: Hex
+				Name10: Verdyll
+				Name11: Auden
+				Name12: Lily
+				Name13: Azeal
+				Name14: Motii
+				Name15: Gyge
+				Name16: Elven
+				Name17: Jure
+				Name18: Kenji
+				Name19: Idiis
+				Name20: Kioku
+				Name21: Onyx
+				Name22: Cordelia
+				Name23: Rayen
+				Name24: Tesille
+				Name25: Revyrie
+				Name26: Ruelle
+				Name27: Styx
+				Name28: Nimrae
+				Name29: Veshil
+				Name30: Sylsune
+				Name31: Takuen
+				Name32: Ayomi
+				Name33: Eluu
+				Name34: Suzume
+				Name35: Akainu
+				Name36: Hatsume
+				Name37: Kichirou
+				Name38: Shiroko
+				Name39: Ooyama
+				Name40: Ayama
+				Name41: Yukka
+				Name42: Mikazuki
+				Name43: Chitose
+				Name44: Nikiya
+				Name45: Aoi
+				Name46: Chihiro
+				Name47: Himari
+				RareName1: Nyluus
+				RareName2: Noxus
+				RareName3: Corex
+			}
+		}
+
+		Biomes: {
+			ForgottenShrineBiome: {
+				DisplayName: Forgotten Shrine
+				TownNPCDialogueName: the Forgotten Shrine
+			}
+		}
 
 		Keybinds: {
-			"Quick Dash.DisplayName": Quick  Dash
+			"Quick Dash.DisplayName": Quick Dash
 			"Toggle Haemsong Mode.DisplayName": Toggle  Haemsong  Mode
 		}
-	}
 
-	Cooldowns: {
-		AntiShield: {
-			BarrierCooldown: AntiShield Decay
-			BarrierRecharge: AntiShield Recharge
+		Cooldowns: {
+			AntiShield: {
+				BarrierCooldown: AntiShield Decay
+				BarrierRecharge: AntiShield Recharge
+			}
 		}
+
+		CellPhoneInfoOverrides: {
+			ForgottenShrineText: Quiet Stillness
+			ForgottenShrineWindyText: Scarlet Squall
+		}
+
+		UI.GraphicalUniverseImager.ForgottenShrineBackground: A Perfect World
 	}
 }

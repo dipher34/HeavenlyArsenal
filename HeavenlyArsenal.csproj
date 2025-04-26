@@ -21,9 +21,11 @@
 	  <Compile Remove="Common\utils\MusicKiller.cs" />
 	  <Compile Remove="Content\Items\Accessories\NDWings.cs" />
 	  <Compile Remove="Content\Items\Accessories\Vambrace\ElectricVambraceDash.cs" />
+	  <Compile Remove="Content\Items\Weapons\Ranged\AvatarBow.cs" />
 	  <Compile Remove="Content\Items\Weapons\Rogue\LifeAndCessationGlobalNPC.cs" />
 	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\ZombeReskin.cs" />
 	  <Compile Remove="Content\Projectiles\Misc\CosmicWatergun_proj.cs" />
+	  <Compile Remove="Content\Projectiles\Weapons\Ranged\AvatarBow_Held.cs" />
 	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="Content\Items\auric_catalyst.png" />
@@ -42,7 +44,7 @@
 	  <Folder Include="Assets\Textures\Backpacks\" />
 	  <Folder Include="Content\Items\Weapons\Ranged\NewFolder\" />
 	  <Folder Include="Content\NPCs\Hostile\BloodMoon\" />
-	  <Folder Include="Content\Tiles\" />
+	  <Folder Include="Content\Projectiles\Weapons\Holdout\" />
 	  <Folder Include="Core\Autoloaders\SolynBooks\" />
 	</ItemGroup>
 	<ItemGroup>
@@ -54,6 +56,9 @@
 	  </Reference>
 	  <Reference Include="NoxusBoss">
 	    <HintPath>ModReferences\NoxusBoss.dll</HintPath>
+	  </Reference>
+	  <Reference Include="SubworldLibrary">
+	    <HintPath>ModReferences\SubworldLibrary.dll</HintPath>
 	  </Reference>
 	</ItemGroup>
 
