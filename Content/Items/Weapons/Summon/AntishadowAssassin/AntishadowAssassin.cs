@@ -493,12 +493,8 @@ public class AntishadowAssassin : ModProjectile
     {
         // Initialize beads if necessary.
         if (BeadRopeA is null || BeadRopeB is null || BeadRopeC is null || BeadRopeD is null)
-        {
-            BeadRopeA = new VerletSimulatedRope(Projectile.Center, Vector2.Zero, 6, 12.5f);
-            BeadRopeB = new VerletSimulatedRope(Projectile.Center, Vector2.Zero, 6, 18.5f);
-            BeadRopeC = new VerletSimulatedRope(Projectile.Center, Vector2.Zero, 6, 11.1f);
-            BeadRopeD = new VerletSimulatedRope(Projectile.Center, Vector2.Zero, 6, 11.3f);
-        }
+            InitializeBeads();
+
         AmbientLoop ??= LoopedSoundManager.CreateNew(AntishadowAmbientLoopSound, () => !Projectile.active);
         AttackLoop ??= LoopedSoundManager.CreateNew(AntishadowAttackLoopSound, () => !Projectile.active);
 
@@ -506,6 +502,31 @@ public class AntishadowAssassin : ModProjectile
         if (State != AssassinState.Leave)
             HandleMinionBuffs();
 
+        ExecuteState();
+
+        if (Owner.MinionAttackTargetNPC != -1 && Main.npc[Owner.MinionAttackTargetNPC].active)
+            TargetIndex = Owner.MinionAttackTargetNPC;
+
+        ResetVisuals();
+        MoveBeadRopes();
+        CreateFootSmoke();
+        CreateIdleSounds();
+        UpdateLoopedSounds();
+        KeepSoundsAttached();
+        DisturbLiquids();
+        UpdateCloth();
+
+        Time++;
+        ExistenceTimer++;
+        if (SpiritBowCooldown >= 1)
+            SpiritBowCooldown--;
+    }
+
+    /// <summary>
+    /// Executes the state of this assassin.
+    /// </summary>
+    private void ExecuteState()
+    {
         switch (State)
         {
             case AssassinState.StayNearOwner:
@@ -533,25 +554,11 @@ public class AntishadowAssassin : ModProjectile
                 DoBehavior_Leave();
                 break;
         }
-
-        if (Owner.MinionAttackTargetNPC != -1 && Main.npc[Owner.MinionAttackTargetNPC].active)
-            TargetIndex = Owner.MinionAttackTargetNPC;
-
-        ResetVisuals();
-        MoveBeadRopes();
-        CreateFootSmoke();
-        CreateIdleSounds();
-        UpdateLoopedSounds();
-        KeepSoundsAttached();
-        DisturbLiquids();
-        UpdateCloth();
-
-        Time++;
-        ExistenceTimer++;
-        if (SpiritBowCooldown >= 1)
-            SpiritBowCooldown--;
     }
 
+    /// <summary>
+    /// Updates the rope of this assassin, making it sway in the wind and stay attached to its back.
+    /// </summary>
     private void UpdateCloth()
     {
         int steps = 25;
@@ -570,6 +577,9 @@ public class AntishadowAssassin : ModProjectile
         }
     }
 
+    /// <summary>
+    /// Constrains a given cloth point, keeping it locked in place.
+    /// </summary>
     private void ConstrainParticle(Vector2 anchor, ClothPoint? point, float angleOffset)
     {
         if (point is null)
@@ -583,6 +593,18 @@ public class AntishadowAssassin : ModProjectile
 
         point.Position = new Vector3(anchor, 0f) + ring;
         point.IsFixed = true;
+    }
+
+    /// <summary>
+    /// Initializes beads atop the kasa of this assassin.
+    /// </summary>
+    private void InitializeBeads()
+    {
+        int ropePoints = 6;
+        BeadRopeA = new VerletSimulatedRope(Projectile.Center, Vector2.Zero, ropePoints, 12.5f);
+        BeadRopeB = new VerletSimulatedRope(Projectile.Center, Vector2.Zero, ropePoints, 18.5f);
+        BeadRopeC = new VerletSimulatedRope(Projectile.Center, Vector2.Zero, ropePoints, 11.1f);
+        BeadRopeD = new VerletSimulatedRope(Projectile.Center, Vector2.Zero, ropePoints, 11.3f);
     }
 
     private void DoBehavior_StayNearOwner()
