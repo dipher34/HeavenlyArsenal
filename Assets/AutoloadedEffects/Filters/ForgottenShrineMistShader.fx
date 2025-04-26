@@ -16,11 +16,6 @@ float2 oldScreenPosition;
 float2 targetSize;
 float4 mistColor;
 
-float DistanceToLiquidPixel(float2 coords)
-{
-    return tex2D(lightDistanceTexture, coords).r * targetSize.y;
-}
-
 float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD0) : COLOR0
 {
     // Calculate coordinates.
@@ -32,14 +27,15 @@ float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD
     float light = tex2D(lightTexture, liquidTextureCoords);
     
     // Determine how much mist should be present. Only pixels above liquid may receive mist.
-    float distanceToLiquid = DistanceToLiquidPixel(liquidTextureCoords);
-    float mistInterpolant = smoothstep(0, 30, distanceToLiquid) * smoothstep(mistHeight, mistHeight * 0.45, distanceToLiquid);
+    float4 liquidDistanceData = tex2D(lightDistanceTexture, coords);
+    float distanceToLiquid = liquidDistanceData.r * targetSize.y;
+    float mistInterpolant = smoothstep(0, mistHeight * 0.1875, distanceToLiquid) * smoothstep(mistHeight, mistHeight * 0.45, distanceToLiquid);
     
     // Make mist dissipate if light is low.
     mistInterpolant *= smoothstep(0, 0.5, pow(light, 1.6));
     
     // Make mist dissipate if the water is shallow.
-    mistInterpolant *= smoothstep(0.05, 0.15, tex2D(lightDistanceTexture, liquidTextureCoords).g);
+    mistInterpolant *= smoothstep(0.05, 0.15, liquidDistanceData.g);
     
     // Make mist dissipate if it's inside of tiles.
     mistInterpolant *= 1 - tex2D(tileTexture, liquidTextureCoords).a;
