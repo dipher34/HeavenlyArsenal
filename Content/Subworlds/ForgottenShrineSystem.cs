@@ -31,6 +31,16 @@ public class ForgottenShrineSystem : ModSystem
     /// </summary>
     public static event Action OnEnter;
 
+    /// <summary>
+    /// The horizontal distance in parsecs displayed if the player has the appropriate info accessory.
+    /// </summary>
+    public static ulong HorizontalDistanceParsecs => 7411267996481;
+
+    /// <summary>
+    /// The vertical distance in parsecs displayed if the player has the appropriate info accessory.
+    /// </summary>
+    public static ulong VerticalDistanceParsecs => 7233858412997;
+
     public override void OnModLoad()
     {
         OnEnter += BaseBridgePass.CreateCandles;
@@ -98,7 +108,7 @@ public class ForgottenShrineSystem : ModSystem
     private string UseParsecsPositionTextX(string originalText)
     {
         if (WasInSubworldLastFrame)
-            return Language.GetText($"Mods.NoxusBoss.CellPhoneInfoOverrides.ParsecText").Format($"{7411267996481:n0}");
+            return Language.GetText($"Mods.NoxusBoss.CellPhoneInfoOverrides.ParsecText").Format($"{HorizontalDistanceParsecs:n0}");
 
         return null;
     }
@@ -106,7 +116,7 @@ public class ForgottenShrineSystem : ModSystem
     private string UseParsecsPositionTextY(string originalText)
     {
         if (WasInSubworldLastFrame)
-            return Language.GetText($"Mods.NoxusBoss.CellPhoneInfoOverrides.ParsecText").Format($"{7233858412997:n0}");
+            return Language.GetText($"Mods.NoxusBoss.CellPhoneInfoOverrides.ParsecText").Format($"{VerticalDistanceParsecs:n0}");
 
         return null;
     }
