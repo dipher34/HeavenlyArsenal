@@ -1499,11 +1499,7 @@ public class AntishadowAssassin : ModProjectile
 
             float baseRotation = 0f;
             float leftKatanaAngle = 0.15f;
-            float rightKatanaAngle = 0.15f;
-            if (Projectile.spriteDirection == 1)
-                rightKatanaAngle += 0.3f;
-            else
-                leftKatanaAngle -= 0.3f;
+            float rightKatanaAngle = Projectile.spriteDirection * 0.3f + 0.15f;
 
             Vector2 rightShoulderPosition = center + new Vector2(6f, -80f).RotatedBy(baseRotation + BowRotation * Projectile.spriteDirection) * Projectile.scale;
             Vector2 rightHandEnd = rightShoulderPosition + new Vector2(16f, 110f).RotatedBy(baseRotation + RightArmRotation) * Projectile.scale * ArmScale;
