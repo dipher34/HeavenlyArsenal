@@ -70,6 +70,7 @@ public static class ForgottenShrineGenerationHelpers
     /// </summary>
     public static int ShrineIslandGatePillarDistance => 18;
 
+    // This value is specially selected for its religious signifiance in Dharmic religions.
     /// <summary>
     /// The amount of candles to generate on the shrine island, near the shrine itself.
     /// </summary>

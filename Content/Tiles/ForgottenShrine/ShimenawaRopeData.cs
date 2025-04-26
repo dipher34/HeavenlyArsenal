@@ -184,7 +184,7 @@ public class ShimenawaRopeData : WorldOrientedTileObject
     [
         new ShimenawaRopeOrnament(shideTexture, 0.15f, 0.6f, StandardOrnamentInteraction),
         new ShimenawaRopeOrnament(shideTexture, 0.33f, 0.6f, StandardOrnamentInteraction),
-        new ShimenawaRopeOrnament(bellTexture, 0.5f, 0.76f, BellOrnamentInteraction),
+        new ShimenawaRopeOrnament(bellTexture, 0.5f, 1f, BellOrnamentInteraction),
         new ShimenawaRopeOrnament(shideTexture, 0.67f, 0.6f, StandardOrnamentInteraction),
         new ShimenawaRopeOrnament(shideTexture, 0.85f, 0.6f, StandardOrnamentInteraction),
     ];
