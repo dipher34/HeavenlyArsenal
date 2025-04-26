@@ -611,7 +611,11 @@ Mods: {
 			}
 		}
 
-		CellPhoneInfoOverrides.ForgottenShrineText: Quiet Stillness
+		CellPhoneInfoOverrides: {
+			ForgottenShrineText: Quiet Stillness
+			ForgottenShrineWindyText: Scarlet Squall
+		}
+
 		UI.GraphicalUniverseImager.ForgottenShrineBackground: A Perfect World
 	}
 }

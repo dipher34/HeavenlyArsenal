@@ -93,7 +93,12 @@ public class ForgottenShrineSystem : ModSystem
     private string UseWeatherText(string originalText)
     {
         if (WasInSubworldLastFrame)
+        {
+            if (MathF.Abs(Main.windSpeedCurrent) >= 0.03f)
+                return Language.GetTextValue("Mods.HeavenlyArsenal.CellPhoneInfoOverrides.ForgottenShrineWindyText");
+
             return Language.GetTextValue("Mods.HeavenlyArsenal.CellPhoneInfoOverrides.ForgottenShrineText");
+        }
 
         return null;
     }
