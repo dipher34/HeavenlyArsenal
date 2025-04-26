@@ -124,13 +124,19 @@ public class ForgottenShrineSystem : ModSystem
         if (!WasInSubworldLastFrame)
             return;
 
-        ModContent.GetInstance<ForgottenShrineBackground>().ShouldBeActive = true;
-        ModContent.GetInstance<ForgottenShrineBackground>().Opacity = 1f;
-
+        EnableBackground();
         Main.time = Main.nightLength * 0.71;
         Main.dayTime = false;
         Main.windSpeedCurrent = 0f;
         Sandstorm.Happening = false;
+    }
+
+    public override void PostDrawTiles() => EnableBackground();
+
+    private static void EnableBackground()
+    {
+        ModContent.GetInstance<ForgottenShrineBackground>().ShouldBeActive = true;
+        ModContent.GetInstance<ForgottenShrineBackground>().Opacity = 1f;
     }
 
     public override void ModifySunLightColor(ref Color tileColor, ref Color backgroundColor)
