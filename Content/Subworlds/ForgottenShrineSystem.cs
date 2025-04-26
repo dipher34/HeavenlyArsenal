@@ -135,8 +135,11 @@ public class ForgottenShrineSystem : ModSystem
 
     private static void EnableBackground()
     {
-        ModContent.GetInstance<ForgottenShrineBackground>().ShouldBeActive = true;
-        ModContent.GetInstance<ForgottenShrineBackground>().Opacity = 1f;
+        if (WasInSubworldLastFrame)
+        {
+            ModContent.GetInstance<ForgottenShrineBackground>().ShouldBeActive = true;
+            ModContent.GetInstance<ForgottenShrineBackground>().Opacity = 1f;
+        }
     }
 
     public override void ModifySunLightColor(ref Color tileColor, ref Color backgroundColor)
