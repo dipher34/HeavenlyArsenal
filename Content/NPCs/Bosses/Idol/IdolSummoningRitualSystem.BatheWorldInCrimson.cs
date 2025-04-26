@@ -1,4 +1,5 @@
 ﻿using HeavenlyArsenal.Content.Subworlds;
+using HeavenlyArsenal.Content.Tiles.ForgottenShrine;
 using Luminance.Common.Utilities;
 using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
@@ -24,6 +25,9 @@ public partial class IdolSummoningRitualSystem : ModSystem
         ForgottenShrineBackground.LanternSpeed = MathHelper.Lerp(1f, MaxLanternSpeedup, animationCompletion);
         ForgottenShrineBackground.MoonBackglow = MathHelper.SmoothStep(0f, 1.5f, backglowFadeIn);
         ForgottenShrineBackground.LanternsCanSpawn = animationCompletion < 0.8f;
+
+        IdolStatueManager.WaterFlowCutoffInterpolant = 1f;
+        IdolStatueManager.ExtraDrawAction = p => DrawGlowOnStatueEye(1f, p);
     }
 
     private static void ShiftSkyPalette(float shiftInterpolant)

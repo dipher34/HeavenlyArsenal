@@ -29,8 +29,13 @@ public class ShrinePass : GenPass
         int left = BaseBridgePass.BridgeGenerator.Right + ForgottenShrineGenerationHelpers.LakeWidth + bridgeSettings.DockWidth;
         int right = left + ForgottenShrineGenerationHelpers.ShrineIslandWidth;
         int gateCenterX = (left + right) / 2;
+        int gateCenterY = LumUtils.FindGroundVertical(new Point(gateCenterX, 10)).Y;
+
         TransformGroundIntoBricks(gateCenterX - brickGroundDistance, gateCenterX + brickGroundDistance);
         ConstructToriiGate(gateCenterX - pillarDistance, gateCenterX + pillarDistance, pillarHeight);
+
+        Point statueBottom = new Point(gateCenterX * 16, gateCenterY * 16 + 16);
+        ModContent.GetInstance<IdolStatueManager>().Register(new IdolStatueData(statueBottom));
     }
 
     private static void TransformGroundIntoBricks(int left, int right)
