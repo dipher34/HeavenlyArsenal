@@ -84,7 +84,7 @@ public class HangingLanternRopeData : WorldOrientedTileObject
         // Only do tile collision checks if a player is close, to save on performance.
         Vector2 segmentCenter = VerletRope.segments[VerletRope.segments.Length / 2].position;
         bool playerNearby = Main.player[Player.FindClosest(segmentCenter, 1, 1)].WithinRange(segmentCenter, 1900f);
-        VerletRope.tileCollide = !playerNearby;
+        VerletRope.tileCollide = playerNearby;
 
         VerletRope.segments[^1].pinned = false;
 
