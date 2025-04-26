@@ -146,7 +146,7 @@ public class HangingLanternRopeData : WorldOrientedTileObject
         float lanternRotation = VerletRope.segments[0].position.AngleTo(VerletRope.segments[^1].position);
         Vector2 lanternDrawPosition = VerletRope.segments[^1].position - Main.screenPosition;
         Color lanternGlowColor = new Color(1f, 0.32f, 0f, 0f) * 0.42f;
-        Main.spriteBatch.Draw(lantern, lanternDrawPosition, null, Color.White, lanternRotation + MathHelper.PiOver2, lantern.Size() * 0.5f, lanternScale, Direction.ToSpriteDirection(), 0f);
+        Main.spriteBatch.Draw(lantern, lanternDrawPosition, null, Color.White, lanternRotation - MathHelper.PiOver2, lantern.Size() * 0.5f, lanternScale, Direction.ToSpriteDirection(), 0f);
         Main.spriteBatch.Draw(glowTexture, lanternDrawPosition, null, lanternGlowColor, 0f, glowTexture.Size() * 0.5f, glowScale * 1.05f, 0, 0f);
         Main.spriteBatch.Draw(glowTexture, lanternDrawPosition, null, lanternGlowColor * 0.6f, 0f, glowTexture.Size() * 0.5f, glowScale * 1.4f, 0, 0f);
 
