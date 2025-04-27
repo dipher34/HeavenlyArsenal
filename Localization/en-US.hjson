@@ -458,8 +458,23 @@ Mods: {
 					'''
 			}
 
-			Goretex: {
-				DisplayName: Goretex
+			ForgottenShrineTeleporter: {
+				DisplayName: Forgotten Shrine Teleporter [DEBUG]
+				Tooltip: ""
+			}
+
+			IdolSummoner: {
+				DisplayName: Idol of Madder Crimson Summoner [DEBUG]
+				Tooltip: ""
+			}
+
+			Samsara: {
+				DisplayName: Samsara
+				Tooltip: ""
+			}
+
+			Rapture: {
+				DisplayName: Rapture
 				Tooltip: ""
 			}
 		}
@@ -537,23 +552,25 @@ Mods: {
 			VolatileExplosion.DisplayName: Volatile Explosion
 		}
 
-		NPCs: {
-			AnAffrontToGod.DisplayName: Cravatar
-			UmbralLeech.DisplayName: Umbral Leech
-			UmbralLeech_Body.DisplayName: Umbral Leech_ Body
-			UmbralLeech_Tail.DisplayName: Umbral Leech_ Tail
-		}
+		NPCs.AnAffrontToGod.DisplayName: Cravatar
 
 		Keybinds: {
-			"Quick Dash.DisplayName": Quick  Dash
+			"Quick Dash.DisplayName": Quick Dash
 			"Toggle Haemsong Mode.DisplayName": Toggle  Haemsong  Mode
 		}
-	}
 
-	Cooldowns: {
-		AntiShield: {
-			BarrierCooldown: AntiShield Decay
-			BarrierRecharge: AntiShield Recharge
+		Cooldowns: {
+			AntiShield: {
+				BarrierCooldown: AntiShield Decay
+				BarrierRecharge: AntiShield Recharge
+			}
 		}
+
+		CellPhoneInfoOverrides: {
+			ForgottenShrineText: Quiet Stillness
+			ForgottenShrineWindyText: Scarlet Squall
+		}
+
+		UI.GraphicalUniverseImager.ForgottenShrineBackground: A Perfect World
 	}
 }

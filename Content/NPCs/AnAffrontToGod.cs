@@ -178,6 +178,4 @@ namespace HeavenlyArsenal.Content.NPCs
             return false;
         }
     }
-
-
 }
