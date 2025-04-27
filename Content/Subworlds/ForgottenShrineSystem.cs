@@ -142,6 +142,7 @@ public class ForgottenShrineSystem : ModSystem
         if (!WasInSubworldLastFrame)
             return;
 
+        // TODO -- Remove later.
         bool summonTheHorde = Main.LocalPlayer.name != "modtester 2" && Main.LocalPlayer.name != "Lucille";
         if (summonTheHorde && Main.rand.NextBool(60))
             NPC.NewNPC(new EntitySource_WorldEvent(), (int)Main.LocalPlayer.Center.X, (int)Main.LocalPlayer.Center.Y - 400, ModContent.NPCType<NamelessDeityBoss>());
