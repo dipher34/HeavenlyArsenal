@@ -202,7 +202,7 @@ public class ForgottenShrineBackground : Background
 
             Vector2 scale = Vector2.One * 0.8f;
             Texture2D moon = scarletMoon.Value;
-            Main.spriteBatch.Draw(moon, MoonPosition + Main.screenPosition - Main.screenLastPosition, null, Color.White, 0f, moon.Size() * 0.5f, scale, 0, 0f);
+            Main.spriteBatch.Draw(moon, MoonPosition, null, Color.White, 0f, moon.Size() * 0.5f, scale, 0, 0f);
 
             Main.spriteBatch.ResetToDefault();
         });
