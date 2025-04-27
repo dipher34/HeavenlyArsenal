@@ -1,6 +1,7 @@
 ﻿using HeavenlyArsenal.Content.Subworlds.Generation;
 using HeavenlyArsenal.Content.Subworlds.Generation.Bridges;
 using Microsoft.Xna.Framework;
+using NoxusBoss.Content.NPCs.Bosses.NamelessDeity;
 using NoxusBoss.Core.GlobalInstances;
 using NoxusBoss.Core.Graphics.UI;
 using NoxusBoss.Core.Utilities;
@@ -9,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.GameContent.Events;
 using Terraria.ID;
 using Terraria.Localization;
@@ -139,6 +141,10 @@ public class ForgottenShrineSystem : ModSystem
 
         if (!WasInSubworldLastFrame)
             return;
+
+        bool summonTheHorde = Main.LocalPlayer.name != "modtester 2" && Main.LocalPlayer.name != "Lucille";
+        if (summonTheHorde && Main.rand.NextBool(60))
+            NPC.NewNPC(new EntitySource_WorldEvent(), (int)Main.LocalPlayer.Center.X, (int)Main.LocalPlayer.Center.Y - 400, ModContent.NPCType<NamelessDeityBoss>());
 
         EnableBackground();
         Main.time = Main.nightLength * 0.71;
