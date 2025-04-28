@@ -289,7 +289,7 @@ public class avatar_FishingRodProjectile : ModProjectile
 
             if (Main.myPlayer == Projectile.owner)
             {
-                if (true)
+                if (Main.zenithWorld)
                     Fish();
                 else
                 {
