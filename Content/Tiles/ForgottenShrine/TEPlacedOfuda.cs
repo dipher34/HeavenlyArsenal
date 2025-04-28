@@ -16,9 +16,9 @@ public class TEPlacedOfuda : ModTileEntity, IClientSideTileEntityUpdater
 
     private static readonly Asset<Texture2D>[] ofudaTextures =
     [
-        ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Tiles/ForgottenShrine/PlacedOfuta1"),
-        ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Tiles/ForgottenShrine/PlacedOfuta2"),
-        ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Tiles/ForgottenShrine/PlacedOfuta3"),
+        ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Tiles/ForgottenShrine/PlacedOfuda1"),
+        ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Tiles/ForgottenShrine/PlacedOfuda2"),
+        ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Tiles/ForgottenShrine/PlacedOfuda3"),
     ];
 
     public override bool IsTileValidForEntity(int x, int y)
