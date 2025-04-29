@@ -136,8 +136,8 @@ public class SpiritCandleParticle : BaseParticle
             float spin = MathF.Sin(MathHelper.TwoPi * AnimationTimer / spinRate + timeOffset);
 
             Scale = new Vector2(1f + horizontalSquish, 1f - horizontalSquish) * BaseScale;
-            Velocity = new Vector2(spin * 1.12f, squishWave * -0.9f) * new Vector2(1f + windSpeed * 2.12f, 1f + windSpeed * 3.2f);
-            Rotation = spin * 0.18f + squishWave * 0.04f;
+            Velocity = new Vector2(spin * 1.12f, squishWave * -0.9f);
+            Rotation = spin * 0.18f + squishWave * 0.04f - Main.windSpeedCurrent * 0.23f;
         }
 
         Time++;
@@ -164,7 +164,7 @@ public class SpiritCandleParticle : BaseParticle
 
         ForgottenShrineDarknessSystem.QueueGlowAction(() =>
         {
-            Main.spriteBatch.Draw(glow, glowDrawPosition, null, new Color(1f, 0.8f, 0.4f, 0f) * 0.84f, Rotation, glowOrigin, glowFlicker * 0.99f, 0, 0f);
+            Main.spriteBatch.Draw(glow, glowDrawPosition + Main.screenLastPosition - Main.screenPosition, null, new Color(1f, 0.8f, 0.4f, 0f) * 0.84f, Rotation, glowOrigin, glowFlicker * 0.99f, 0, 0f);
         });
     }
 }

@@ -22,7 +22,7 @@ float CalculateColorSaturation(float3 color)
 float4 PixelShaderFunction(float4 sampleColor : COLOR0, float2 coords : TEXCOORD0) : COLOR0
 {
     float4 baseColor = tex2D(baseTexture, coords);
-    float4 glowColor = tex2D(glowTargetTexture, coords + screenOffset);
+    float4 glowColor = tex2D(glowTargetTexture, coords);
     
     // Calculate world coordinates.
     float2 worldPosition = mul(float4(coords, 0, 1), uvToWorld).xy;
