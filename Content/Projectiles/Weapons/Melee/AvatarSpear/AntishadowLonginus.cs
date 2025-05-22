@@ -86,10 +86,10 @@ public class AntishadowLonginus : ModProjectile
 	public override bool PreDraw(ref Color lightColor)
 	{
 		Texture2D glow = AssetDirectory.Textures.BigGlowball.Value;
-		Main.EntitySpriteDraw(glow, Projectile.Center - Main.screenPosition, null, Color.DarkBlue with { A = 0 } * 0.5f, Projectile.rotation, glow.Size() / 2, new Vector2(0.1f, 0.15f) * Projectile.scale, 0, 0);
+		Main.EntitySpriteDraw(glow, Projectile.Center - Main.screenPosition, null, Color.DarkRed with { A = 100 } * 0.5f, Projectile.rotation, glow.Size() / 2, new Vector2(0.1f, 0.15f) * Projectile.scale, 0, 0);
 
 		for (int i = 0; i < 4; i++)
-			DrawSpear(new Vector2(2, 0).RotatedBy(Projectile.rotation + i / 4f * MathHelper.TwoPi), Color.Red with { A = 10 });
+			DrawSpear(new Vector2(2, 0).RotatedBy(Projectile.rotation + i / 4f * MathHelper.TwoPi), Color.Red with { A = 100 });
 
 		DrawSpear(Vector2.Zero, Color.Black);
 
@@ -101,7 +101,7 @@ public class AntishadowLonginus : ModProjectile
 		Texture2D texture = TextureAssets.Projectile[Type].Value;
 
 		Rectangle headFrame = texture.Frame(3, 2, (int)Projectile.localAI[0] % 3, 0);
-		Rectangle poleFrame = texture.Frame(3, 2, (int)Projectile.localAI[0] % 3, 1);
+		Rectangle poleFrame = texture.Frame(3, 2, (int)Projectile.localAI[1] % 3, 1);
 
 		SpriteEffects effect = Projectile.localAI[0] > 2 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
 		SpriteEffects poleEffect = Projectile.localAI[1] > 2 ? SpriteEffects.FlipHorizontally : SpriteEffects.None;

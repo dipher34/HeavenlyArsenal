@@ -74,7 +74,15 @@ public class LonginusRift : ModProjectile
 
 		SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.PortalHandReach with { MaxInstances = 0, Volume = 0.5f, Pitch = 0.7f, PitchVariance = 0.3f }, Projectile.Center);
 
-		NPC targetNPC = Projectile.FindTargetWithinRange(800f);
+		NPC targetNPC = null;
+		foreach (NPC npc in Main.ActiveNPCs)
+		{
+			if (npc.CanBeChasedBy(this) && npc.Distance(Projectile.Center) < 1000f)
+			{
+				targetNPC = npc;
+				break;
+			}
+		}
 
 		if (targetNPC != null)
 		{
@@ -83,13 +91,10 @@ public class LonginusRift : ModProjectile
 					shakeDirection: Projectile.velocity.SafeNormalize(Vector2.Zero) * 2,
 					shakeStrengthDissipationIncrement: 0.2f);
 
-			for (int i = 0; i < Main.rand.Next(1, 3); i++)
-			{
-				Vector2 velocity = Main.rand.NextVector2Circular(20, 20);
-				Projectile spear = Projectile.NewProjectileDirect(Projectile.GetSource_FromThis(), Projectile.Center, velocity, ModContent.ProjectileType<AntishadowLonginus>(), Projectile.damage, 1f, Projectile.owner);
-				spear.ai[1] = targetNPC.whoAmI + 1;
-				spear.scale *= Main.rand.NextFloat(0.9f, 1.3f);
-			}
+			Vector2 velocity = Main.rand.NextVector2Circular(20, 20);
+			Projectile spear = Projectile.NewProjectileDirect(Projectile.GetSource_FromThis(), Projectile.Center, velocity, ModContent.ProjectileType<AntishadowLonginus>(), Projectile.damage, 1f, Projectile.owner);
+			spear.ai[1] = targetNPC.whoAmI + 1;
+			spear.scale *= Main.rand.NextFloat(0.9f, 1.3f);
 		}
 	}
 
