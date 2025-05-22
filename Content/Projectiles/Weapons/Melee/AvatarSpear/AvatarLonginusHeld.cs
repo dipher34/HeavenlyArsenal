@@ -1,10 +1,12 @@
 ﻿
+using CalamityMod.NPCs.TownNPCs;
 using HeavenlyArsenal.Common.Graphics;
 using HeavenlyArsenal.Common.Players;
 using HeavenlyArsenal.Common.Ui;
 using HeavenlyArsenal.Common.utils;
 using HeavenlyArsenal.Content.Items.Weapons.Melee;
 using HeavenlyArsenal.Content.Particles;
+using Luminance.Common.Utilities;
 using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -18,6 +20,7 @@ using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.GameContent;
+using Terraria.Graphics;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -50,7 +53,11 @@ public class AvatarLonginusHeld : ModProjectile
 
         Projectile.usesLocalNPCImmunity = true;
         Projectile.localNPCHitCooldown = 17;
-    }
+
+        const int slashLength = 24;
+        _slashPositions = new Vector2[slashLength];
+		_slashRotations = new float[slashLength];
+	}
 
     public ref float Time => ref Projectile.ai[0];
     public ref float AttackState => ref Projectile.ai[1];
@@ -83,7 +90,7 @@ public class AvatarLonginusHeld : ModProjectile
         SecondSlash,
         RipOut,
         Rupture,
-        Castigation
+        Castigate
     }
 
     public const float RuptureCost = 0.2f;
@@ -106,7 +113,7 @@ public class AvatarLonginusHeld : ModProjectile
         throwMode = false;
         canHit = false;
 
-        useTrail = false;
+        useSlash = false;
         holdTrailUpdate = false;
 
         Vector2 offset = Vector2.Zero;
@@ -117,6 +124,7 @@ public class AvatarLonginusHeld : ModProjectile
         {
             if (Time < 2 && Main.myPlayer == Projectile.owner)
             {
+                ResetTrail();
                 Projectile.velocity = Player.DirectionTo(Main.MouseWorld) * 20f;
                 Projectile.direction = Projectile.velocity.X > 0 ? 1 : -1;
                 Projectile.netUpdate = true;
@@ -142,15 +150,15 @@ public class AvatarLonginusHeld : ModProjectile
 
                 if (Player.altFunctionUse == 1 && Player.ItemTimeIsZero)
                 {
-                    if (IsEmpowered && Player.GetModPlayer<AvatarSpearHeatPlayer>().ConsumeHeat(0.5f, false))
-                        AttackState = (int)AvatarSpearAttacks.ThrowRupture; //replace with castigate when it actually does something
+                    if (IsEmpowered && Player.GetModPlayer<AvatarSpearHeatPlayer>().ConsumeHeat(0.5f, true))
+                        AttackState = (int)AvatarSpearAttacks.Castigate;
                     else
                         AttackState = (int)AvatarSpearAttacks.ThrowRupture;
                 }
                 else if (InUse && Player.ItemTimeIsZero)
-                    AttackState = (int)AvatarSpearAttacks.RapidStabs;
+					AttackState = (int)AvatarSpearAttacks.RapidStabs;
 
-                IsEmpowered = Player.GetModPlayer<AvatarSpearHeatPlayer>().Active;
+				HandleEmpowerment();
 
                 break;
 
@@ -251,7 +259,6 @@ public class AvatarLonginusHeld : ModProjectile
             case (int)AvatarSpearAttacks.SecondSlash:
 
                 Player.SetDummyItemTime(10);
-                Projectile.extraUpdates = 0;
 
                 bool isSecondSlash = AttackState == (int)AvatarSpearAttacks.SecondSlash;
 
@@ -263,13 +270,15 @@ public class AvatarLonginusHeld : ModProjectile
                 if (isSecondSlash && Time < 3) // Flip the second slash
                     Projectile.direction = Projectile.velocity.X > 0 ? -1 : 1;
 
-                if (Time < SlashWindUp)
+				ResetTrail();
+
+				if (Time < SlashWindUp)
                 {
-                    float windProgress = Time / (SlashWindUp - 1f);
+					float windProgress = Time / (SlashWindUp - 1f);
 
                     float wiggle = -MathF.Sqrt(windProgress) * SlashRotation * -Projectile.direction;
 
-                    Projectile.rotation = Utils.AngleLerp(Projectile.rotation, Projectile.velocity.ToRotation() + wiggle, 0.9f);
+                    Projectile.rotation = Utils.AngleLerp(Projectile.rotation, Projectile.velocity.ToRotation() + wiggle, 1f - windProgress);
                     offset = new Vector2(MathHelper.SmoothStep(0, -30, windProgress), 0).RotatedBy(Projectile.rotation);
                     Projectile.scale = 1f - windProgress * (1 - windProgress);
 
@@ -277,10 +286,17 @@ public class AvatarLonginusHeld : ModProjectile
                 }
                 else
                 {
-                    if (Time > SlashWindDown + 4 && Time < SlashWindDown + SlashTime + SlashWindDown / 2)
-                        useTrail = true;
+                    if (Time > SlashWindUp + 2 && Time < SlashWindDown + SlashTime + SlashWindDown / 3)
+                        useSlash = true;
+                    else
+						ResetSlash();
 
-                    if (Time == SlashWindUp + 1)
+                    if (Time > SlashWindDown + SlashTime)
+                        _holdSlashUpdate = true;
+
+					canHit = true;
+
+					if (Time == SlashWindUp + 1)
                         SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.StakeGraze with { Pitch = 0.2f, PitchVariance = 0.1f, Volume = 0.66f, MaxInstances = 0 }, Projectile.Center);
 
                     if (Time == SlashWindUp + SlashTime - 1)
@@ -343,10 +359,12 @@ public class AvatarLonginusHeld : ModProjectile
 
                 if (Time < HeavyWindUp)
                 {
-                    float windProgress = Time / (HeavyWindUp - 1f);
+                    ResetTrail(true);
+
+					float windProgress = Time / (HeavyWindUp - 1f);
 
                     float wiggle = (windProgress * -0.5f - 0.5f) * Projectile.direction;
-                    Projectile.rotation = Utils.AngleLerp(Projectile.rotation, Projectile.velocity.ToRotation() + wiggle, windProgress);
+                    Projectile.rotation = Utils.AngleLerp(Projectile.rotation, Projectile.velocity.ToRotation() + wiggle * 2f * (1f - windProgress), windProgress * 0.5f);
                     offset = new Vector2(MathHelper.SmoothStep(0, -50, windProgress), 0).RotatedBy(Projectile.rotation);
                     Projectile.scale = 1f;
                     Projectile.velocity = Player.DirectionTo(Main.MouseWorld) * 15f;
@@ -407,8 +425,7 @@ public class AvatarLonginusHeld : ModProjectile
 
                     if (InUse)
                     {
-                        //temporary bypass, was whipslash
-                        AttackState = (int)AvatarSpearAttacks.RapidStabs;
+                        AttackState = (int)AvatarSpearAttacks.WhipSlash;
                         Time = 0;
                     }
                     else if (Time > HeavyWindUp + HeavyThrustTime - HeavyWindDown)
@@ -482,8 +499,7 @@ public class AvatarLonginusHeld : ModProjectile
                     HandleEmpowerment();
                     if (InUse)
                     {
-                        //temporary bypass
-                        AttackState = (int)AvatarSpearAttacks.RapidStabs;
+                        AttackState = (int)AvatarSpearAttacks.WhipSlash;
                         Time = 0;
                     }
                     else if (Time > PullTime + RipTime)
@@ -592,7 +608,7 @@ public class AvatarLonginusHeld : ModProjectile
                     if (Main.npc[attackedNPC].active && Main.npc[attackedNPC].life > 2)
                         Projectile.Center = Main.npc[attackedNPC].Center + JavelinOffset;
                     else
-                        Time = AvatarSpearRupture.FlickerTime + AvatarSpearRupture.ExplosionTime;
+                        Time = AvatarSpearRupture.FlickerTime + AvatarSpearRupture.ExplosionTime + 2;
                 }
 
                 if (!validNPC || Time > AvatarSpearRupture.FlickerTime + AvatarSpearRupture.ExplosionTime)
@@ -605,14 +621,76 @@ public class AvatarLonginusHeld : ModProjectile
 
                 break;
 
+            case (int)AvatarSpearAttacks.Castigate:
+
+                Projectile.extraUpdates = 6;
+
+                const int CastigateWindTime = 100;
+                const int PortalWaves = 7;
+                const int PortalsPerWave = 3;
+                const int PortalTime = 111;
+                const float MaxTime = PortalWaves * PortalTime + CastigateWindTime;
+
+				Player.ChangeDir(Projectile.velocity.X > 0 ? 1 : -1);
+
+                float twirlProgress = Time / MaxTime;
+				float castigateTwirl = MathHelper.TwoPi * 2 * PortalWaves * MathHelper.SmoothStep(0f, 1f, twirlProgress);
+
+                float castigateWind = Utils.GetLerpValue(2, CastigateWindTime, Time, true);
+                float castigateHandRot = ((-MathHelper.Pi * MathF.Sqrt(castigateWind)) + MathF.Sin(castigateTwirl) * 0.5f) * Player.direction;
+                Player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, castigateHandRot);
+                handPosition = Player.GetFrontHandPosition(Player.CompositeArmStretchAmount.Full, castigateHandRot);
+
+                Projectile.rotation = Utils.AngleLerp(Projectile.rotation, -castigateTwirl * Projectile.direction, MathF.Pow(castigateWind, 3f));
+
+                canHit = Time > CastigateWindTime;
+
+                Projectile.scale = MathF.Sin(twirlProgress * 4f) * 0.4f + 1f;
+
+                if (Time == CastigateWindTime)
+					SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.ArcticWindGust with { Volume = 0.5f, Pitch = 0.5f, MaxInstances = 0 }, Projectile.Center);
+
+				if (Time >= CastigateWindTime)
+                {
+                    DoShake(0.1f);
+                    if ((Time - CastigateWindTime) % PortalTime == PortalTime / 3)
+                    {
+                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.ArmSwing with { Volume = 0.33f, PitchVariance = 0.5f, MaxInstances = 0 }, Projectile.Center);
+
+                        for (int l = 0; l < PortalsPerWave; l++)
+                        {
+                            Vector2 velocity = (Main.rand.NextVector2Circular(30, 30) + Main.rand.NextVector2CircularEdge(20, 20)).RotatedBy(l / 3 * MathHelper.TwoPi);
+                            velocity += Player.velocity / 2;
+                            Projectile rift = Projectile.NewProjectileDirect(Projectile.GetSource_FromThis(), Projectile.Center, velocity, ModContent.ProjectileType<LonginusRift>(), Projectile.damage * 2, 1f, Player.whoAmI);
+                            rift.scale *= Main.rand.NextFloat(1f, 1.4f);
+                            rift.direction = Main.rand.NextBool().ToDirectionInt();
+                            rift.timeLeft += Main.rand.Next(-20, 20);
+                        }
+                    }
+                }
+
+                if (Time > CastigateWindTime + 5)
+                    useSlash = true;
+                else
+                    ResetSlash();
+
+                _slashScale = 0.7f;
+
+                if (Time > MaxTime)
+                {
+                    AttackState = (int)AvatarSpearAttacks.Idle;
+                    Time = 0;
+                }
+
+				Time++;
+
+                break;
         }
 
         handPosition = Player.RotatedRelativePoint(handPosition);
 
         if (!throwMode)
             Projectile.Center = handPosition + offset - Projectile.velocity;
-
-        UpdateTrail();
 
         if (canHit)
         {
@@ -627,7 +705,13 @@ public class AvatarLonginusHeld : ModProjectile
         if (Projectile.localAI[0] > 240)
             Projectile.localAI[0] = 0;
 
-        Lighting.AddLight(Player.Center, Color.DarkRed.ToVector3());
+		UpdateTrail();
+        if (!_holdSlashUpdate)
+            UpdateSlash();
+
+        _holdSlashUpdate = false;
+
+		Lighting.AddLight(Player.Center, Color.DarkRed.ToVector3());
 
         if (HitTimer > 0)
             HitTimer--; 
@@ -640,24 +724,28 @@ public class AvatarLonginusHeld : ModProjectile
         }
     }
 
-    public void SetTrailToCurrent()
+    public void ResetTrail(bool rotation = false)
     {
         for (int i = 0; i < Projectile.oldPos.Length; i++)
         {
             Projectile.oldPos[i] = Projectile.Center;
-            Projectile.oldRot[i] = Projectile.rotation;
-        }
-    }
+            if (rotation)
+				Projectile.oldRot[i] = Projectile.rotation;
+		}
+	}
 
     public void UpdateTrail()
     {
-        if (Projectile.numUpdates <= 0)
+		Vector2 playerPosOffset = Player.position - Player.oldPosition;
+
+		if (Projectile.numUpdates == 0)
         {
-            Vector2 playerPosOffset = Player.position - Player.oldPosition;
-            for (int i = Projectile.oldPos.Length - 1; i > 0; i--)
+            playerPosOffset = Vector2.Zero;
+
+			for (int i = Projectile.oldPos.Length - 1; i > 0; i--)
             {
                 Projectile.oldPos[i] = Projectile.oldPos[i - 1];
-                Projectile.oldRot[i] = Projectile.oldRot[i - 1];
+                Projectile.oldRot[i] = Utils.AngleLerp(Projectile.rotation, Projectile.oldRot[i - 1], 0.1f);
 
                 if (!throwMode)
                     Projectile.oldPos[i] += playerPosOffset;
@@ -665,16 +753,41 @@ public class AvatarLonginusHeld : ModProjectile
 
             if (!holdTrailUpdate)
             {
-                Projectile.oldPos[0] = Projectile.Center;
+                Projectile.oldPos[0] = Projectile.Center + Projectile.velocity;
                 Projectile.oldRot[0] = Projectile.rotation;
             }
 
             if (!throwMode)
                 Projectile.oldPos[0] += playerPosOffset - Player.velocity;
-        }
+		}
     }
 
-    public void HandleEmpowerment() => IsEmpowered = Player.GetModPlayer<AvatarSpearHeatPlayer>().Active;
+	public void ResetSlash()
+	{
+        _slashScale = 1f;
+		for (int i = _slashPositions.Length - 1; i > 0; i--)
+		{
+			_slashPositions[i] = new Vector2(200 * Projectile.scale, 0).RotatedBy(Projectile.rotation);
+			_slashRotations[i] = Projectile.rotation + MathHelper.PiOver2 * Projectile.direction;
+		}
+	}
+
+    private float _slashScale;
+    private bool _holdSlashUpdate;
+
+	public void UpdateSlash()
+	{
+		for (int i = _slashPositions.Length - 1; i > 0; i--)
+		{
+			_slashRotations[i] = _slashRotations[i - 1];
+            _slashPositions[i] = _slashPositions[i - 1];
+		}
+
+		_slashRotations[0] = Projectile.rotation + MathHelper.PiOver2 * Projectile.direction;
+		_slashPositions[0] = new Vector2(200 * Projectile.scale * _slashScale, 0).RotatedBy(Projectile.rotation);
+	}
+
+	public void HandleEmpowerment() => IsEmpowered = Player.GetModPlayer<AvatarSpearHeatPlayer>().Active;
 
     private void DoShake(float strength = 1f)
     {
@@ -727,7 +840,21 @@ public class AvatarLonginusHeld : ModProjectile
             }
         }
 
-        if (Main.myPlayer == Projectile.owner)
+        switch (AttackState)
+        {
+            case (int)AvatarSpearAttacks.RapidStabs:
+
+				if (IsEmpowered && HitTimer <= 0)
+				{
+					Projectile spear = Projectile.NewProjectileDirect(Projectile.GetSource_FromThis(), Projectile.Center, Main.rand.NextVector2Circular(30, 30), ModContent.ProjectileType<AntishadowLonginus>(), Projectile.damage, 1f, Projectile.owner);
+					spear.ai[1] = target.whoAmI + 1;
+					spear.scale *= Main.rand.NextFloat(0.9f, 1.3f);
+				}
+
+				break;
+        }
+
+		if (Main.myPlayer == Projectile.owner)
         {
             HitTimer = 5;
             JavelinOffset = Projectile.Center - target.Center;
@@ -827,12 +954,11 @@ public class AvatarLonginusHeld : ModProjectile
         JavelinOffset = reader.ReadVector2();
     }
 
-    private bool useTrail;
+    private bool useSlash;
     private bool holdTrailUpdate;
 
     public override bool PreDraw(ref Color lightColor)
-    {
-        
+    {      
         Texture2D texture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Projectiles/Weapons/Melee/AvatarSpear/AvatarLonginusHeld_Alt").Value;
             //default: TextureAssets.Projectile[Type].Value;
         Rectangle frame = texture.Frame(1, 2, 0, IsEmpowered ? 1 : 0);
@@ -841,22 +967,22 @@ public class AvatarLonginusHeld : ModProjectile
         float scale = Projectile.scale;
         int direction = Projectile.spriteDirection;
         SpriteEffects flipEffect = direction > 0 ? 0 : SpriteEffects.FlipVertically;
-        int gripDistance = IsEmpowered ? 30 : 60;
+        int gripDistance = IsEmpowered ? 40 : 60;
         Vector2 origin = new Vector2(frame.Width / 2 - gripDistance, frame.Height / 2 + (gripDistance - 4) * Player.gravDir * direction);
         Vector2 spearHeadPosition = Projectile.Center + new Vector2(90 * Projectile.scale, 0).RotatedBy(Projectile.rotation);
 
-        float glowAmt = (IsEmpowered ? 0.6f : 0.4f) + MathF.Cbrt(Math.Clamp(HitTimer / 5f, 0f, 1f)) * 0.4f;
-
-        if (useTrail)
-            DrawTrail();
+        float glowAmt = (IsEmpowered ? 0.7f : 0.4f) + MathF.Cbrt(Math.Clamp(HitTimer / 5f, 0f, 1f)) * 0.4f;
 
         for (int i = 0; i < Projectile.oldPos.Length; i++)
         {
-            Color color = Color.Lerp(Color.Red with { A = 100 } * 0.5f, Color.Blue * 0.15f, i / 9f);
+            Color color = Color.Lerp(Color.Red with { A = 200 } * 0.5f, Color.DarkBlue with { A = 50 }, i / 9f) * (1f - (float)i / Projectile.oldPos.Length);
             Main.EntitySpriteDraw(texture, Projectile.oldPos[i] - Main.screenPosition, frame, color * 0.5f, Projectile.oldRot[i] + MathHelper.PiOver4 * direction, origin, scale, flipEffect, 0);
         }
 
-        Vector2 highlightOffset = new Vector2(3, 0).RotatedBy(Main.GlobalTimeWrappedHourly * 2 * MathHelper.TwoPi);
+		if (useSlash)
+			DrawSlash();
+
+		Vector2 highlightOffset = new Vector2(3, 0).RotatedBy(Main.GlobalTimeWrappedHourly * 2 * MathHelper.TwoPi);
         Main.EntitySpriteDraw(texture, Projectile.Center + highlightOffset - Main.screenPosition, frame, Color.Red with { A = 100 } * 0.5f, Projectile.rotation + MathHelper.PiOver4 * direction, origin, scale, flipEffect, 0);
         Main.EntitySpriteDraw(texture, Projectile.Center - highlightOffset - Main.screenPosition, frame, Color.RoyalBlue with { A = 100 } * 0.5f, Projectile.rotation + MathHelper.PiOver4 * direction, origin, scale, flipEffect, 0);
 
@@ -864,29 +990,40 @@ public class AvatarLonginusHeld : ModProjectile
         Main.EntitySpriteDraw(texture, Projectile.Center - Main.screenPosition, frame, Color.White, Projectile.rotation + MathHelper.PiOver4 * direction, origin, scale, flipEffect, 0);
         Main.EntitySpriteDraw(glow, spearHeadPosition - Main.screenPosition, glow.Frame(), Color.DarkRed with { A = 0 } * glowAmt, Projectile.rotation, glow.Size() * 0.5f, scale * 0.4f, flipEffect, 0);
 
-        return false;
+		return false;
     }
 
-    private void DrawTrail()
+    private Vector2[] _slashPositions;
+    private float[] _slashRotations;
+
+    private static VertexStrip _slashStrip;
+
+	private void DrawSlash()
     {
         Main.spriteBatch.End();
         Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.Transform);
 
-        ManagedShader trailShader = ShaderManager.GetShader("HeavenlyArsenal.LonginusSlash");
-        trailShader.SetTexture(GennedAssets.Textures.Noise.PerlinNoise, 0, SamplerState.LinearWrap);
+        // Have a shader prepared, only special thing is that it uses a normalized matrix
+		ManagedShader trailShader = ShaderManager.GetShader("HeavenlyArsenal.LonginusSlash");
+        trailShader.SetTexture(GennedAssets.Textures.Noise.SwirlNoise, 0, SamplerState.LinearWrap);
 
-        Vector2[] positions = new Vector2[Projectile.oldPos.Length];
-        for (int i = 0; i < Projectile.oldPos.Length; i++)
-        {
-            positions[i] = Projectile.oldPos[i] + new Vector2(120 * Projectile.scale, 0).RotatedBy(Projectile.oldRot[i]);
-        }
+		trailShader.TrySetParameter("uTime", Projectile.localAI[0] / 30f);
+        trailShader.TrySetParameter("uWorldViewProjection", Main.GameViewMatrix.NormalizedTransformationmatrix);
+        trailShader.TrySetParameter("uColor", Color.White.ToVector4() * 0.66f);
+        trailShader.Apply();
 
-        PrimitiveRenderer.RenderTrail(Projectile.oldPos, new PrimitiveSettings(TrailWidthFunction, TrailColorFunction, Shader: trailShader), Projectile.oldPos.Length * 2);
-        
-        Main.spriteBatch.End();
+        // Rendering primitives involves setting vertices of each triangle to form quads
+        // This does it for us
+        // Have a list of positions and rotations to create vertices, width function to determine how far vertices are from the center
+        // Color function determines each vertex's color, which can be used in the shader
+		_slashStrip ??= new VertexStrip();
+        _slashStrip.PrepareStrip(_slashPositions, _slashRotations, TrailColorFunction, TrailWidthFunction, Player.Center - Main.screenPosition, _slashPositions.Length, true);
+        _slashStrip.DrawTrail();
+
+		Main.spriteBatch.End();
         Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.Transform);
     }
 
-    private float TrailWidthFunction(float p) => 100 * Projectile.direction;
-    private Color TrailColorFunction(float p) => Color.Lerp(Color.Red, Color.MidnightBlue * 0.5f, p);
+    private float TrailWidthFunction(float p) => (IsEmpowered ? 110 : 75) * Projectile.scale * _slashScale * Projectile.direction;
+    private Color TrailColorFunction(float p) => Color.Lerp(Color.Red with { A = 120 }, Color.DarkCyan with { A = 50 }, p);
 }

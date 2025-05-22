@@ -34,7 +34,7 @@ public class BleedingBurstParticle : BaseParticle
         Velocity = velocity;
         Rotation = velocity.ToRotation() + rotation;
         ColorTint = color;
-        MaxTime = 10 + (int)(15 / Math.Clamp(scale, 0.1f, 10f));
+        MaxTime = 7 + (int)(15 / Math.Clamp(scale, 0.1f, 10f));
         Scale = scale;
         Offset = Main.rand.NextVector2Circular(10f, 10f);
     }

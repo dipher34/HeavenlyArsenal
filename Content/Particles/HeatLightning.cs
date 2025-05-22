@@ -27,7 +27,7 @@ public class HeatLightning : BaseParticle
 
     public void Prepare(Vector2 position, Vector2 velocity, float rotation, int lifeTime, float scale)
     {
-        position = position;
+        this.position = position;
         Velocity = velocity;
         Rotation = velocity.ToRotation() + rotation;
         MaxTime = lifeTime;

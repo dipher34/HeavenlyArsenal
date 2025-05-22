@@ -147,7 +147,7 @@ public class AvatarSpearRupture : ModProjectile
         {
             Vector2 targetCenter = targetHitbox.Center();
             Vector2 circle = Projectile.Center + Projectile.DirectionTo(targetCenter).SafeNormalize(Vector2.Zero) * Math.Min(Projectile.Distance(targetCenter), Projectile.width);
-            Dust.QuickDust(circle, Color.Cyan);
+            //Dust.QuickDust(circle, Color.Cyan);
             return targetHitbox.Contains(circle.ToPoint());
         }
 
@@ -158,7 +158,6 @@ public class AvatarSpearRupture : ModProjectile
 
     public override bool PreDraw(ref Color lightColor)
     {
-        Texture2D texture = TextureAssets.Projectile[Type].Value;
         Texture2D glow = AssetDirectory.Textures.BigGlowball.Value;
 
         if (Time < FlickerTime)

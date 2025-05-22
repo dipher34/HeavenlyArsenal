@@ -1,9 +1,7 @@
-sampler bloodBlobTexture : register(s0);
-sampler accentNoise : register(s1);
+sampler uImage0 : register(s0);
 
-float dissolveThreshold;
-float localTime;
-float4 accentColor;
+float uTime;
+float4 uColor;
 matrix uWorldViewProjection;
 
 struct VertexShaderInput
@@ -34,11 +32,15 @@ VertexShaderOutput VertexShaderFunction(in VertexShaderInput input)
 
 float4 PixelShaderFunction(VertexShaderOutput input) : COLOR0
 {
-    float4 color = input.Color;
     float2 coords = input.TextureCoordinates;
-    coords.y = (coords.y - 0.5) / input.TextureCoordinates.z + 0.5;
+    const float pi = 3.1415926534897;
     
-    return input.Color; //* (coords.y - sqrt(coords.x));
+    float xFade = smoothstep(0, 0.1, coords.x) * (1 - coords.x);
+    bool edge = coords.y > 1 - ((1 - sin((coords.x - uTime) * 10 * pi)) * 0.1 + 0.06) * pow(xFade, 2);
+    float4 noise = tex2D(uImage0, float2(coords.x/ 2 - uTime, coords.y));
+    float decay = pow(length(noise.rgb) * 3 * xFade * coords.y, coords.x * 4);
+    return edge * uColor + pow(coords.y * xFade, 1.5) * input.Color * (1 + decay * 2 * sqrt(coords.x));
+
 }
 
 technique Technique1

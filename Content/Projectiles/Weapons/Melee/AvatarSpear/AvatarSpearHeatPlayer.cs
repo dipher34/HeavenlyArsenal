@@ -14,7 +14,9 @@ public class AvatarSpearHeatPlayer : ModPlayer
 {
     public float HeatAcculumationTimer { get; private set; }
 
-    // Max is 1f
+    /// <summary>
+    /// Max is 1f
+    /// </summary>
     public float Heat { get; private set; }
 
     public bool Active { get; private set; }
@@ -46,7 +48,7 @@ public class AvatarSpearHeatPlayer : ModPlayer
 
     public override void PostUpdateBuffs()
     {
-        const float SevenSeconds = 1f / (10f * 60f);
+        const float SevenSeconds = 1f / (7 * 60f);
 
         if (!Active && HeatAcculumationTimer > 0)
             HeatAcculumationTimer--;
@@ -65,5 +67,5 @@ public class AvatarSpearHeatPlayer : ModPlayer
             particle.Prepare(Player.MountedCenter, Player.velocity * 2f + Main.rand.NextVector2Circular(10, 10), Main.rand.NextFloat(-2f, 2f), Main.rand.Next(5, 15), Main.rand.NextFloat(0.3f, 1.5f));
             ParticleEngine.Particles.Add(particle);
         }
-    }
+	}
 }
