@@ -68,7 +68,7 @@ public class BrutalForgivenessProjectile : ModProjectile
 
         Time++;
     }
-
+    public override bool? CanDamage() => false;
     public void SetPlayerItemAnimations()
     {
         if (Main.myPlayer == Projectile.owner)

@@ -87,6 +87,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         /// </summary>
         public int TendrilCount = 2;
 
+        private float BloodHarpoonCost = 0.25f;
         /// <summary>
         /// List of individual BloodUnits currently held.
         /// </summary>
@@ -183,159 +184,144 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             // Only override visuals if the player truly has the set equipped (vanity-free)
             if (!hasVanityHead && hasArmorHead)
             {
-                string headTexture = $"AwakenedBloodHelm{ActualForm}";
+                string headTexture = $"AwakenedBloodHelm{actualFormStr}";
                 self.head = EquipLoader.GetEquipSlot(Mod, headTexture, EquipType.Head);
                
             }
 
             if (!hasVanityBody && hasArmorBody)
             {
-                string bodyTexture = $"AwakenedBloodplate{ActualForm}";
+                string bodyTexture = $"AwakenedBloodplate{actualFormStr}";
                 self.body = EquipLoader.GetEquipSlot(Mod, bodyTexture, EquipType.Body);
             }
+            if (Frenzy)
+            {
+               
+            }
+            //Main.NewText($"Correct visuals actualform: {actualFormStr}");
         }
 
         #endregion
 
-        #region Main Logic: Resource Aging, Form Effects, and Frenzy Timer
+        #region  Form Effects, Resource Aging, and Frenzy Timer
 
         /// <summary>
         /// Called every tick before the player’s update loop. 
         /// Handles drawing the resource bars, aging blood into clot, 
-        /// applying Offense/Defense bonuses, and managing Frenzy.
-        /// </summary>
         public override void PreUpdate()
         {
-          
-            actualFormString = CurrentForm.ToString();
             if (!BloodArmorEquipped)
                 return;
 
-            
-            
+            actualFormString = CurrentForm.ToString();
+
+            //Main.NewText($"Preupdate Actualform: {actualFormString}");
             WeaponBar.DisplayBar(Color.AntiqueWhite, Color.Crimson, CurrentBlood, 120, 0, new Vector2(0, -30));
             WeaponBar.DisplayBar(Color.Crimson, Color.AntiqueWhite, Clot, 120, 0, new Vector2(0, -20));
             WeaponBar.DisplayBar(Color.HotPink, Color.Silver, TotalResource, 120, 1, new Vector2(0, -40));
 
             
-
-            // ——— Offense Form Logic & Frenzy Behavior ——— \\ 
-            if (CurrentForm == BloodArmorForm.Offense)
+            switch (CurrentForm)
             {
-                // Massive defense drop while in Offense form
-                Player.statDefense -= 75;
-
-                
-                if (Player.ownedProjectileCounts[ModContent.ProjectileType<BloodNeedle>()] <= TendrilCount - 1
-                    && Main.myPlayer == Player.whoAmI)
-                {
-                    bool[] tentaclesPresent = new bool[TendrilCount];
-                    foreach (Projectile proj in Main.projectile)
-                    {
-                        if (proj.active
-                            && proj.type == ModContent.ProjectileType<BloodNeedle>()
-                            && proj.owner == Main.myPlayer
-                            && proj.ai[1] >= 0f
-                            && proj.ai[1] < TendrilCount)
-                        {
-                            tentaclesPresent[(int)proj.ai[1]] = true;
-                        }
-                    }
-
-                    for (int i = 0; i < TendrilCount; i++)
-                    {
-                        if (!tentaclesPresent[i])
-                        {
-                            int damage = (int)Player.GetBestClassDamage().ApplyTo(TendrilBaseDamage);
-                            if (Frenzy)
-                                damage *= 2;
-                            damage = Player.ApplyArmorAccDamageBonusesTo(damage);
-
-                            var source = Player.GetSource_FromThis(AwakenedBloodHelm.TentacleEntitySourceContext);
-                            Vector2 vel = new Vector2(Main.rand.Next(-13, 14), Main.rand.Next(-13, 14)) * 0.25f;
-                            Projectile.NewProjectile(source,
-                                Player.Center,
-                                vel,
-                                ModContent.ProjectileType<BloodNeedle>(),
-                                damage,
-                                8f,
-                                Main.myPlayer,
-                                Main.rand.Next(120),
-                                i);
-                        }
-                    }
-                }
-
-                // Trigger Frenzy once resource is maxed
-                if (TotalResource >= MaxResource && CurrentBlood > 0f && !Frenzy)
-                {
-                    Frenzy = true;
-                    frenzyTimer = 1f + TotalResource * 9f;
-                }
-
-                // Base Offense buffs
-                float damageUp = 0.4f;
-                int critUp = 9;
-
-                if (Frenzy)
-                {
-                    // While Frenzy is active, double the damage/crit buff and drain blood rapidly
-                    if (!Player.HasBuff<BloodArmorFrenzy>())
-                    {
-                        int buffDurationTicks = (int)(frenzyTimer * 60);
-                        Player.AddBuff(ModContent.BuffType<BloodArmorFrenzy>(), buffDurationTicks, true);
-                    }
-
-                    damageUp *= 2f;
-                    critUp *= 2;
-                    DrainBloodRapidly();
-                }
-
-                Player.GetDamage<GenericDamageClass>() += damageUp;
-                Player.GetCritChance<GenericDamageClass>() += critUp;
+                case BloodArmorForm.Offense:
+                    HandleOffenseForm();
+                    break;
+                case BloodArmorForm.Defense:
+                    HandleDefenseForm();
+                    break;
+                    
             }
 
-            // ——— Defense Form Logic ——— \\ 
-            if (CurrentForm == BloodArmorForm.Defense)
+            HandleFrenzy();
+            AgeBlood();
+        }
+        /// <summary>
+        /// i feel like i don't need to explain this.
+        /// </summary>
+        private void HandleOffenseForm()
+        {
+            Player.statDefense -= 75;
+            if (Player.ownedProjectileCounts[ModContent.ProjectileType<BloodNeedle>()] <= TendrilCount - 1
+                && Main.myPlayer == Player.whoAmI)
             {
-                // Cancel any ongoing frenzy
-                if (Frenzy)
-                    frenzyTimer = 0f;
-
-                Player.moveSpeed *= 0.76f;
-                Player.statDefense += 50;
-
-                // Drain clot into healing over time
-                clotDrainTimer += 1f / 60f;
-                if (Player.statLife < Player.statLifeMax2 && clotDrainTimer >= ClotDrainInterval && Clot > 0f)
+                bool[] tentaclesPresent = new bool[TendrilCount];
+                foreach (Projectile proj in Main.projectile)
                 {
-                    EatClot();
-                    clotDrainTimer = 0f;
+                    if (proj.active
+                        && proj.type == ModContent.ProjectileType<BloodNeedle>()
+                        && proj.owner == Main.myPlayer
+                        && proj.ai[1] >= 0f
+                        && proj.ai[1] < TendrilCount)
+                    {
+                        tentaclesPresent[(int)proj.ai[1]] = true;
+                    }
+                }
+
+                for (int i = 0; i < TendrilCount; i++)
+                {
+                    if (!tentaclesPresent[i])
+                    {
+                        int damage = (int)Player.GetBestClassDamage().ApplyTo(TendrilBaseDamage);
+                        if (Frenzy)
+                            damage *= 2;
+                        damage = Player.ApplyArmorAccDamageBonusesTo(damage);
+
+                        var source = Player.GetSource_FromThis(AwakenedBloodHelm.TentacleEntitySourceContext);
+                        Vector2 vel = new Vector2(Main.rand.Next(-13, 14), Main.rand.Next(-13, 14)) * 0.25f;
+                        Projectile.NewProjectile(source,
+                            Player.Center,
+                            vel,
+                            ModContent.ProjectileType<BloodNeedle>(),
+                            damage,
+                            8f,
+                            Main.myPlayer,
+                            Main.rand.Next(120),
+                            i);
+                    }
                 }
             }
 
-            // ——— Manage Frenzy Timer ——— \\ 
+            // Trigger Frenzy once resource is maxed
+            
+
+            // Base Offense buffs
+           
+
+
+        }
+        /// <summary>
+        /// Self Explanatory
+        /// </summary>
+        private void HandleDefenseForm()
+        {
+            // Cancel any ongoing frenzy
             if (Frenzy)
+                frenzyTimer = 0f;
+
+            Player.moveSpeed *= 0.76f;
+            Player.statDefense += 50;
+
+            // Drain clot into healing over time
+            clotDrainTimer += 1f / 60f;
+            if (Player.statLife < Player.statLifeMax2 && clotDrainTimer >= ClotDrainInterval && Clot > 0f)
             {
-                frenzyTimer -= 1f / 60f;
-                if (frenzyTimer <= 0f)
-                {
-                    Frenzy = false;
-                    SoundEngine.PlaySound(
-                        GennedAssets.Sounds.Common.MediumBloodSpill with
-                        { Volume = 0.5f, Pitch = 1f, PitchVariance = 0.5f, MaxInstances = 4 });
-                }
+                EatClot();
+                clotDrainTimer = 0f;
             }
         }
-
         public override void PostUpdateMiscEffects()
         {
-            if(BloodArmorEquipped)
-                AgeBlood();
+            if (BloodArmorEquipped && !Frenzy)
+            {
+               
+               
+            }
+                //
         }
         private void AgeBlood()
         {
-            // ——— Age & Convert At Most One BloodUnit Per Tick ——— \\ 
+            if (Frenzy)
+                return;
             bool convertedThisTick = false;
             for (int i = 0; i < bloodUnits.Count && !convertedThisTick; i++)
             {
@@ -398,14 +384,18 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             }
             else
             {
-                Projectile.NewProjectile(
-                    Player.GetSource_FromThis(),
-                    Player.Center,
-                    Vector2.Zero,
-                    ModContent.ProjectileType<BloodHarpoon>(),
-                    3000,
-                    0f,
-                    Main.myPlayer);
+                //todo: if clot is greater than zero and this player doesn't have any blood harpoons, spawn a harpoon.
+                if (Player.ownedProjectileCounts[ModContent.ProjectileType<BloodHarpoon>()] <= 0
+                     && Main.myPlayer == Player.whoAmI)
+                    if (Clot > 0) 
+                    {
+                       float cost = 0.25f;
+                       Main.NewText($"Clot subtracted: {Clot - BloodHarpoonCost}. Cost: {BloodHarpoonCost}");
+                       Clot -= cost;
+                       Projectile.NewProjectile(Player.GetSource_FromThis(), Player.Center, Vector2.Zero, ModContent.ProjectileType<BloodHarpoon>(), 3000, 0f, Main.myPlayer);
+                    }
+
+                   
             }
         }
         public override void FrameEffects()
@@ -469,18 +459,86 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
 
         #region Blood Drain During Frenzy
 
+
+        private void HandleFrenzy()
+        {
+            float damageUp = 0.4f;
+            int critUp = 9;
+
+            if (TotalResource >= MaxResource && CurrentBlood > 0f && !Frenzy)
+            {
+
+                Frenzy = true;
+                frenzyTimer = 1f + TotalResource * 9f;
+            }
+          
+
+
+           
+            if (Frenzy)
+            {
+
+                if (frenzyTimer == 1f + TotalResource * 9f)
+                    DrainBloodRapidly(CurrentBlood);
+                // While Frenzy is active, double the damage/crit buff and drain blood rapidly
+                if (!Player.HasBuff<BloodArmorFrenzy>())
+                {
+                    int buffDurationTicks = (int)(frenzyTimer * 60);
+                    Player.AddBuff(ModContent.BuffType<BloodArmorFrenzy>(), buffDurationTicks, true);
+                }
+
+                damageUp *= 2f;
+                critUp *= 2;
+
+
+                Lighting.AddLight(Player.Center, 2, 0, 0);
+                frenzyTimer -= 1f / 60f;
+                if (frenzyTimer <= 0f)
+                {
+                    Frenzy = false;
+                    SoundEngine.PlaySound(
+                        GennedAssets.Sounds.Common.LargeBloodSpill with
+                        { Volume = 0.5f, Pitch = 1f, PitchVariance = 0.5f, MaxInstances = 4 });
+                }
+            }
+
+            Player.GetDamage<GenericDamageClass>() += damageUp;
+            Player.GetCritChance<GenericDamageClass>() += critUp;
+        }
         /// <summary>
         /// Rapidly drains all BloodUnits by a small amount each tick while Frenzy is active.
         /// </summary>
-        private void DrainBloodRapidly()
+        private void DrainBloodRapidly(float bloodAtTime)
         {
-            float drainPerFrame = 0.02f;
+            // Calculate how much blood needs to be drained per frame so that all blood is gone when frenzyTimer reaches 0.
+            // This method is called once at the start of Frenzy, with bloodAtTime = CurrentBlood at that moment.
+            // The drain should be distributed over the duration of the frenzy.
+
+            // If no blood or no timer, nothing to do
+            if (bloodAtTime <= 0f || frenzyTimer <= 0f)
+                return;
+
+            // Calculate total frames left in Frenzy
+            float framesLeft = frenzyTimer;
+            if (framesLeft <= 0f)
+                return;
+
+            // Calculate how much blood to drain per frame
+            float drainPerFrame = bloodAtTime / framesLeft;
+            Main.NewText($"DrainPerframe:{drainPerFrame}");
+            // Drain from each unit, removing empty units
             for (int i = bloodUnits.Count - 1; i >= 0; i--)
             {
                 var unit = bloodUnits[i];
-                unit.Amount = Math.Max(unit.Amount - drainPerFrame, 0f);
+                float toDrain = Math.Min(unit.Amount, drainPerFrame);
+                unit.Amount -= toDrain;
+                // If this unit is depleted, remove it
                 if (unit.Amount <= 0f)
                     bloodUnits.RemoveAt(i);
+                // Subtract drained amount from the total to drain this frame
+                //drainPerFrame -= toDrain;
+                if (drainPerFrame <= 0f)
+                    break;
             }
         }
 
@@ -488,22 +546,35 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
 
         #region On-Hit Effects & Blood Generation
 
-        /// <summary>
-        /// Called when any projectile hits an NPC. Currently present for future hair-triggered effects.
-        /// </summary>
+        private float BloodGainChance
+        {
+            get;
+            set;
+        }        
         public override void OnHitNPCWithProj(Projectile proj, NPC target, NPC.HitInfo hit, int damageDone)
         {
-            // Future code can go here (e.g., synergy with DragonRageFireball, etc.).
+            if (proj.type == ModContent.ProjectileType<DragonRageFireball>() || proj.type == ModContent.ProjectileType<DragonRageStaff>())
+            {
+                BloodGainChance++;
+                if (BloodGainChance >= 3)
+                {
+                    BloodGainChance = 0;
+                    
+                }
+            }
+           
+
             base.OnHitNPCWithProj(proj, target, hit, damageDone);
         }
 
-        /// <summary>
-        /// Called when the player’s melee hit registers. 
-        /// Adds a BloodUnit each time the player hits an NPC (unless in Frenzy).
-        /// </summary>
+        public override void OnHitAnything(float x, float y, Entity victim)
+        {
+            AddBloodUnit(default,0.01f);
+            base.OnHitAnything(x, y, victim);
+        }
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
-            AddBloodUnit();
+            
             base.OnHitNPC(target, hit, damageDone);
         }
 
@@ -511,12 +582,12 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         /// Adds one small BloodUnit (0.005f) if there is room within the MaxResource limit.
         /// </summary>
         /// <param name="age">Optional starting age (in seconds) for the new unit; default is zero.</param>
-        public void AddBloodUnit(float age = 0f)
+        public void AddBloodUnit(float age = 0f, float amount = 0.05f)
         {
             if (BloodArmorEquipped && !Frenzy)
             {
                 float space = MaxResource - Clot - CurrentBlood;
-                float toAdd = Math.Min(0.005f, space);
+                float toAdd = Math.Min(amount, space);
                 if (toAdd > 0f)
                     bloodUnits.Add(new BloodUnit { Amount = toAdd, Age = age });
             }
@@ -578,49 +649,83 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         public override bool GetDefaultVisibility(PlayerDrawSet drawInfo)
         {
             var modPlayer = drawInfo.drawPlayer.GetModPlayer<BloodArmorPlayer>();
-            return modPlayer.BloodArmorEquipped && (modPlayer.Frenzy || modPlayer.frenzyTimer > 0f);
+            return modPlayer.BloodArmorEquipped; //&& (modPlayer.Frenzy || modPlayer.frenzyTimer > 0f);
         }
         public override bool IsHeadLayer => false;
         protected override void Draw(ref PlayerDrawSet drawInfo)
         {
             var modPlayer = drawInfo.drawPlayer.GetModPlayer<BloodArmorPlayer>();
+            string BloodClotString = (" | Blood = " + modPlayer.CurrentBlood + " | Clot = " + modPlayer.Clot + " | Total = " + modPlayer.TotalResource.ToString());
+            Utils.DrawBorderString(Main.spriteBatch, BloodClotString, (Vector2.UnitX* -230)+drawInfo.drawPlayer.Center - Vector2.UnitY * 160 - Main.screenPosition, Color.White);
+
+            string FrenzyString = (" | Frenzy : "+modPlayer.Frenzy.ToString()+" | Timer : "+ modPlayer.frenzyTimer.ToString());
+
+            Utils.DrawBorderString(Main.spriteBatch, FrenzyString, (Vector2.UnitX * -230) + drawInfo.drawPlayer.Center - Vector2.UnitY * 140 - Main.screenPosition, Color.White);
+
+            for (int i = 0; i < modPlayer.bloodUnits.Count -1; i++)
+            {
+                
+                if (i >= 0 && i < modPlayer.bloodUnits.Count)
+                {
+                    var unit = modPlayer.bloodUnits[i];
+                    string bloodUnitInfo = $"BloodUnit({i}): Amount={unit.Amount:F3}, Age={unit.Age:F2}s";
+                    Utils.DrawBorderString(
+                        Main.spriteBatch,
+                        bloodUnitInfo,
+                        (Vector2.UnitX * 230) + drawInfo.drawPlayer.Center - Vector2.UnitY * (100 + (i * 20)) - Main.screenPosition,
+                        Color.White
+                    );
+                }
+
+            }
+
             Asset<Texture2D> coronaTexture = GennedAssets.Textures.GreyscaleTextures.Corona.Asset;
-
-            Vector2 playerCenterOnScreen = drawInfo.drawPlayer.Center - Main.screenPosition;
-            float baseScale = 0.25f;
-            float rotation = Main.GlobalTimeWrappedHourly * 2f;
-
-            // Fade in to full alpha at the start of Frenzy, then fade out as the timer depletes
-            float alpha;
-            if (modPlayer.Frenzy)
+            if (modPlayer.frenzyTimer > 0f)
             {
-                alpha = 1f;
+                float baseScale = 0.25f;
+                float rotation = Main.GlobalTimeWrappedHourly * 2f;
+
+                Vector2 playerCenterOnScreen = drawInfo.drawPlayer.Center - Main.screenPosition;
+
+
+
+              
+
+                // Fade in to full alpha at the start of Frenzy, then fade out as the timer depletes
+                float alpha;
+                if (modPlayer.Frenzy)
+                {
+                    alpha = 1f;
+                }
+                else
+                {
+                    // frenzyTimer counts down (in seconds); dividing by 60 gives fraction
+                    alpha = MathHelper.Clamp(modPlayer.frenzyTimer / 60f, 0f, 1f);
+                }
+
+                Color glowColor = Color.Crimson * alpha;
+                byte alphaByte = (byte)(255 * alpha);
+                glowColor.A = alphaByte;
+
+                // Pulsing effect
+                float pulseSpeed = 5f;
+                float pulse = (float)Math.Sin(Main.GlobalTimeWrappedHourly * pulseSpeed) * 0.1f;
+                Vector2 finalScale = new Vector2(baseScale * (1f + pulse), baseScale * (1f + pulse));
+
+                Main.spriteBatch.Draw(
+                    coronaTexture.Value,
+                    playerCenterOnScreen,
+                    null,
+                    glowColor with { A = 0 },
+                    rotation + MathHelper.PiOver4,
+                    Utils.Size(coronaTexture) * 0.5f,
+                    finalScale,
+                    SpriteEffects.None,
+                    0f);
             }
-            else
-            {
-                // frenzyTimer counts down (in seconds); dividing by 60 gives fraction
-                alpha = MathHelper.Clamp(modPlayer.frenzyTimer / 60f, 0f, 1f);
-            }
-
-            Color glowColor = Color.Crimson * alpha;
-            byte alphaByte = (byte)(255 * alpha);
-            glowColor.A = alphaByte;
-
-            // Pulsing effect
-            float pulseSpeed = 5f;
-            float pulse = (float)Math.Sin(Main.GlobalTimeWrappedHourly * pulseSpeed) * 0.1f;
-            Vector2 finalScale = new Vector2(baseScale * (1f + pulse), baseScale * (1f + pulse));
-
-            Main.spriteBatch.Draw(
-                coronaTexture.Value,
-                playerCenterOnScreen,
-                null,
-                glowColor with { A = 0 },
-                rotation + MathHelper.PiOver4,
-                Utils.Size(coronaTexture) * 0.5f,
-                finalScale,
-                SpriteEffects.None,
-                0f);
         }
+           
+
+            
     }
 }

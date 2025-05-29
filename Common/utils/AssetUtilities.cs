@@ -54,6 +54,6 @@ public static class AssetUtilities
         if (ModContent.GetInstance<AssetUtilitiesSystem>() is { } system)
             return system.GetAssetManager<T>().GetOrRequestAsset(path, requestMode);*/
 
-        return ModContent.Request<T>(path, requestMode);
+         return ModContent.Request<T>(path, requestMode);
     }
 }

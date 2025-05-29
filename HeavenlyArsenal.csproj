@@ -47,6 +47,7 @@
 	  <Compile Remove="Content\Items\Weapons\Ranged\HotFusion\Temp.cs" />
 	  <Compile Remove="Content\Items\Weapons\Rogue\LifeAndCessationGlobalNPC.cs" />
 	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\Leech\UmbralLeech.cs" />
+	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\Leech\UmbralLeech2.cs" />
 	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\NobleWorm.cs" />
 	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\siphonophore\Cryonophore_Basic.cs" />
 	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\wormEnemy.cs" />
@@ -77,6 +78,7 @@
 	  <Folder Include="Common\Scenes\" />
 	  <Folder Include="Content\Items\Weapons\Ranged\HotFusion\" />
 	  <Folder Include="Core\Overrides\" />
+	  <Folder Include="Core\Visuals\" />
 	</ItemGroup>
 	<ItemGroup>
 	  <Reference Include="CalamityMod">

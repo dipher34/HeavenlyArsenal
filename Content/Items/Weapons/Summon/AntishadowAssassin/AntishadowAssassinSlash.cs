@@ -85,7 +85,7 @@ public class AntishadowAssassinSlash : ModProjectile
         if (Main.rand.NextBool(6))
             fireColor = new Color(174, 0, Main.rand.Next(23), 0);
 
-        if (Time % 4f == 0f)
+        if (Time % 12f == 0f)
             AntishadowFireParticleSystemManager.CreateNew(Projectile.owner, false, Projectile.Center, Main.rand.NextVector2Circular(77f, 77f), Vector2.One * Main.rand.NextFloat(30f, 105f) * SizeMultiplier, fireColor);
     }
 
@@ -106,11 +106,11 @@ public class AntishadowAssassinSlash : ModProjectile
         trailShader.TrySetParameter("noiseSlant", 1.95f);
         trailShader.TrySetParameter("noiseInfluenceFactor", 0.5f);
         trailShader.TrySetParameter("opacityFadeExponent", 2f);
-        trailShader.SetTexture(GennedAssets.Textures.Noise.PerlinNoise, 1, SamplerState.LinearWrap);
+        trailShader.SetTexture(GennedAssets.Textures.Noise.SwirlNoise, 1, SamplerState.LinearWrap);
         trailShader.SetTexture(TextureAssets.Projectile[Type], 2, SamplerState.LinearWrap);
 
         float swingArc = lifetimeRatio * -MathHelper.Pi + Projectile.rotation;
-        Vector2[] points = new Vector2[26];
+        Vector2[] points = new Vector2[52];
         Matrix transformation = Matrix.CreateRotationX(AngleX) * Matrix.CreateRotationY(AngleY);
         for (int i = 0; i < points.Length; i++)
         {
@@ -122,8 +122,8 @@ public class AntishadowAssassinSlash : ModProjectile
         PrimitiveRenderer.RenderTrail(points, new PrimitiveSettings(default, default, Shader: trailShader, UseUnscaledMatrix: true)
         {
             WidthFunction = TrailWidthFunction,
-            ColorFunction = TrailColorFunction
-        }, 15);
+            ColorFunction = TrailColorFunction,
+        }, (int)(100*MathHelper.Pi));
         return false;
     }
 }

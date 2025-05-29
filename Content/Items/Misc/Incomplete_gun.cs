@@ -55,7 +55,7 @@ namespace HeavenlyArsenal.Content.Items.Misc
             //Item.UseSound = SoundID.Item1;
             Item.autoReuse = true;
             //Item.shoot = ModContent.ProjectileType<ColdBurst>();
-            Item.shoot = ModContent.ProjectileType<incomplete_gunHoldout>();
+            Item.shoot = ModContent.ProjectileType<Incomplete_gunHoldout>();
             Item.ChangePlayerDirectionOnShoot = true;
             Item.noMelee = true;
         }
@@ -72,7 +72,7 @@ namespace HeavenlyArsenal.Content.Items.Misc
                     player.Center.X,               // X coordinate of the spawn location
                     player.Center.Y,               // Y coordinate of the spawn location
                     0f, 0f,                        // Velocity (set to 0 for stationary)
-                    ModContent.ProjectileType<incomplete_gunHoldout>(), // Type of the projectile
+                    ModContent.ProjectileType<Incomplete_gunHoldout>(), // Type of the projectile
                     Item.damage,                   // Damage of the projectile
                     Item.knockBack,                // Knockback of the projectile
                     player.whoAmI                  // Owner of the projectile

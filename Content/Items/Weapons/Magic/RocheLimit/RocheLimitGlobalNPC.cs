@@ -8,6 +8,7 @@ using NoxusBoss.Content.NPCs.Bosses.Avatar.FirstPhaseForm;
 using NoxusBoss.Content.NPCs.Bosses.Avatar.SecondPhaseForm;
 using NoxusBoss.Content.NPCs.Bosses.NamelessDeity;
 using NoxusBoss.Core.Graphics.RenderTargets;
+using System;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
@@ -157,6 +158,8 @@ public class RocheLimitGlobalNPC : GlobalNPC
 
     public override void PostAI(NPC npc)
     {
+        
+
         bool wasShreddedBefore = BeingShredded;
         BeingShredded = false;
         DownscaleFactor = MathHelper.Lerp(DownscaleFactor, 1f, 0.12f);
@@ -211,6 +214,7 @@ public class RocheLimitGlobalNPC : GlobalNPC
             if (closestBlackHole.Colliding(closestBlackHole.Hitbox, npc.Hitbox) || BeingShredded)
             {
                 int damage = closestBlackHole.damage;
+
                 bool willDie = npc.life - damage <= 0; // This calculation doesn't care about defense and DR but honestly who cares? filthy liar,then why do they have DR still
                 if (willDie)
                 {
@@ -239,6 +243,28 @@ public class RocheLimitGlobalNPC : GlobalNPC
                         npc.HitSound = null;
                         npc.DeathSound = null;
                         Main.player[closestBlackHole.owner].addDPS(npc.SimpleStrikeNPC(damage, 0));
+                        #region kill echdeath
+                        Mod echdeathMod = ModLoader.TryGetMod("ReturnOfEchdeeath", out Mod mod) ? mod : null;
+                        int echdeathType = -1;
+                        if (echdeathMod != null)
+                        {
+                            // Try to get the NPC type "echdeath" from the mod
+                            if (echdeathMod.TryFind("Echdeath", out ModNPC echdeathNPC))
+                                echdeathType = echdeathNPC.Type;
+                        }
+
+                        if (BeingShredded && echdeathType != -1 && npc.type == echdeathType)
+                        {
+                            npc.defense = 0;
+                            npc.life -= (int)(npc.lifeMax * 0.1f);
+                            npc.takenDamageMultiplier = 5f;
+                           
+                            if (Main.netMode != NetmodeID.Server)
+                            {
+                                SoundEngine.PlaySound(SoundID.Roar with {Volume = 1.0f, PitchVariance = 0.4f}, npc.Center);
+                            }
+                        }
+                        #endregion
                     }
                     finally
                     {
