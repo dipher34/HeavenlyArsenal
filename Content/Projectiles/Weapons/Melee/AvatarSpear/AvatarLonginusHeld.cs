@@ -61,7 +61,6 @@ public class AvatarLonginusHeld : ModProjectile
 
     public ref float Time => ref Projectile.ai[0];
     public ref float AttackState => ref Projectile.ai[1];
-    public ref float MiscState => ref Projectile.ai[2];
 
     public bool canHit;
     public bool throwMode;
@@ -138,9 +137,8 @@ public class AvatarLonginusHeld : ModProjectile
             case (int)AvatarSpearAttacks.Idle:
 
                 Time = 0;
-                MiscState = 0;
 
-				Projectile.scale = 1f;
+                Projectile.scale = 1f;
                 Projectile.velocity = Vector2.Zero;
                 float motionBob = Player.velocity.X * 0.02f - Player.velocity.Y * 0.015f * Player.direction;
                 Projectile.rotation = Utils.AngleLerp(Projectile.rotation, Player.fullRotation - MathHelper.PiOver2 + 1f * Player.direction + motionBob, 0.1f);
@@ -559,27 +557,19 @@ public class AvatarLonginusHeld : ModProjectile
                 }
                 else
                 {
-                    Projectile.extraUpdates = 1;
-                    Projectile.velocity *= 0.9f;
+                    Projectile.extraUpdates = 2;
+                    Projectile.velocity *= 0.6f;
 
+                    if (Main.myPlayer == Projectile.owner)
+                        Main.SetCameraLerp(0.1f, 10);
 
                     canHit = true;
                     throwMode = true;
 
-                    bool failedThrow = MiscState == 1;
-
-					if (!failedThrow && HitTimer <= 0 && !Collision.SolidCollision(Projectile.Center - new Vector2(20) + Projectile.velocity.SafeNormalize(Vector2.Zero) * 20, 40, 40))
-                    {
-						Player.Center = Vector2.Lerp(Player.Center, Projectile.Center, 0.3f);
-						if (Main.myPlayer == Projectile.owner)
-							Main.SetCameraLerp(0.1f, 10);
-					}
-					else
-                    {
-                        MiscState = 1;
-                        Projectile.scale = MathF.Sqrt(Utils.GetLerpValue(0, 30, Time - ThrowWindUp - TPTime, true));
-						Projectile.Center = Player.Center - Projectile.velocity * 20;
-                    }
+                    if (HitTimer <= 0 && !Collision.SolidCollision(Projectile.Center - new Vector2(20) + Projectile.velocity.SafeNormalize(Vector2.Zero) * 20, 40, 40))
+                        Player.Center = Vector2.Lerp(Player.Center, Projectile.Center, 0.3f);
+                    else
+                        Projectile.Center = Vector2.Lerp(Projectile.Center, Player.MountedCenter, MathF.Pow(Utils.GetLerpValue(0, TPTime, Time - ThrowWindUp - ThrowTime, true), 5f) * 0.2f);
                 }
 
                 Player.velocity *= 0.98f;
@@ -633,93 +623,60 @@ public class AvatarLonginusHeld : ModProjectile
 
             case (int)AvatarSpearAttacks.Castigate:
 
-                Projectile.extraUpdates = 3;
+                Projectile.extraUpdates = 6;
 
-                const int CastigateWindTime = 50;
+                const int CastigateWindTime = 100;
                 const int PortalWaves = 7;
                 const int PortalsPerWave = 3;
-                const int PortalTime = 41;
-                const int CastigateSmashTime = 55;
-				const float MaxTime = PortalWaves * PortalTime + CastigateWindTime + CastigateSmashTime;
+                const int PortalTime = 111;
+                const float MaxTime = PortalWaves * PortalTime + CastigateWindTime;
 
 				Player.ChangeDir(Projectile.velocity.X > 0 ? 1 : -1);
 
-                float smashProgress = MathF.Cbrt(Utils.GetLerpValue(-CastigateSmashTime / 3, -CastigateSmashTime, Time - MaxTime, true));
-                float twirlProgress = Utils.GetLerpValue(CastigateWindTime / 2, MaxTime - CastigateSmashTime, Time, true);
-                float castigateTwirl = MathHelper.PiOver2 + MathHelper.Lerp(-0.1f * Projectile.direction, 2f * Projectile.direction, twirlProgress * smashProgress)
-                    + MathHelper.Pi * (PortalWaves / 2) * 2 * MathHelper.SmoothStep(0f, 1f, twirlProgress) * Projectile.direction;
+                float twirlProgress = Time / MaxTime;
+				float castigateTwirl = MathHelper.TwoPi * 2 * PortalWaves * MathHelper.SmoothStep(0f, 1f, twirlProgress);
 
-				float castigateWind = Utils.GetLerpValue(2, CastigateWindTime, Time, true);
-                float castigateHandRot = ((-MathHelper.Pi * MathF.Sqrt(castigateWind))
-                    + MathF.Sin(twirlProgress * MathHelper.TwoPi * PortalWaves) * 0.5f) * Player.direction
-                    + MathHelper.PiOver2 * (1f - smashProgress) * Player.direction;
-                
-               
+                float castigateWind = Utils.GetLerpValue(2, CastigateWindTime, Time, true);
+                float castigateHandRot = ((-MathHelper.Pi * MathF.Sqrt(castigateWind)) + MathF.Sin(castigateTwirl) * 0.5f) * Player.direction;
                 Player.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, castigateHandRot);
                 handPosition = Player.GetFrontHandPosition(Player.CompositeArmStretchAmount.Full, castigateHandRot);
 
-                Projectile.rotation = Utils.AngleLerp(Projectile.rotation, -castigateTwirl, MathF.Pow(castigateWind, 3f));
+                Projectile.rotation = Utils.AngleLerp(Projectile.rotation, -castigateTwirl * Projectile.direction, MathF.Pow(castigateWind, 3f));
 
                 canHit = Time > CastigateWindTime;
 
                 Projectile.scale = MathF.Sin(twirlProgress * 4f) * 0.4f + 1f;
 
-				offset = new Vector2(80 * (1f - smashProgress), 0).RotatedBy(Projectile.rotation);
-
-				if (Time == CastigateWindTime)
+                if (Time == CastigateWindTime)
 					SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.ArcticWindGust with { Volume = 0.5f, Pitch = 0.5f, MaxInstances = 0 }, Projectile.Center);
 
-				if (Time >= CastigateWindTime && Time < MaxTime - CastigateSmashTime)
+				if (Time >= CastigateWindTime)
                 {
                     DoShake(0.1f);
                     if ((Time - CastigateWindTime) % PortalTime == PortalTime / 3)
                     {
-                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.ArmSwing with { Volume = 0.33f, Pitch = 1f, PitchVariance = 0.5f, MaxInstances = 0 }, Projectile.Center);
+                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.ArmSwing with { Volume = 0.33f, PitchVariance = 0.5f, MaxInstances = 0 }, Projectile.Center);
 
-						for (int l = 0; l < PortalsPerWave; l++)
+                        for (int l = 0; l < PortalsPerWave; l++)
                         {
                             Vector2 velocity = (Main.rand.NextVector2Circular(30, 30) + Main.rand.NextVector2CircularEdge(20, 20)).RotatedBy(l / 3 * MathHelper.TwoPi);
                             velocity += Player.velocity / 2;
                             Projectile rift = Projectile.NewProjectileDirect(Projectile.GetSource_FromThis(), Projectile.Center, velocity, ModContent.ProjectileType<LonginusRift>(), Projectile.damage * 2, 1f, Player.whoAmI);
                             rift.scale *= Main.rand.NextFloat(1f, 1.4f);
                             rift.direction = Main.rand.NextBool().ToDirectionInt();
-                            rift.timeLeft = (int)((MaxTime - Time) / Projectile.extraUpdates) + Main.rand.Next(-5, 10);
+                            rift.timeLeft += Main.rand.Next(-20, 20);
                         }
                     }
                 }
 
-                if (Time > CastigateWindTime + 5 && Time < MaxTime - CastigateSmashTime)
+                if (Time > CastigateWindTime + 5)
                     useSlash = true;
                 else
                     ResetSlash();
 
-				if (Time >= MaxTime - CastigateSmashTime / 2)
-				{
-					if (Time == MaxTime - CastigateSmashTime / 2 + 10)
-					{
-                        Vector2 bottom = Projectile.Center + new Vector2(-100, 0).RotatedBy(Projectile.rotation);
-						Color randomColor = Color.Lerp(Color.Black, Color.DarkRed, Main.rand.NextFloat());
+                _slashScale = 0.7f;
 
-						//BleedingBurstParticle bombParticle = BleedingBurstParticle.pool.RequestParticle();
-						//bombParticle.Prepare(bottom, Player.velocity + Main.rand.NextVector2Circular(15, 15), Main.rand.NextFloat(-1f, 1f), randomColor, Main.rand.NextFloat(0.7f, 1f));
-						//ParticleEngine.ShaderParticles.Add(bombParticle);
-
-						SoundBarrierParticle particle = SoundBarrierParticle.pool.RequestParticle();
-						particle.Prepare(bottom, Player.velocity, Player.fullRotation - MathHelper.PiOver2, randomColor, 2f);
-						ParticleEngine.ShaderParticles.Add(particle);
-						
-                        SoundBarrierParticle hugeParticle = SoundBarrierParticle.pool.RequestParticle();
-						hugeParticle.Prepare(bottom, Player.velocity, Player.fullRotation - MathHelper.PiOver2, Color.DarkRed with { A = 0 }, 5f);
-						ParticleEngine.ShaderParticles.Add(hugeParticle);
-
-						SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.FrostColumnBurst with { Volume = 0.8f, Pitch = 1f, MaxInstances = 0 }, Projectile.Center);
-					}
-
-					Projectile.scale = 1.1f;
-					DoShake((1f - smashProgress) * 0.7f);
-				}
-
-                if (Time > MaxTime + 225)
+                if (Time > MaxTime)
                 {
                     AttackState = (int)AvatarSpearAttacks.Idle;
                     Time = 0;
@@ -765,9 +722,7 @@ public class AvatarLonginusHeld : ModProjectile
             if (heat > 0f)
                 WeaponBar.DisplayBar(Color.DarkRed, Color.Red, heat, style: 1, BarOffset: IsEmpowered ? Main.rand.NextVector2Circular(2, 2) : Vector2.Zero);
         }
-
-        _slashDistance = offset.Length();
-	}
+    }
 
     public void ResetTrail(bool rotation = false)
     {
@@ -790,7 +745,7 @@ public class AvatarLonginusHeld : ModProjectile
 			for (int i = Projectile.oldPos.Length - 1; i > 0; i--)
             {
                 Projectile.oldPos[i] = Projectile.oldPos[i - 1];
-                Projectile.oldRot[i] = Utils.AngleLerp(Projectile.oldRot[i - 1], Projectile.rotation, 0.1f);
+                Projectile.oldRot[i] = Utils.AngleLerp(Projectile.rotation, Projectile.oldRot[i - 1], 0.1f);
 
                 if (!throwMode)
                     Projectile.oldPos[i] += playerPosOffset;
@@ -812,8 +767,8 @@ public class AvatarLonginusHeld : ModProjectile
         _slashScale = 1f;
 		for (int i = _slashPositions.Length - 1; i > 0; i--)
 		{
-			_slashPositions[i] = new Vector2(140 * Projectile.scale * _slashScale, 0).RotatedBy(Projectile.rotation);
-			_slashRotations[i] = Projectile.rotation + MathHelper.PiOver2;
+			_slashPositions[i] = new Vector2(200 * Projectile.scale, 0).RotatedBy(Projectile.rotation);
+			_slashRotations[i] = Projectile.rotation + MathHelper.PiOver2 * Projectile.direction;
 		}
 	}
 
@@ -828,35 +783,13 @@ public class AvatarLonginusHeld : ModProjectile
             _slashPositions[i] = _slashPositions[i - 1];
 		}
 
-		_slashRotations[0] = Projectile.rotation + MathHelper.PiOver2;
-		_slashPositions[0] = new Vector2(140 * Projectile.scale * _slashScale + _slashDistance, 0).RotatedBy(Projectile.rotation);
+		_slashRotations[0] = Projectile.rotation + MathHelper.PiOver2 * Projectile.direction;
+		_slashPositions[0] = new Vector2(200 * Projectile.scale * _slashScale, 0).RotatedBy(Projectile.rotation);
 	}
 
-    public void HandleEmpowerment()
-    {
-        bool oldEmpower = IsEmpowered;
+	public void HandleEmpowerment() => IsEmpowered = Player.GetModPlayer<AvatarSpearHeatPlayer>().Active;
 
-		IsEmpowered = Player.GetModPlayer<AvatarSpearHeatPlayer>().Active;
-
-		if (!oldEmpower && IsEmpowered)
-		{
-			if (Main.myPlayer == Projectile.owner)
-                SoundEngine.PlaySound(GennedAssets.Sounds.Common.ScreenShatter with { MaxInstances = 0 }, Projectile.Center);
-
-            for (int i = 0; i < 20; i++)
-				Dust.NewDustPerfect(Projectile.Center + new Vector2(Main.rand.Next(-50, 50), 0).RotatedBy(Projectile.rotation), DustID.Glass, Main.rand.NextVector2Circular(10, 10) - Vector2.UnitY * 10, 0, Color.White with { A = 10 }, Main.rand.NextFloat(0.7f, 1.4f));
-		}
-		if (oldEmpower && !IsEmpowered)
-        {
-			if (Main.myPlayer == Projectile.owner)
-				SoundEngine.PlaySound(GennedAssets.Sounds.Common.TwinkleMuffled with { MaxInstances = 0 }, Projectile.Center);
-
-			for (int i = 0; i < 20; i++)
-				Dust.NewDustPerfect(Projectile.Center + new Vector2(Main.rand.Next(-50, 50), 0).RotatedBy(Projectile.rotation), DustID.AncientLight, Main.rand.NextVector2Circular(10, 10) - Vector2.UnitY * 10, 0, Color.White with { A = 10 }, Main.rand.NextFloat(0.5f, 1f));
-		}
-	}
-
-	private void DoShake(float strength = 1f)
+    private void DoShake(float strength = 1f)
     {
         if (Main.myPlayer == Projectile.owner)
             ScreenShakeSystem.StartShakeAtPoint(Projectile.Center, 7f * strength, 
@@ -874,7 +807,7 @@ public class AvatarLonginusHeld : ModProjectile
         SoundBarrierParticle largerParticle = SoundBarrierParticle.pool.RequestParticle();
         largerParticle.Prepare(soundBarrierPosition, -soundBarrierVelocity * 50f + Player.velocity, Projectile.rotation, Color.DarkRed with { A = 200 }, 1f);
 
-		ParticleEngine.ShaderParticles.Add(particle);
+        ParticleEngine.ShaderParticles.Add(particle);
         ParticleEngine.ShaderParticles.Add(largerParticle);
 
     }
@@ -1025,8 +958,13 @@ public class AvatarLonginusHeld : ModProjectile
     private bool holdTrailUpdate;
 
     public override bool PreDraw(ref Color lightColor)
-    {      
-        Texture2D texture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Projectiles/Weapons/Melee/AvatarSpear/AvatarLonginusHeld_Alt").Value;
+    {
+        string texturePath = "HeavenlyArsenal/Content/Projectiles/Weapons/Melee/AvatarSpear/AvatarLonginusHeld_Alt";
+        if(Main.LocalPlayer.name == "ModTester2")
+            texturePath = "HeavenlyArsenal/Content/Projectiles/Weapons/Melee/AvatarSpear/AvatarLonginusHeld";
+
+
+        Texture2D texture = ModContent.Request<Texture2D>(texturePath).Value;
             //default: TextureAssets.Projectile[Type].Value;
         Rectangle frame = texture.Frame(1, 2, 0, IsEmpowered ? 1 : 0);
         Texture2D glow = AssetDirectory.Textures.BigGlowball.Value;
@@ -1072,9 +1010,11 @@ public class AvatarLonginusHeld : ModProjectile
 
         // Have a shader prepared, only special thing is that it uses a normalized matrix
 		ManagedShader trailShader = ShaderManager.GetShader("HeavenlyArsenal.LonginusSlash");
-        trailShader.SetTexture(GennedAssets.Textures.Noise.SwirlNoise, 0, SamplerState.LinearWrap);
-
-		trailShader.TrySetParameter("uTime", Projectile.localAI[0] / 10f);
+        if(Main.LocalPlayer.name == "ModTester2")
+            trailShader.SetTexture(GennedAssets.Textures.Noise.BurnNoise, 0, SamplerState.LinearWrap);
+        else
+        trailShader.SetTexture(GennedAssets.Textures.Noise.SwirlNoise, 0, SamplerState.PointClamp);
+        trailShader.TrySetParameter("uTime", Projectile.localAI[0] / 30f);
         trailShader.TrySetParameter("uWorldViewProjection", Main.GameViewMatrix.NormalizedTransformationmatrix);
         trailShader.TrySetParameter("uColor", Color.White.ToVector4() * 0.66f);
         trailShader.Apply();
@@ -1091,7 +1031,6 @@ public class AvatarLonginusHeld : ModProjectile
         Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.Transform);
     }
 
-    private float _slashDistance;
-    private float TrailWidthFunction(float p) => (IsEmpowered ? 130 : 70) * Projectile.scale * _slashScale;
+    private float TrailWidthFunction(float p) => (IsEmpowered ? 110 : 75) * Projectile.scale * _slashScale * Projectile.direction;
     private Color TrailColorFunction(float p) => Color.Lerp(Color.Red with { A = 120 }, Color.DarkCyan with { A = 50 }, p);
 }

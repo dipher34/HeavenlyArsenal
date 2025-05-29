@@ -26,6 +26,8 @@ public static class AssetDirectory
         #endregion
         #region UmbralLeech
         public static readonly Asset<Texture2D> UmbralLeechWhisker = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/NPCs/Hostile/BloodMoon/UmbralLeech/UmbralLeech_Whisker");
+        public static readonly Asset<Texture2D> UmbralLeechTendril = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/NPCs/Hostile/BloodMoon/UmbralLeech/UmbralLeech_TailTendril");
+
         #endregion
         public static class Inventors
         {

@@ -173,7 +173,7 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
         Projectile.damage = Owner.HeldMouseItem() is null ? 0 : Owner.GetWeaponDamage(Owner.HeldMouseItem());
 
         // Begin dying if no longer holding the click button or otherwise unable to use the item.
-        if ((!Owner.channel || Owner.dead || !Owner.active || Owner.noItems || Owner.CCed) && State != BlackHoleState.Vanish)
+        if ((!Owner.channel|| Owner.dead || !Owner.active || Owner.noItems || Owner.CCed) && State != BlackHoleState.Vanish)
             SwitchState(BlackHoleState.Vanish);
 
         // Check if mana should be consumed.

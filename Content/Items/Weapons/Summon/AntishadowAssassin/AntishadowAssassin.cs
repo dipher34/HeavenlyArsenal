@@ -370,6 +370,11 @@ public class AntishadowAssassin : ModProjectile
         private set;
     }
 
+    public static Asset<Texture2D> AhogeTexture
+    {
+        get;
+        private set;
+    }
     /// <summary>
     /// The legs texture asset wrapper.
     /// </summary>
@@ -435,6 +440,7 @@ public class AntishadowAssassin : ModProjectile
         ArmBowTexture = ModContent.Request<Texture2D>($"{texturePrefix}/AntishadowAssassinArmBow");
         ArmBowOutlineTexture = ModContent.Request<Texture2D>($"{texturePrefix}/AntishadowAssassinArmBow_Outline");
         KasaTexture = ModContent.Request<Texture2D>($"{texturePrefix}/AntishadowAssassinKasa");
+        AhogeTexture = ModContent.Request<Texture2D>($"{texturePrefix}/AntishadowAssassin_Ahoge");
         LegsTexture = ModContent.Request<Texture2D>($"{texturePrefix}/AntishadowAssassinLegs");
     }
 
@@ -502,6 +508,8 @@ public class AntishadowAssassin : ModProjectile
         if (State != AssassinState.Leave)
             HandleMinionBuffs();
 
+        //Main.NewText($"State: {State}");
+        //Main.NewText($"Particle count: {AntishadowFireParticleSystemManager.BackParticleSystem.Keys.Count.ToString()}");
         ExecuteState();
 
         if (Owner.MinionAttackTargetNPC != -1 && Main.npc[Owner.MinionAttackTargetNPC].active)
@@ -683,7 +691,7 @@ public class AntishadowAssassin : ModProjectile
         KatanaRotation = KatanaRotation.AngleLerp(0.6f, 0.56f);
 
         // Vanish.
-        Projectile.Opacity = MathHelper.SmoothStep(0f, 1f, LumUtils.InverseLerp(18f, 7f, Time).Squared());
+        //Projectile.Opacity = MathHelper.SmoothStep(0f, 1f, LumUtils.InverseLerp(18f, 7f, Time).Squared());
         KatanaUnsheathInterpolant = EasingCurves.Quadratic.Evaluate(EasingType.InOut, LumUtils.InverseLerp(0f, 11f, Time));
         if (Time >= 18f)
             SwitchState(AssassinState.PerformDirectionalSlices);
@@ -707,26 +715,29 @@ public class AntishadowAssassin : ModProjectile
         }
 
         // Go FAST.
-        Projectile.MaxUpdates = 2;
+        Projectile.MaxUpdates = 4;
 
         KatanaUnsheathInterpolant = 1f;
         DoesDamage = true;
 
-        int dashCount = 14;
+        int dashCount = 32;
         NPC target = Main.npc[TargetIndex];
         ref float dashCounter = ref AIData;
         int dashDuration = Utils.Clamp(15 - (int)dashCounter * 3, 5, 1000);
         int dashCycleHit = dashCounter == 0f ? 1 : (int)(dashDuration * 0.5f); // Done to ensure that the slash sound always plays even if the target dies before the dash duration midway point is reached.
         if (Time == dashCycleHit)
         {
-            SoundEngine.PlaySound((target.Organic() ? Murasama.OrganicHit : Murasama.InorganicHit) with { MaxInstances = 9 });
+            //todo: come back to me and give it new sfx
+            SoundEngine.PlaySound((target.Organic() ? Murasama.OrganicHit : Murasama.InorganicHit) with { MaxInstances = 9, Volume = 0.4f, PitchVariance = 0.4f, Pitch = 0.4f});
             ScreenShakeSystem.StartShakeAtPoint(target.Center, 3.6f);
         }
 
         float dashRadius = MathHelper.Lerp(401f, 200f, dashCounter / (dashCount - 1f));
 
-        if (Time == 1f)
+        if (Time == 2f)
         {
+            //Projectile.Opacity = Projectile.Opacity.StepTowards(1f, 0.3f);
+
             float teleportOffset = Main.rand.NextFloat(300f, 500f);
             Vector2 teleportDirection = Main.rand.NextVector2Unit();
             if (dashCounter == 0f)
@@ -756,6 +767,7 @@ public class AntishadowAssassin : ModProjectile
             int slash = Projectile.NewProjectile(Projectile.GetSource_FromThis(), slashSpawnPosition, Vector2.Zero, slashID, Projectile.damage, Projectile.knockBack, Projectile.owner, dashCounter, slashOffset.Length(), slashOffset.ToRotation());
             Main.projectile[slash].originalDamage = Projectile.originalDamage;
             Main.projectile[slash].netUpdate = true;
+            
 
             slashMaxOffset = 50f;
             slashID = ModContent.ProjectileType<AntishadowAssassinSlash>();
@@ -763,7 +775,7 @@ public class AntishadowAssassin : ModProjectile
             float angleY = Main.rand.NextFloatDirection() * 1.1f;
             slashSpawnPosition = Vector2.Lerp(Projectile.Center, target.Center, 0.8f) + Main.rand.NextVector2Circular(slashMaxOffset, slashMaxOffset);
 
-            slash = Projectile.NewProjectile(Projectile.GetSource_FromThis(), slashSpawnPosition, Vector2.Zero, slashID, Projectile.damage, Projectile.knockBack, Projectile.owner, angleX, angleY, 0.56f);
+            slash = Projectile.NewProjectile(Projectile.GetSource_FromThis(), slashSpawnPosition, Vector2.Zero, slashID, Projectile.damage, Projectile.knockBack, Projectile.owner, angleX, angleY, 0.67f);
             Main.projectile[slash].originalDamage = Projectile.originalDamage;
             Main.projectile[slash].netUpdate = true;
         }
@@ -790,7 +802,11 @@ public class AntishadowAssassin : ModProjectile
 
             dashCounter++;
             if (dashCounter >= dashCount)
-                SwitchState(AssassinState.SliceTargetRepeatedly);
+            {
+               SwitchState(AssassinState.SliceTargetRepeatedly);
+                RerollMask(false);
+            }
+               
         }
     }
 
@@ -805,18 +821,18 @@ public class AntishadowAssassin : ModProjectile
         KatanaUnsheathInterpolant = 1f;
         DoesDamage = true;
 
-        int slashTime = 180;
+        int slashTime = 120;
         NPC target = Main.npc[TargetIndex];
         if (Time <= slashTime)
         {
             if (Time % 4f == 0f)
-                SoundEngine.PlaySound((target.Organic() ? Murasama.OrganicHit : Murasama.InorganicHit) with { MaxInstances = 16 });
+                SoundEngine.PlaySound((target.Organic() ? Murasama.OrganicHit : Murasama.InorganicHit) with { MaxInstances = 16, Volume = 0.5f });
 
             Projectile.Center = target.Center;
             Projectile.velocity = target.velocity.SafeNormalize((target.position - target.oldPosition).SafeNormalize(Vector2.UnitX * Projectile.spriteDirection));
             Projectile.spriteDirection = Projectile.velocity.X.NonZeroSign();
             DashStart = Projectile.Center;
-            ScreenShakeSystem.StartShakeAtPoint(target.Center, 2f);
+            ScreenShakeSystem.StartShakeAtPoint(target.Center, 1.75f);
 
             if (Main.myPlayer == Projectile.owner)
             {
@@ -1101,9 +1117,10 @@ public class AntishadowAssassin : ModProjectile
     /// <summary>
     /// Rerolls the mask variant for this assassin.
     /// </summary>
-    private void RerollMask()
+    private void RerollMask(bool CreateGore = true)
     {
-        CreateMaskGore();
+        if(CreateGore)
+            CreateMaskGore();
 
         int oldMaskVariant = MaskVariant;
         do
@@ -1157,9 +1174,10 @@ public class AntishadowAssassin : ModProjectile
                     loopFireColor = new Color(174, 0, Main.rand.Next(16), 0);
 
                 Vector2 position = Vector2.Lerp(previous, current, i / steps);
-                AntishadowFireParticleSystemManager.CreateNew(Projectile.owner, false, position, Main.rand.NextVector2Circular(27f, 27f) + directionalForce * 0.45f, Vector2.One * Main.rand.NextFloat(30f, 175f) * scaleFactor, loopFireColor);
+                if(Main.rand.NextBool(3))
+                    AntishadowFireParticleSystemManager.CreateNew(Projectile.owner, false, position, Main.rand.NextVector2Circular(27f, 27f) + directionalForce * 0.45f, Vector2.One * Main.rand.NextFloat(30f, 175f) * scaleFactor, loopFireColor);
 
-                if (Main.rand.NextBool(4) && Main.GetProjectileDesiredShader(Projectile) == 0)
+                if (Main.rand.NextBool(8) && Main.GetProjectileDesiredShader(Projectile) == 0)
                 {
                     Dust fire = Dust.NewDustPerfect(position, 261);
                     fire.velocity = Main.rand.NextVector2Circular(30f, 30f) - directionalForce * 0.4f;
@@ -1204,11 +1222,13 @@ public class AntishadowAssassin : ModProjectile
         if (Main.rand.NextBool(12))
             fireColor = new Color(175, 0, Main.rand.Next(16), 0);
 
-        Vector2 fireSpawnPosition = Projectile.Bottom + new Vector2(Main.rand.NextFloatDirection() * 36f, Main.rand.NextFloatDirection() * 24f - 16f).RotatedBy(Projectile.rotation) * Projectile.scale;
+        Vector2 fireSpawnPosition = Projectile.Bottom + new Vector2(Main.rand.NextFloatDirection() * 36f, Main.rand.NextFloatDirection() * 2f - 28f).RotatedBy(Projectile.rotation) * Projectile.scale;
         Vector2 fireVelocity = fireSpawnPosition.SafeDirectionTo(Projectile.Bottom) * fireSpeed - Vector2.UnitY * 3f;
-        AntishadowFireParticleSystemManager.CreateNew(Projectile.owner, true, fireSpawnPosition, fireVelocity, new Vector2(0.81f, 1f) * Main.rand.NextFloat(20f, 65f), fireColor * Projectile.Opacity);
+        if(Main.rand.NextBool(2))
+            for(int i = 0; i < 2; i++)
+                AntishadowFireParticleSystemManager.CreateNew(Projectile.owner, true, fireSpawnPosition, fireVelocity, new Vector2(0.81f, 1f) * Main.rand.NextFloat(20f, 65f), fireColor * Projectile.Opacity);
 
-        if (Main.rand.NextBool(24))
+        if (Main.rand.NextBool(48))
         {
             EmberParticle ember = new EmberParticle(fireSpawnPosition, Main.rand.NextVector2Circular(4f, 1f) - Vector2.UnitY * Main.rand.NextFloat(10f), Color.Crimson * Projectile.Opacity, 2f, 120);
             ember.Spawn();
@@ -1246,7 +1266,7 @@ public class AntishadowAssassin : ModProjectile
         });
         AttackLoop.Update(Projectile.Center, sound =>
         {
-            sound.Volume = AttackLoopActivationInterpolant * 1.3f;
+            sound.Volume = AttackLoopActivationInterpolant * 2f;
             sound.Pitch = MathHelper.SmoothStep(0f, 0.8f, AttackLoopActivationInterpolant);
         });
     }
@@ -1478,6 +1498,10 @@ public class AntishadowAssassin : ModProjectile
     /// </summary>
     private void DrawHat(Vector2 center)
     {
+        if (Main.specialSeedWorld)
+        {
+
+        }
         Texture2D hat = KasaTexture.Value;
         Vector2 hatDrawPosition = center + new Vector2(Projectile.spriteDirection * -4f, -128f).RotatedBy(BowRotation * Projectile.spriteDirection) * Projectile.scale;
         Main.spriteBatch.Draw(hat, hatDrawPosition, null, Color.White * Projectile.Opacity, BowRotation * Projectile.spriteDirection, hat.Size() * 0.5f, Projectile.scale, Projectile.spriteDirection.ToSpriteDirection(), 0f);

@@ -30,6 +30,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
     {
         #region setup
         private List<Vector2> clotOffsets;
+        private List<int> clotFrames;
         public NeedleAi CurrentState;
 
         private Vector2 hitPosition;
@@ -151,10 +152,10 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             // Compute home position
             int SignFromOwner = Math.Sign(FromOwner.X);
             float sideOffset = Player.direction * (Index % 2 == 0 ? -90f : 100f);
-            Vector2 homePos = Player.MountedCenter + new Vector2(sideOffset, 0f) - Player.velocity * 20f;
+            Vector2 homePos = Player.MountedCenter + new Vector2(sideOffset, 10*(Index%2)) - Player.velocity * 2f;
 
-            if (Index >= 2 && Target == null) homePos = Player.MountedCenter + new Vector2(sideOffset, Index % 1 - (50 + Player.direction * SignFromOwner * 5)) - Player.velocity * 20f;
-            else homePos = Player.MountedCenter + new Vector2(sideOffset, Index % 1) - Player.velocity * 20f;
+            if (Index >= 2 && Target == null) homePos = Player.MountedCenter + new Vector2(sideOffset, Index % 1 - (50 + Player.direction * SignFromOwner * (Index % 2))) - Player.velocity * 2f;
+            else homePos = Player.MountedCenter + new Vector2(sideOffset, (Index % 2 == 0 ? 1 : 0)-60) - Player.velocity * 20f;
             
             if (Target == null && Attack != 0) Attack = 0;
             float trackSpeed = 1f;
@@ -388,24 +389,8 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         }
         #endregion
         #region Assorted Stuff
-        private void EnsureClotOffsetCount(int desiredCount)
-        {
-            if (clotOffsets == null)
-                clotOffsets = new List<Vector2>(desiredCount);
-
-            // Append random offsets if we have fewer than needed:
-            while (clotOffsets.Count < desiredCount)
-            {
-                float maxOffset = 5f; // adjust “scatter radius” as you like
-                float ox = Main.rand.NextFloat(-maxOffset, maxOffset);
-                float oy = Main.rand.NextFloat(-maxOffset, maxOffset);
-                clotOffsets.Add(new Vector2(ox, oy));
-            }
-
-            // If we somehow have more entries than segments, trim the end:
-            while (clotOffsets.Count > desiredCount)
-                clotOffsets.RemoveAt(clotOffsets.Count - 1);
-        }
+        private int clotFrame;
+      
 
         public override void OnKill(int timeLeft)
         {
@@ -413,6 +398,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             base.OnKill(timeLeft);
         }
         private bool CanHit() => (Attack == 1 && AttackCooldown <= 0);
+        
         public override bool? CanHitNPC(NPC target) => CanHit();//(Attack == 1 && AttackCooldown <= 0 && (!Main.zenithWorld || !target.friendly));
 
         public override void ModifyDamageHitbox(ref Rectangle hitbox)
@@ -426,9 +412,13 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                 AttackCooldown += MaxAttackCooldown - 2 + Main.rand.Next(0, 2);
             else
                 AttackCooldown += 10;
-            if (target.type == ModContent.NPCType<FAP>() || target.type == ModContent.NPCType<WITCH>())
+            if (target.type == ModContent.NPCType<FAP>())
             {
-                damageDone = int.MaxValue;
+                // Instantly kill the npc if its of the type "FAP"
+               // target.StrikeNPCNoInteraction(target.life + 9999, 0f, 0, false, false, false);
+                target.StrikeInstantKill();
+                target.checkDead();
+                target.active = false;
             }
             BloodMetaball metaball = ModContent.GetInstance<BloodMetaball>();
             for (int i = 0; i < 5; i++)
@@ -452,7 +442,8 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                 AttackCooldown = 0;
                 Attack = 3;
             }
-            for (int i = 0; i < 6; i++) Player.GetModPlayer<BloodArmorPlayer>().AddBloodUnit(-10);
+            if(!Player.GetModPlayer<BloodArmorPlayer>().Frenzy)
+                for (int i = 0; i < 1; i++) Player.GetModPlayer<BloodArmorPlayer>().AddBloodUnit(-5);
 
         }
         public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
@@ -468,7 +459,38 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         public override bool? CanCutTiles() => CanHit();
         #endregion
         #region drawcode
-
+        /// <summary>
+        /// Gives each piece of clot a randomized position on the tendril.
+        /// </summary>
+        /// <param name="desiredCount"></param>
+        private void EnsureClotOffsetCount(int desiredCount)
+        {
+            if (clotOffsets == null)
+                clotOffsets = new List<Vector2>(desiredCount);
+            if (clotFrames == null)
+                clotFrames = new List<int>(desiredCount);
+            // Append random offsets if we have fewer than needed:
+            while (clotOffsets.Count < desiredCount)
+            {
+                float maxOffset = 5f; // adjust “scatter radius” as you like
+                float ox = Main.rand.NextFloat(-maxOffset, maxOffset);
+                float oy = Main.rand.NextFloat(-maxOffset, maxOffset);
+                clotOffsets.Add(new Vector2(ox, oy));
+                
+            }
+            while (clotFrames.Count < desiredCount)
+            {
+                int totalFrames = 5;
+                int frame = Main.rand.Next(0, totalFrames+1);
+                clotFrames.Add(frame);
+                
+            }
+            while (clotFrames.Count > desiredCount)
+                clotFrames.RemoveAt(clotFrames.Count - 1);
+            // If we somehow have more entries than segments, trim the end:
+            while (clotOffsets.Count > desiredCount)
+                clotOffsets.RemoveAt(clotOffsets.Count - 1);
+        }
         //todo: create a method that checks if the player is in frenzy. then, animate the bloodneedle_head and hold it on the last frame.
         //when the frenzy is over, run backwards through the animation until its on the first frame again.
         //7 frames
@@ -564,9 +586,10 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         {
             Texture2D head = ModContent.Request<Texture2D>(Texture).Value;
             Texture2D body = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Items/Armor/AwakenedBloodArmor/RegSeg").Value;
-            Texture2D Clot = GennedAssets.Textures.GreyscaleTextures.WhitePixel;
+            Texture2D Clot = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Items/Armor/AwakenedBloodArmor/Scab").Value;
+            //todo: create frame and make sure that it looks decent.x
 
-            
+           
 
             int frameHeight = head.Height / HeadFrameCount;
             Rectangle HeadFrame = new Rectangle(0, headFrame * frameHeight, head.Width, frameHeight);
@@ -617,8 +640,8 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                 Rectangle BodyFrame = new Rectangle(0, bodyFrame * BodyframeHeight, body.Width, BodyframeHeight);
                 Vector2 Borigin = new Vector2(body.Width / 2f, BodyframeHeight / 2f);
 
-                for (int i = points.Count - 1; i > 0; i--)
-                //for (int i = 1; i < points.Count -1; i++)
+                //for (int i = points.Count - 1; i > 0; i--)
+                for (int i = 1; i < points.Count -1; i++)
                 {
 
                     float rot = points[i].AngleTo(points[i - 1]);
@@ -637,13 +660,16 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                     Vector2 stretch = new Vector2((1.3f - (float)i / points.Count * 0.6f) * Projectile.scale,
                         i > points.Count ? points[i].Distance(points[i - 1]) / (body.Height / 2f) : 1.1f + currentPulsate);
 
+                    Rectangle ScabFrame = new Rectangle(0, clotFrames[i], 16, 16);
+                    Vector2 Clorigin = new Vector2(ScabFrame.Width / 2, (ScabFrame.Height / 5) / 2);
+
                     Main.EntitySpriteDraw(body, points[i] - Main.screenPosition, BodyFrame, lightColor, rot, Borigin, stretch, Tendril, 0);
                     Vector2 fixedOffset = clotOffsets[i];
                     Vector2 clotDrawPos = points[i] + fixedOffset;
-                    Main.EntitySpriteDraw(Clot, clotDrawPos - Main.screenPosition, null, lightColor, rot, Clot.Size() * 0.5f, Player.GetModPlayer<BloodArmorPlayer>().Clot * 10, Tendril, 0);
+                    Main.EntitySpriteDraw(Clot, clotDrawPos - Main.screenPosition, ScabFrame, lightColor, rot, Clorigin * 0.5f, Player.GetModPlayer<BloodArmorPlayer>().Clot, SpriteEffects.None, 0);
                 }
             }
-            Main.EntitySpriteDraw(head, headDrawPos, HeadFrame, Color.White, Projectile.rotation, origin, new Vector2(1f, 1f), sprite, 0);
+            Main.EntitySpriteDraw(head, headDrawPos, HeadFrame, lightColor, Projectile.rotation, origin, new Vector2(1f, 1f), sprite, 0);
 
 
             return false;
