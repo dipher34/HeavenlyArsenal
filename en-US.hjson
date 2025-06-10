@@ -246,6 +246,11 @@ Mods: {
 				DisplayName: Noxus Weapon
 				Tooltip: ""
 			}
+
+			UmbralLeechDrop: {
+				DisplayName: Umbral Leech Drop
+				Tooltip: ""
+			}
 		}
 
 		Biomes: {

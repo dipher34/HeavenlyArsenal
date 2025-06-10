@@ -1,19 +1,4 @@
-﻿// CustomTunnel.fx
-// --------------------------------------------------------------------------
-// Translated from the Shadertoy GLSL you posted. Assumes tModLoader (DX9/FX).
-// Place this in YourMod/Content/Shaders/CustomTunnel.fx
-// --------------------------------------------------------------------------
-
-// These “uniform” values will be set by tModLoader at runtime.
-//   - Resolution: float2 screen width/height in pixels
-//   - Time:      the game time in seconds (usually `Main.GameUpdateCount / 60f` or similar)
-//   - inputTexture: the back-buffer or input texture (if you want to composit onto the current screen).
-//
-// We’re writing a “full-screen post-process” shader. In tModLoader FX files,
-// the pixel shader entrypoint is usually called “MainPS”.
-
-// --------------------------- User‐set uniforms ---------------------------
-// This float2 is the full screen resolution in pixels.
+﻿
 float2 Resolution;
 
 // This is the “time” uniform (in seconds). tModLoader will update this each frame.
@@ -37,7 +22,7 @@ struct PS_INPUT
     float2 TexCoord0 : TEXCOORD0; // uv ∈ [0,1] over the screen.
 };
 
-// The function returns a float4 color (RGBA) for each pixel.
+
 float4 MainPS(PS_INPUT input) : SV_TARGET
 {
     // 1) Re‐create the “u = (fragCoord - iResolution/2)/iResolution.y” part:

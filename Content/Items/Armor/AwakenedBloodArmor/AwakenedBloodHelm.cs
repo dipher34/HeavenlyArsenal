@@ -7,6 +7,7 @@ using CalamityMod.Items.Materials;
 using CalamityMod.Rarities;
 using CalamityMod.Tiles.Furniture.CraftingStations;
 using HeavenlyArsenal.Content.Items.Armor.Haemsong;
+using HeavenlyArsenal.Content.Items.Materials.BloodMoon;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 using Terraria;
@@ -104,6 +105,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                      AddIngredient<OmegaBlueHelmet>().
                      AddRecipeGroup("HeavenlyArsenal:BloodflareHelmets", 1).
                      AddIngredient<YharonSoulFragment>(15).
+                     AddIngredient<UmbralLeechDrop>(3).
                      AddCondition(conditions: Condition.BloodMoon).
                      AddTile<CosmicAnvil>().
                      Register();
