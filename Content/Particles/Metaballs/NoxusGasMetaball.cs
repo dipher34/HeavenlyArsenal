@@ -10,7 +10,7 @@ using CalamityMod.Graphics.Metaballs;
 using NoxusBoss.Assets;
 using HeavenlyArsenal.Content.Items.Weapons.CCR_Weapon;
 
-namespace CalRemix.Core.Graphics
+namespace HeavenlyArsenal.Content.Particles.Metaballs.NoxusGasMetaball
 {
     public class NoxusGasMetaball : Metaball
     {
@@ -34,12 +34,7 @@ namespace CalRemix.Core.Graphics
         {
             get
             {
-                // Check if the calamity remix mod is installed
-                if (ModLoader.HasMod("CalRemix"))
-                {
-                    yield return ModContent.Request<Texture2D>("CalRemix/Core/Graphics/Metaballs/NoxusGasLayer1").Value;
-                }
-                else
+                
                 {
                     yield return ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Particles/Metaballs/NoxusGasLayer1").Value;
                 }

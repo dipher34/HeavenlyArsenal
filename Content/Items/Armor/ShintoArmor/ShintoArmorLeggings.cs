@@ -10,6 +10,9 @@ using Terraria.Localization;
 using Terraria.ModLoader;
 using NoxusBoss.Content.Rarities;
 using HeavenlyArsenal.ArsenalPlayer;
+using Microsoft.Xna.Framework.Graphics;
+using Terraria.DataStructures;
+using Microsoft.Xna.Framework;
 
 namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 {
@@ -92,4 +95,31 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             }
         }
 	}
+
+    public class HipSwordBackLayer : PlayerDrawLayer
+    {
+        public override Position GetDefaultPosition() => new AfterParent(PlayerDrawLayers.BackAcc);
+        public override bool GetDefaultVisibility(PlayerDrawSet drawInfo) =>
+            drawInfo.drawPlayer.active && drawInfo.drawPlayer.GetModPlayer<ShintoArmorPlayer>().VoidBeltEquipped;
+
+        protected override void Draw(ref PlayerDrawSet drawInfo)
+        {
+            
+            DrawSword(ref drawInfo);
+        }
+
+        private void DrawSword(ref PlayerDrawSet drawInfo)
+        {
+            Texture2D texture = ModContent.Request<Texture2D>("HeavenlyArsenal/Assets/Textures/Extra/SheathedSword").Value;
+
+            Vector2 position = drawInfo.Position + new Vector2(12f, 30f) - Main.screenPosition;
+            //todo: lerp rotation based on player velocity
+            float Rot = MathHelper.Lerp(-0.3f, 0.3f, MathHelper.Clamp((drawInfo.drawPlayer.velocity.X + 8f) / 16f, 0f, 1f)
+            );
+
+            Main.EntitySpriteDraw(texture, position, null, Color.White, Rot, texture.Size() / 2, 1f, drawInfo.playerEffect, 0);
+        }
+    }
+
+   
 }

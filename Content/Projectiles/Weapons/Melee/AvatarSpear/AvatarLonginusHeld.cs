@@ -961,7 +961,7 @@ public class AvatarLonginusHeld : ModProjectile
     {
         string texturePath = "HeavenlyArsenal/Content/Projectiles/Weapons/Melee/AvatarSpear/AvatarLonginusHeld_Alt";
         if(Main.LocalPlayer.name == "ModTester2")
-            texturePath = "HeavenlyArsenal/Content/Projectiles/Weapons/Melee/AvatarSpear/AvatarLonginusHeld";
+            texturePath = "HeavenlyArsenal/Content/Projectiles/Weapons/Melee/AvatarSpear/AvatarLonginusHeld_Alt";
 
 
         Texture2D texture = ModContent.Request<Texture2D>(texturePath).Value;

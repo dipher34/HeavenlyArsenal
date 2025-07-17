@@ -1,5 +1,5 @@
 ﻿using CalamityMod.Particles;
-using CalRemix.Core.Graphics;
+using HeavenlyArsenal.Content.Particles.Metaballs.NoxusGasMetaball;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;

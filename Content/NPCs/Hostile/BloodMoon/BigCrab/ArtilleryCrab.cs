@@ -1,17 +1,13 @@
 ﻿using CalamityMod;
-using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using NoxusBoss.Assets;
 using System;
 using Terraria;
 using Terraria.Audio;
-using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.Utilities;
-using static NoxusBoss.Assets.GennedAssets.Textures;
 using Dust = Terraria.Dust;
 
 namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
@@ -158,16 +154,14 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
                     {
                         for(int i = 0; i < 2; i++)
                         {
-                            //when i = 0, the angle should be offset by -15 degrees
-                            //when i = 1, the angle should be offset by 0
-                            //when i = 2, the angle should be offset by 15 degrees
+                            
                             Vector2 dir = (target.Center - NPC.Center).SafeNormalize(new Vector2(0,i*15 - 15)) * 10f;
                             Projectile.NewProjectile(NPC.GetSource_FromAI(), NPC.Center, dir, ModContent.ProjectileType<Bloodproj>(), NPC.damage / 10, 0f, Main.myPlayer);
                         }
                         
                     }
                     
-                    // After 3 shots, charge and transition
+                    
                     if (BombardTimer > 60 && ChargeDistance < 400)
                     {
                         
@@ -201,6 +195,23 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
             }
         }
 
+
+        private void StateMachine()
+        {
+            switch (CurrentState)
+            {
+                case HemocrabAI.Idle:
+                    break;
+                case HemocrabAI.MoveToRange:
+                    break;
+                case HemocrabAI.BombardTarget:
+                    break;
+                case HemocrabAI.EnragedMelee:
+                    break;
+
+            }
+        }
+        
         public const int totalFrameCount = 13;
         public const int WalkFrameCount = 6;
         public const int BombardFrameCount = 7;
@@ -316,9 +327,9 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
         {
             if (!NPC.IsABestiaryIconDummy)
             {
-                //Utils.DrawBorderString(spriteBatch, " | State: " + CurrentState, NPC.Center - Vector2.UnitY * 160 - Main.screenPosition, Color.White);
-                //Utils.DrawBorderString(spriteBatch, " | Ammo: " + AmmoCount, NPC.Center - Vector2.UnitY * 140 - Main.screenPosition, Color.White);
-                //Utils.DrawBorderString(spriteBatch, " | Timer: " + BombardTimer, NPC.Center - Vector2.UnitY * 120 - Main.screenPosition, Color.White);
+                Utils.DrawBorderString(spriteBatch, " | State: " + CurrentState, NPC.Center - Vector2.UnitY * 160 - Main.screenPosition, Color.White);
+                Utils.DrawBorderString(spriteBatch, " | Ammo: " + AmmoCount, NPC.Center - Vector2.UnitY * 140 - Main.screenPosition, Color.White);
+                Utils.DrawBorderString(spriteBatch, " | Timer: " + BombardTimer, NPC.Center - Vector2.UnitY * 120 - Main.screenPosition, Color.White);
 
             }
 

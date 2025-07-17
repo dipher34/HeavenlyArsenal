@@ -192,8 +192,8 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                     Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.Transform);
 
                     //Utils.DrawBorderString(Main.spriteBatch, "Opacity: " + baseShieldOpacity.ToString(), -Vector2.UnitX *150 +pos - Vector2.UnitY*40, Color.AntiqueWhite);
-                    Utils.DrawBorderString(Main.spriteBatch, "Barrier: "+player.GetModPlayer<ShintoArmorPlayer>().barrier, -Vector2.UnitX * 150 + pos - Vector2.UnitY * 60, Color.AntiqueWhite);
-                    Utils.DrawBorderString(Main.spriteBatch, "ShieldHealth Interp: " + ShieldHealthInterpolant.ToString(), - Vector2.UnitX * 150 + pos - Vector2.UnitY * 80, Color.AntiqueWhite);
+                    //Utils.DrawBorderString(Main.spriteBatch, "Barrier: "+player.GetModPlayer<ShintoArmorPlayer>().barrier, -Vector2.UnitX * 150 + pos - Vector2.UnitY * 60, Color.AntiqueWhite);
+                    //Utils.DrawBorderString(Main.spriteBatch, "ShieldHealth Interp: " + ShieldHealthInterpolant.ToString(), - Vector2.UnitX * 150 + pos - Vector2.UnitY * 80, Color.AntiqueWhite);
 
                     Vector2 drawPosition = player.Center - Main.screenPosition;
 

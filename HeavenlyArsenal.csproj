@@ -45,7 +45,6 @@
 	  <Compile Remove="Content\Items\Weapons\Ranged\AvatarBow.cs" />
 	  <Compile Remove="Content\Items\Weapons\Ranged\BloodFall.cs" />
 	  <Compile Remove="Content\Items\Weapons\Ranged\FileName.cs" />
-	  <Compile Remove="Content\Items\Weapons\Ranged\HotFusion\Temp.cs" />
 	  <Compile Remove="Content\Items\Weapons\Rogue\LifeAndCessationGlobalNPC.cs" />
 	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\Goreca\Goreca.cs" />
 	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\Leech\UmbralLeech.cs" />
@@ -79,7 +78,6 @@
 	<ItemGroup>
 	  <Folder Include="Common\Scenes\" />
 	  <Folder Include="Content\Gores\Enemy\BloodMoon\UmbralLeech\" />
-	  <Folder Include="Content\Items\Weapons\Ranged\HotFusion\" />
 	  <Folder Include="Core\Overrides\" />
 	  <Folder Include="Core\Visuals\" />
 	</ItemGroup>
