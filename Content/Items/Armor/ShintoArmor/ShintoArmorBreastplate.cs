@@ -13,6 +13,7 @@ using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
+using NoxusBoss.Content.NPCs.Bosses.Avatar.SpecificEffectManagers;
 using NoxusBoss.Content.Rarities;
 using ReLogic.Content;
 using System;
@@ -27,8 +28,7 @@ using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 {
-	// The AutoloadEquip attribute automatically attaches an equip texture to this item.
-	// Providing the EquipType.Body value here will result in TML expecting a X_Body.png file to be placed next to the item's main texture.
+	
 	[AutoloadEquip(EquipType.Body)]
 	public class ShintoArmorBreastplate : ModItem
 	{
@@ -40,12 +40,10 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         public static int ShieldRechargeRate = 25;
         public static int TotalShieldRechargeTime = 220;
 
-        public static int AbyssDash_Iframes = 10 * 60;
-        public static int AbyssDash_Cooldown = 60;
-        public static readonly SoundStyle AbyssDash_Start = GennedAssets.Sounds.Avatar.AngryDistant with { PitchVariance = 0.4f, Volume = 0.6f, MaxInstances = 0 };
         public static readonly SoundStyle ShieldHurtSound = GennedAssets.Sounds.Avatar.DeadStarCoreCrack with { PitchVariance = 0.6f, Volume = 0.6f, MaxInstances = 0 };
         public static readonly SoundStyle ActivationSound = GennedAssets.Sounds.Avatar.DeadStarCoreCritical with { PitchVariance = 0.6f, Volume = 0.6f, MaxInstances = 0 };
         public static readonly SoundStyle BreakSound = GennedAssets.Sounds.Avatar.DeadStarCoreExplode with { PitchVariance = 0.6f, Volume = 0.6f, MaxInstances = 0 };
+
         public static Texture2D NoiseTex = GennedAssets.Textures.Noise.TurbulentNoise;
         public static Texture2D GFB = GennedAssets.Textures.Extra.Ogscule;
 
@@ -69,7 +67,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 			Item.height = 18; // Height of the item
 			Item.value = Item.sellPrice(gold: 4445); // How many coins the item is worth
 			Item.rare = ModContent.RarityType<AvatarRarity>(); // The rarity of the item
-			Item.defense = 56; // The amount of defense the item will give when equipped
+			Item.defense = 63; // The amount of defense the item will give when equipped
 
 		}
 
@@ -77,8 +75,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         public override void UpdateEquip(Player player)
         {
             var modPlayer = player.Calamity();
-            modPlayer.shadeRegen = true;
-            player.thorns += 10f;
+            modPlayer.shadeRegen = false;
             player.statLifeMax2 += MaxLifeIncrease;
             player.statManaMax2 += MaxManaIncrease;
             player.GetDamage<GenericDamageClass>() += 0.15f;
@@ -91,7 +88,6 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             player.GetModPlayer<ShintoArmorPlayer>().ChestplateEquipped = true;
         }
 
-        // Please see Content/ExampleRecipes.cs for a detailed explanation of recipe creation.
         public float RenderDepth => IDyeableShaderRenderer.SpongeShieldDepth;
         public static void DrawDyeableShader(SpriteBatch spriteBatch)
         {
@@ -126,7 +122,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                 float baseScale = 1f;
                 float maxExtraScale = 0.055f;
                 float extraScalePulseInterpolant = MathF.Pow(4f, MathF.Sin(Main.GlobalTimeWrappedHourly * 0.791f + i) - 1);
-                float scale = baseScale + maxExtraScale * extraScalePulseInterpolant;
+                float scale = (baseScale + maxExtraScale * extraScalePulseInterpolant) * modPlayer.barrierSizeInterp;
                 float ShieldHealthInterpolant = (float)player.GetModPlayer<ShintoArmorPlayer>().barrier / ShieldDurabilityMax;
 
                 if (!alreadyDrawnShieldForPlayer)
@@ -134,7 +130,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                     float visualShieldStrength = ShieldHealthInterpolant;
 
                     // The scale used for the noise overlay also grows and shrinks
-                    float noiseScale = MathHelper.Lerp(0.28f, 0.38f, 5f + 0.5f * MathF.Sin(Main.GlobalTimeWrappedHourly * 0.347f + i));
+                    float noiseScale = MathHelper.Lerp(0.28f, 0.38f, 5f + 0.5f * MathF.Sin(Main.GlobalTimeWrappedHourly * 0.347f + i)) * modPlayer.barrierSizeInterp;
 
 
                     
@@ -185,7 +181,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                         Main.EntitySpriteDraw(ogg, pos, null, Color.AntiqueWhite, rotation, ogg.Size() / 2f, 0.05f, 0, 0);
                     }
                     else 
-                        Main.EntitySpriteDraw(glow, pos, null, Color.AntiqueWhite, rotation, glow.Size() / 2f, (baseShieldOpacity/20)+0.1f, 0);
+                        Main.EntitySpriteDraw(glow, pos, null, Color.AntiqueWhite, rotation, glow.Size() / 2f, modPlayer.barrierSizeInterp*((baseShieldOpacity/20)+0.1f), 0);
                     
                     
                     Main.spriteBatch.End();
@@ -193,7 +189,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 
                     //Utils.DrawBorderString(Main.spriteBatch, "Opacity: " + baseShieldOpacity.ToString(), -Vector2.UnitX *150 +pos - Vector2.UnitY*40, Color.AntiqueWhite);
                     //Utils.DrawBorderString(Main.spriteBatch, "Barrier: "+player.GetModPlayer<ShintoArmorPlayer>().barrier, -Vector2.UnitX * 150 + pos - Vector2.UnitY * 60, Color.AntiqueWhite);
-                    //Utils.DrawBorderString(Main.spriteBatch, "ShieldHealth Interp: " + ShieldHealthInterpolant.ToString(), - Vector2.UnitX * 150 + pos - Vector2.UnitY * 80, Color.AntiqueWhite);
+                    //Utils.DrawBorderString(Main.spriteBatch, "TimeSinceLastHit: " + player.GetModPlayer<ShintoArmorPlayer>().timeSinceLastHit, - Vector2.UnitX * 150 + pos - Vector2.UnitY * 80, Color.AntiqueWhite);
 
                     Vector2 drawPosition = player.Center - Main.screenPosition;
 
@@ -202,6 +198,17 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                     SpriteEffects direction = SpriteEffects.None;
                     Vector2 Gorigin = new Vector2(glow.Width / 2 , glow.Height / 2);
 
+
+                    ManagedScreenFilter suctionShader = ShaderManager.GetFilter("HeavenlyArsenal.SuctionSpiralShader");
+
+                    suctionShader.TrySetParameter("suctionCenter", Vector2.Transform(player.Center - Main.screenPosition, Main.GameViewMatrix.TransformationMatrix));
+                    suctionShader.TrySetParameter("zoomedScreenSize", Main.ScreenSize.ToVector2() / Main.GameViewMatrix.Zoom);
+                    suctionShader.TrySetParameter("zoom", Main.GameViewMatrix.Zoom.X);
+                    suctionShader.TrySetParameter("suctionOpacity", 1 * (player.GetModPlayer<ShintoArmorPlayer>().barrierSizeInterp - AvatarRiftSuckVisualsManager.ZoomInInterpolant) * 0.32f);
+                    suctionShader.TrySetParameter("suctionBaseRange", 27f);
+                    suctionShader.TrySetParameter("suctionFadeOutRange", 10f);
+                    suctionShader.SetTexture(GennedAssets.Textures.Noise.PerlinNoise, 1, SamplerState.LinearWrap);
+                    suctionShader.Activate();
 
                     //Main.spriteBatch.Draw(glow, drawPosition, null, Color.Crimson, rotation, Gorigin, 0.05f, direction, 0f);
 
@@ -254,15 +261,6 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             }
         }
 
-        public override bool PreDrawInWorld(SpriteBatch spriteBatch, Color lightColor, Color alphaColor, ref float rotation, ref float scale, int whoAmI)
-        {
-            return base.PreDrawInWorld(spriteBatch, lightColor, alphaColor, ref rotation, ref scale, whoAmI);
-        }
-        public override void PostDrawInWorld(SpriteBatch spriteBatch, Color lightColor, Color alphaColor, float rotation, float scale, int whoAmI)
-        {
-            base.PostDrawInWorld(spriteBatch, lightColor, alphaColor, rotation, scale, whoAmI);
-        }
-
         public override void AddRecipes()
 		{
             if (ModLoader.TryGetMod("CalamityHunt", out Mod CalamityHunt))
@@ -291,23 +289,4 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 
         }
     }
-    public class ShintoArmorBreastplate_DrawLayer : PlayerDrawLayer
-    {
-
-        public override Position GetDefaultPosition() => new BeforeParent(PlayerDrawLayers.FrontAccFront);
-
-        public override bool GetDefaultVisibility(PlayerDrawSet drawInfo) => drawInfo.drawPlayer.body == EquipLoader.GetEquipSlot(Mod, nameof(ShintoArmorBreastplate), EquipType.Body);
-
-        public override bool IsHeadLayer => false;
-
-
-
-        protected override void Draw(ref PlayerDrawSet drawInfo)
-        {
-
-
-
-        }
-    }
-
 }

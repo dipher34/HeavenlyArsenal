@@ -76,7 +76,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
 
         private readonly List<SlotId> attachedSounds = new List<SlotId>();
 
-       public LoopedSoundInstance AmbientLoop { get; set; }
+        public LoopedSoundInstance AmbientLoop { get; set; }
 
         public LoopedSoundInstance FrenzyLoop { get; set; }
         public bool BloodArmorEquipped;
@@ -175,13 +175,12 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         {
             orig(self, itemSlot, item, modded);
 
-            // Check if the player is wearing the helmet and chestplate in their respective slots
             bool hasVanityHead = !self.armor[10].IsAir;
             bool hasArmorHead = self.armor[0].type == ModContent.ItemType<AwakenedBloodHelm>();
             bool hasVanityBody = !self.armor[11].IsAir;
             bool hasArmorBody = self.armor[1].type == ModContent.ItemType<AwakenedBloodplate>();
 
-            // Only override visuals if the player truly has the set equipped (vanity-free)
+           
             if (!hasVanityHead && hasArmorHead)
             {
                 string headTexture = $"AwakenedBloodHelm{actualFormStr}";

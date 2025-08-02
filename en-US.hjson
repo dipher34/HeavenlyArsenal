@@ -251,6 +251,11 @@ Mods: {
 				DisplayName: Umbral Leech Drop
 				Tooltip: ""
 			}
+
+			BadSunItem: {
+				DisplayName: Bad Sun Item
+				Tooltip: ""
+			}
 		}
 
 		Biomes: {

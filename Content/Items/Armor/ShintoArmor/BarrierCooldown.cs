@@ -97,7 +97,7 @@ public class BarrierRecharge : CooldownHandler
     public override SoundStyle? EndSound => ShintoArmorBreastplate.ActivationSound;
     public override bool ShouldPlayEndSound => true;
 
-
+    
     //public override void Tick() => instance.player.Calamity().playedSpongeShieldSound = false;
     // When the recharge period completes, grant 1 point of shielding immediately so the rest my refill normally.
     // The shield durability cooldown is added elsewhere, in Misc Effects.

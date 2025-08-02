@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework; // Using another one library
 using NoxusBoss.Content.Buffs;
 using NoxusBoss.Content.Rarities;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.GameContent.Creative;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -39,9 +40,15 @@ public class StupidFuckYouSword : ModItem
         // Other properties
         Item.value = 10000; // Item sell price in copper coins
         Item.useStyle = ItemUseStyleID.Swing; // This is how you're holding the weapon, visit https://terraria.wiki.gg/wiki/Use_Style_IDs for list of possible use styles
-        Item.UseSound = SoundID.Item1; // What sound is played when using the item, all sounds can be found here - https://terraria.wiki.gg/wiki/Sound_IDs
+        Item.UseSound = SoundID.Item1; // What sound is played when using the item, all sounds can be found here - https://terraria.wiki.gg/wiki/Sound_ID|
+        Item.shoot = 1;
     }
-
+    public override bool Shoot(Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback)
+    {
+        player.statLife--;
+        player.Hurt(PlayerDeathReason.ByPlayerItem(type,Item), 300, 3);
+        return base.Shoot(player, source, position, velocity, type, damage, knockback);
+    }
     public override void MeleeEffects(Player player, Rectangle hitbox)
     {
         if (Main.rand.NextBool(3)) // With 1/3 chance per tick (60 ticks = 1 second)...

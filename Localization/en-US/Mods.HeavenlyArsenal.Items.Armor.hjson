@@ -6,8 +6,15 @@ ShintoArmor: {
 	}
 
 	ShintoArmorHelmetAll: {
-		DisplayName: Helm of Forlorn Stars
+		DisplayName: Forsaken Helmet
 		Tooltip: ""
+		SetBonus:
+			'''
+			double tap down to Enrage
+			while Enraged, deal and take 3x damage
+			an Antishadow barrier is forged around you that absorbs some of the damage you would've taken
+			the barrier cannot sustain itself while you are enraged
+			'''
 	}
 
 	ShintoArmorBreastplate: {

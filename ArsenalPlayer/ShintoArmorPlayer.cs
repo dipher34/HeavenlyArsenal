@@ -1,36 +1,40 @@
-﻿using System;
+﻿using CalamityMod;
+using CalamityMod.Buffs.Potions;
+using CalamityMod.CalPlayer;
+using CalamityMod.CalPlayer.Dashes;
+using CalamityMod.Cooldowns;
+using CalamityMod.Graphics.Metaballs;
+using CalamityMod.Items.Accessories;
+using CalamityMod.Items.Weapons.Magic;
+using CalamityMod.NPCs.TownNPCs;
+using HeavenlyArsenal.Common.Graphics;
+using HeavenlyArsenal.Content.Buffs;
+using HeavenlyArsenal.Content.Items.Armor;
+using HeavenlyArsenal.Content.Items.Armor.ShintoArmor;
+using HeavenlyArsenal.Content.Items.Weapons.Summon.AntishadowAssassin;
+using HeavenlyArsenal.Content.Particles;
+using HeavenlyArsenal.Content.Particles.Metaballs;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using NoxusBoss.Assets;
+using NoxusBoss.Content.NPCs.Bosses.Avatar.Projectiles;
+using NoxusBoss.Core.Graphics.GeneralScreenEffects;
+using NoxusBoss.Core.Graphics.TentInterior.Cutscenes;
+using ReLogic.Content;
+using Steamworks;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Terraria;
+using Terraria.Audio;
+using Terraria.Graphics.Shaders;
 using Terraria.ID;
 using Terraria.ModLoader;
-using Microsoft.Xna.Framework;
-using CalamityMod.Cooldowns;
-using CalamityMod.Items.Accessories;
-using CalamityMod;
-using CalamityMod.CalPlayer;
-using HeavenlyArsenal.Content.Items.Armor;
-using System.Text;
-using Terraria.Audio;
-using System.Collections.Generic;
-using CalamityMod.CalPlayer.Dashes;
-using Microsoft.Xna.Framework.Graphics;
-using ReLogic.Content;
-using NoxusBoss.Core.Graphics.GeneralScreenEffects;
-using NoxusBoss.Assets;
-using CalamityMod.NPCs.TownNPCs;
-using Terraria.Graphics.Shaders;
-using HeavenlyArsenal.Content.Items.Weapons.Summon.AntishadowAssassin;
-using Steamworks;
-using NoxusBoss.Core.Graphics.TentInterior.Cutscenes;
-using HeavenlyArsenal.Content.Particles;
-using HeavenlyArsenal.Common.Graphics;
-using NoxusBoss.Content.NPCs.Bosses.Avatar.Projectiles;
-using HeavenlyArsenal.Content.Buffs;
-using CalamityMod.Buffs.Potions;
-using HeavenlyArsenal.Content.Items.Armor.ShintoArmor;
 
 namespace HeavenlyArsenal.ArsenalPlayer
 {
-    class ShintoArmorPlayer : ModPlayer
+    public class ShintoArmorPlayer : ModPlayer
     {
         public bool SetActive;
         public int maxBarrier;
@@ -39,7 +43,8 @@ namespace HeavenlyArsenal.ArsenalPlayer
         public int Iframe;
         public int rechargeDelay;
         public int rechargeRate;
-        public float barrierDamageReduction = 0.7f;
+        public float barrierDamageReduction = 0.5f;
+        public float barrierSizeInterp = 0;
         public bool ShadowShieldVisible = true;
         public bool ShadowVeil;
         internal float barrierShieldPartialRechargeProgress = 0f;
@@ -47,6 +52,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
         public bool IsDashing;
         public bool empoweredDash;
 
+        public float EnrageInterp = 0;
 
         public bool Enraged;
         #region s
@@ -81,7 +87,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
          */
         #endregion
         public Dictionary<string, CooldownInstance> cooldowns;
-
+        
         public int ShadowVeilImmunity = 0;
         public bool ChestplateEquipped = false;
 
@@ -109,132 +115,24 @@ namespace HeavenlyArsenal.ArsenalPlayer
         {
            
             PlayerDashManager.TryAddDash(new ShintoArmorDash());
-            PlayerDashManager.TryAddDash(new AbyssDash());
+            
 
         }
         public override void ArmorSetBonusActivated()
         {
+            if(SetActive)
             Enraged = Enraged == true ? false : true;
         }
         public override void PostUpdateMiscEffects()
         {
-            if (SetActive)
-            {
-                
-                //Main.NewText($"Barrier: {barrier}, TimeSinceLastHit: {timeSinceLastHit}", Color.AntiqueWhite);
-                Player.buffImmune[BuffID.Silenced] = true;
-                Player.buffImmune[BuffID.Cursed] = true;
-                Player.buffImmune[BuffID.OgreSpit] = true;
-                Player.buffImmune[BuffID.Frozen] = true;
-                Player.buffImmune[BuffID.Webbed] = true;
-                Player.buffImmune[BuffID.Stoned] = true;
-                Player.buffImmune[BuffID.VortexDebuff] = true;
-                Player.buffImmune[BuffID.Electrified] = true;
-                Player.buffImmune[BuffID.Burning] = true;
-                Player.buffImmune[BuffID.Stinky] = true;
-                Player.buffImmune[BuffID.Dazed] = true;
-                Player.buffImmune[BuffID.Venom] = true;
-                Player.buffImmune[BuffID.CursedInferno] = true;
-                Player.buffImmune[BuffID.OnFire] = true;
-                Player.buffImmune[BuffID.Weak] = true;
-                Player.buffImmune[BuffID.BrokenArmor] = true;
-                if (ModLoader.TryGetMod("Calamity", out Mod CalamityMod))
-                {
-                    Mod calamity = ModLoader.GetMod("CalamityMod");
-                    Player.buffImmune[calamity.Find<ModBuff>("Clamity").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("Dragonfire").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("DoGExtremeGravity").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("FishAlert").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("GlacialState").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("GodSlayerInferno").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("HolyFlames").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("IcarusFolly").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("MiracleBlight").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("Nightwither").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("Plague").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("VulnerabilityHex").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("Warped").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("WeakPetrification").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("WhisperingDeath").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("FabsolVodkaBuff").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("FrozenLungs").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("PopoNoselessBuff").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("SearingLava").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("ShellfishClaps").Type] = true;
-                    Player.buffImmune[calamity.Find<ModBuff>("BrimstoneFlames").Type] = true;
-                    calamity.Call("SetWearingRogueArmor", Player, true);
-                    calamity.Call("SetWearingPostMLSummonerArmor", Player, true);
-                }
-                /*
-                if (ModLoader.TryGetMod("CalamityHunt", out Mod CalamityHunt))
-                {
-                    Mod Hunt = ModLoader.GetMod("CalamityHunt");
-                    
-                    {
-                        ModPlayer ShogunArmorPlayer = Player.GetModPlayer(CalamityHunt.Find<ModPlayer>("ShogunArmorPlayer"));
-                        if (ShogunArmorPlayer != null)
-                        {
-                            CalamityHunt.Find<ModPlayer>(ShogunArmorPlayer).active = true;
-                            ShogunArmorPlayer//active = true;
-                        }
-                    }
-                    
-                   
-                }
-                */
-
-
-                // Shield stuff
-
-                // Begin visual cooldown handling for shield recharge.
-
-                // If the shield is completely discharged and not recharging, start the recharge cooldown.
-                if (timeSinceLastHit == 0 && !cooldowns.ContainsKey(BarrierRecharge.ID))
-                    Player.AddCooldown(BarrierRecharge.ID, ShintoArmorBreastplate.ShieldRechargeDelay);
-
-                // Update the durability cooldown display if the shield is active.
-                if (barrier > 0 && !cooldowns.ContainsKey(BarrierDurability.ID))
-                {
-                    var durabilityCooldown = Player.AddCooldown(BarrierDurability.ID, ShintoArmorBreastplate.ShieldDurabilityMax);
-                    durabilityCooldown.timeLeft = barrier;
-                }
-
-                // Only update recharge progress visuals once the recharge delay has passed.
-                if (timeSinceLastHit >= rechargeDelay && barrier > 0 && !cooldowns.ContainsKey(BarrierRecharge.ID))
-                {
-                    barrierShieldPartialRechargeProgress += ShintoArmorBreastplate.ShieldDurabilityMax / (float)ShintoArmorBreastplate.TotalShieldRechargeTime;
-                    int pointsActuallyRecharged = (int)MathF.Floor(barrierShieldPartialRechargeProgress);
-                    // durabilityCooldown.timeLeft += 
-                    // This value is used only for visual display.
-                    int displayBarrier = Math.Min(barrier + pointsActuallyRecharged, TheSponge.ShieldDurabilityMax);
-
-                    barrierShieldPartialRechargeProgress -= 400 - timeSinceLastHit;
-
-                    if (cooldowns.TryGetValue(BarrierDurability.ID, out var cdDurability))
-                        cdDurability.timeLeft = displayBarrier;
-                }
-
-
-
-            }
-            else
-            {
-                barrier = 0;
-                timeSinceLastHit = 0;
-                rechargeDelay = ShintoArmorBreastplate.ShieldRechargeDelay;
-                if (cooldowns.ContainsKey(BarrierDurability.ID) || cooldowns.ContainsKey(BarrierRecharge.ID))
-                {
-                    cooldowns.Remove(BarrierDurability.ID);
-                    cooldowns.Remove(BarrierRecharge.ID);
-                }
-            }
-      
+            ManageImmunity();
+            ManageBarrier();
+            ManageEnraged();
+            AntishadowHealing();
             if (Iframe > 0)
             {
                 Iframe--;
             }
-
-            
             if (ShadowVeil)
             {
                 CalamityPlayer modPlayer = Player.Calamity();
@@ -290,33 +188,212 @@ namespace HeavenlyArsenal.ArsenalPlayer
                     }
                 }
             }
-           
 
-            if (IsDashing)
+            
+            
+        }
+        private void ManageEnraged()
+        {
+            if (SetActive)
             {
-                Main.NewText($"Im doing things!", Color.Coral);
+                if (Enraged)
+                {
+                    //there's gotta be a better way to do it than this.
+
+                    Player.Calamity().RoverDriveShieldDurability =(int) float.Lerp(Player.Calamity().RoverDriveShieldDurability, -1, 0.4f);
+                    Player.Calamity().cooldowns.Remove(WulfrumRoverDriveDurability.ID);
+                    Player.Calamity().cooldowns.Remove(WulfrumRoverDriveRecharge.ID);
+
+                    Player.Calamity().pSoulShieldDurability = (int)float.Lerp(Player.Calamity().pSoulShieldDurability, -1, 0.4f);
+                    Player.Calamity().cooldowns.Remove(ProfanedSoulShield.ID);
+                    Player.Calamity().cooldowns.Remove(ProfanedSoulShieldRecharge.ID);
+
+                    Player.Calamity().SpongeShieldDurability = (int)float.Lerp(Player.Calamity().SpongeShieldDurability, -1, 0.4f);
+
+                    Player.Calamity().cooldowns.Remove(SpongeRecharge.ID);
+                    Player.Calamity().cooldowns.Remove(SpongeDurability.ID);
+                   
+                    Player.GetDamage<GenericDamageClass>() *= 3;
+                    EnrageInterp = float.Lerp(EnrageInterp, 1, 0.4f);
+                    cooldowns.Clear();
+                    barrier = (int)float.Lerp(barrier,-1, 0.14f);
+                    if (barrier <= 0)
+                        Player.Calamity().cooldowns.Remove(BarrierDurability.ID);
+                    barrierSizeInterp = float.Lerp(barrierSizeInterp, -1, 0.14f);
+                    if (barrierSizeInterp <= 0)
+                        barrierSizeInterp = 0;
+                    timeSinceLastHit = 0;
+                    Player.Calamity().cooldowns.Remove(BarrierRecharge.ID);
+                }
+                else
+                {
+                    if (timeSinceLastHit == 1 && EnrageInterp > 0.9)
+                    {
+                        barrier = 0;
+                        Player.AddCooldown(BarrierRecharge.ID, ShintoArmorBreastplate.ShieldRechargeDelay);
+                        if (Player.Calamity().HasAnyEnergyShield)
+                        {
+                            
+                        }
+                    }
+                    EnrageInterp = float.Lerp(EnrageInterp, 0, 0.1f);
+                }
             }
-
-            if (cooldowns.ContainsKey(AbyssDashCooldown.ID)) 
+            else Enraged = false;
+        }
+        private void ManageImmunity()
+        {
+            if (SetActive)
             {
-                empoweredDash = true;
-            }
-            else
-            {
-                empoweredDash = false;
-            }
-
-
-
-            if (Enraged)
-            {
-                Player.GetDamage<GenericDamageClass>() *= 3;
-                
+                //Main.NewText($"Barrier: {barrier}, TimeSinceLastHit: {timeSinceLastHit}", Color.AntiqueWhite);
+                Player.buffImmune[BuffID.Silenced] = true;
+                Player.buffImmune[BuffID.Cursed] = true;
+                Player.buffImmune[BuffID.OgreSpit] = true;
+                Player.buffImmune[BuffID.Frozen] = true;
+                Player.buffImmune[BuffID.Webbed] = true;
+                Player.buffImmune[BuffID.Stoned] = true;
+                Player.buffImmune[BuffID.VortexDebuff] = true;
+                Player.buffImmune[BuffID.Electrified] = true;
+                Player.buffImmune[BuffID.Burning] = true;
+                Player.buffImmune[BuffID.Stinky] = true;
+                Player.buffImmune[BuffID.Dazed] = true;
+                Player.buffImmune[BuffID.Venom] = true;
+                Player.buffImmune[BuffID.CursedInferno] = true;
+                Player.buffImmune[BuffID.OnFire] = true;
+                Player.buffImmune[BuffID.Weak] = true;
+                Player.buffImmune[BuffID.BrokenArmor] = true;
+                if (ModLoader.TryGetMod("Calamity", out Mod CalamityMod))
+                {
+                    Mod calamity = ModLoader.GetMod("CalamityMod");
+                    Player.buffImmune[calamity.Find<ModBuff>("Clamity").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("Dragonfire").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("DoGExtremeGravity").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("FishAlert").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("GlacialState").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("GodSlayerInferno").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("HolyFlames").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("IcarusFolly").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("MiracleBlight").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("Nightwither").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("Plague").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("VulnerabilityHex").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("Warped").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("WeakPetrification").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("WhisperingDeath").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("FabsolVodkaBuff").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("FrozenLungs").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("PopoNoselessBuff").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("SearingLava").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("ShellfishClaps").Type] = true;
+                    Player.buffImmune[calamity.Find<ModBuff>("BrimstoneFlames").Type] = true;
+                    calamity.Call("SetWearingRogueArmor", Player, true);
+                    calamity.Call("SetWearingPostMLSummonerArmor", Player, true);
+                }
+            
             }
         }
+        private void ManageBarrier()
+        {
+            if (timeSinceLastHit == 0 && !cooldowns.ContainsKey(BarrierRecharge.ID))
+                Player.AddCooldown(BarrierRecharge.ID, ShintoArmorBreastplate.ShieldRechargeDelay);
+            if (SetActive)
+            {
+                
 
+                // Update the durability cooldown display if the shield is active.
+                if (barrier > 0 && !cooldowns.ContainsKey(BarrierDurability.ID))
+                {
+                    if(barrierSizeInterp < 1)
+                    {
+                        barrierSizeInterp = float.Lerp(barrierSizeInterp, 1, 0.1f);
+                    }
+                    var durabilityCooldown = Player.AddCooldown(BarrierDurability.ID, ShintoArmorBreastplate.ShieldDurabilityMax);
+                    durabilityCooldown.timeLeft = barrier;
+                }
+                if (barrier <= 0 )
+                    Player.Calamity().cooldowns.Remove(BarrierDurability.ID);
+                // Only update recharge progress visuals once the recharge delay has passed.
+                if (timeSinceLastHit >= rechargeDelay && barrier > 0 && !cooldowns.ContainsKey(BarrierRecharge.ID))
+                {
+                    barrierShieldPartialRechargeProgress += ShintoArmorBreastplate.ShieldDurabilityMax / (float)ShintoArmorBreastplate.TotalShieldRechargeTime;
+                    int pointsActuallyRecharged = (int)MathF.Floor(barrierShieldPartialRechargeProgress);
+                    // durabilityCooldown.timeLeft += 
+                    // This value is used only for visual display.
+                    int displayBarrier = Math.Min(barrier + pointsActuallyRecharged, TheSponge.ShieldDurabilityMax);
 
+                    barrierShieldPartialRechargeProgress -= 400 - timeSinceLastHit;
 
+                    if (cooldowns.TryGetValue(BarrierDurability.ID, out var cdDurability))
+                        cdDurability.timeLeft = displayBarrier;
+                }
+            }
+            if(!SetActive)
+            {
+                barrierSizeInterp = float.Lerp(barrierSizeInterp, 0, 0.2f);
+                barrier = 0;
+                timeSinceLastHit = 0;
+                rechargeDelay = ShintoArmorBreastplate.ShieldRechargeDelay;
+                
+                Player.Calamity().cooldowns.Remove(BarrierDurability.ID);
+                
+                Player.Calamity().cooldowns.Remove(BarrierRecharge.ID);
+            }
+            
+
+        }
+
+        private void AntishadowHealing()
+        {
+            
+            if (!SetActive)
+                return;
+            if (Player.StandingStill() && Player.velocity.Y == 0 && Player.itemAnimation == 0)
+            {
+
+                // Actually apply "standing still" regeneration (the stats are granted even at full health)
+                float regenTimeNeededForTurboRegen = 400;//shadeRegen ? 40f : cFreeze ? 60f : honeyDewWorking ? 90f : photosynthesis ? 90f : aAmpoule ? 90f : purity ? 60f : -1f;
+
+                // 4 = vanilla Shiny Stone
+                int turboRegenPower = 12 * (1 + (int)Player.lifeRegenTime / 1000);//shadeRegen || cFreeze || purity ? 4 : honeyDewWorking || aAmpoule ? 3 : photosynthesis ? 1 : -1;
+
+                if (turboRegenPower > 0)
+                {
+                    // After a brief delay determined by your form of standing still regen, min-cap life regen time at 1800 / 3600.
+                    // Photosynthesis Potion does not do this at night.
+                    if (Player.lifeRegenTime > regenTimeNeededForTurboRegen && Player.lifeRegenTime < 1800f)
+                        Player.lifeRegenTime = 1800f;
+
+                    Player.lifeRegen += turboRegenPower;
+                    Player.lifeRegenTime += turboRegenPower;
+                }
+
+                if (Player.lifeRegen > 0 && Player.statLife < Player.Calamity().actualMaxLife)
+                {
+                    if (Main.rand.NextBool(1))
+                    {
+                        AntishadowBlob Blob = ModContent.GetInstance<AntishadowBlob>();
+                        for (int i = 0; i < turboRegenPower; i++)
+                        {
+                            Vector2 bloodSpawnPosition = Player.Center + Main.rand.NextVector2CircularEdge(120 + Main.rand.Next(-10,10), 120 + Main.rand.Next(-10, 10));
+
+                            //var dust = Dust.NewDustPerfect(bloodSpawnPosition, DustID.AncientLight, Vector2.Zero, default, Color.Red);
+                            //dust.noGravity = true;
+                            Blob.player = Player;
+
+                            Blob.CreateParticle(bloodSpawnPosition, Vector2.Zero, 0, 0);
+                        }
+                    }
+                    
+
+                }
+
+                
+
+            }
+            
+        }
+
+        #region Barrier stuff
         public override void ModifyHurt(ref Player.HurtModifiers modifiers)
         {
             if(SetActive)
@@ -324,16 +401,16 @@ namespace HeavenlyArsenal.ArsenalPlayer
                 if (barrier > 0 && Iframe <= 0)
                 {
                     modifiers.DisableSound();
+                    
                     SoundEngine.PlaySound(ShintoArmorBreastplate.ShieldHurtSound, Player.Center);
                 }
                 else if (barrier <= 0)
                 {
                     if (timeSinceLastHit! < 0)
                     {
-                        BarrierCrack(Player);
                         SoundEngine.PlaySound(ShintoArmorBreastplate.BreakSound, Player.Center);
                         barrier = 0;
-
+                       
                     }
 
 
@@ -347,8 +424,6 @@ namespace HeavenlyArsenal.ArsenalPlayer
            
         }
 
-        
-
         public void BarrierTakeDamageVFX()
         {
             for (int i = 0; i < Main.rand.Next(1, 5); i++)
@@ -361,51 +436,59 @@ namespace HeavenlyArsenal.ArsenalPlayer
             }
         }
 
-        public void BarrierCrack(Player player)
-        {
-            //GeneralScreenEffectSystem.RadialBlur.Start(Player.Center, 3f, 90);
-            if (Main.netMode != NetmodeID.MultiplayerClient)
-                Projectile.NewProjectile(player.GetSource_FromThis(),player.Center.X,player.Center.Y,0,0, ModContent.ProjectileType<DarkWave>(), 0, 0f);
-        }
-        public override bool FreeDodge(Player.HurtInfo info)
+       
+
+        public override void PostUpdateEquips()
         {
             if (barrier > 0 && SetActive)
             {
-                int incoming = info.Damage;
+                Player.statDefense += 30;
+            }
+        }
 
+        #endregion
+        public override bool FreeDodge(Player.HurtInfo info)
+        {
+            timeSinceLastHit = 0;
+            if (barrier > 0 && SetActive)
+            {
+                int incoming = info.SourceDamage/4;//info.Damage;
+                
                 if (Iframe <= 0)
                 {
-                    int TakenDamage = (int)Math.Round(incoming * barrierDamageReduction, 0);
-                    //retaliation
+                    
+                    int TakenDamage = (int)Math.Round(incoming * 0.5f, 0);
+                    
                     if(TakenDamage > ShintoArmorBreastplate.ShieldDurabilityMax && barrier == ShintoArmorBreastplate.ShieldDurabilityMax)
                     {
-                      //  Main.NewText($"Retaliation!", Color.AntiqueWhite);
                         GeneralScreenEffectSystem.ChromaticAberration.Start(Player.Center, 3f, 90);
-                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.Angry, Player.Center);
-                        retaliate();
+                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.AngryDistant with { Volume = 0.05f }, Player.Center);
+                       
                     }
-                    Iframe = Player.ComputeHitIFrames(info);
-                    barrier -= TakenDamage;
+                    Iframe = (int)(Player.ComputeHitIFrames(info)*1.25f);
+                    if (info.DamageSource.SourceProjectileType.Equals(ModContent.ProjectileType<StolenPlanetoid>()))
+                    {
+                        
+                        
+                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.Clap);
+                        barrier = 0;
+                        TakenDamage = 999999;
+                    }
+                    else
 
-
+                        barrier -= TakenDamage;
                     BarrierTakeDamageVFX();
                     CombatText.NewText(Player.Hitbox, Color.Cyan, TakenDamage);
-                    //Main.NewText($"Barrier: {barrier}, TimeSinceLastHit: {timeSinceLastHit}, Damage taken: {TakenDamage}, Incoming damage: {incoming}", Color.AntiqueWhite);
-                    timeSinceLastHit = 0;
+                    
+                   
                 }
 
-                if (barrier < 0)
-                {
-                    barrier = 0;
-                    cooldowns.Remove(BarrierDurability.ID);
-                    BarrierCrack(Player);
-                    return true;
-                }
+                
 
                 // Cancel all damage to the player.
                 return true;
             }
-            else if(barrier== 0 && timeSinceLastHit < Iframe)
+            else if(barrier <= 0 && timeSinceLastHit < Iframe)
             {
                 return true;
             }
@@ -419,13 +502,7 @@ namespace HeavenlyArsenal.ArsenalPlayer
                 return false;
         }
 
-        public override void PostUpdateEquips()
-        {
-            if (barrier > 0 && SetActive)
-            {
-                Player.statDefense += 30;
-            }
-        }
+        
 
         public override void UpdateBadLifeRegen()
         {
@@ -457,13 +534,12 @@ namespace HeavenlyArsenal.ArsenalPlayer
 
         public void VoidBelt()
         {
-            Player.AddBuff(ModContent.BuffType<BloodfinBoost>(),5,true,false);
-            //Main.NewText($"Void belt activated", Color.AntiqueWhite);
+           
             GeneralScreenEffectSystem.RadialBlur.Start(Player.Center, 3f, 90);
             Player.SetImmuneTimeForAllTypes(120);
             Dust.NewDust(Player.Center, Player.width, Player.height, DustID.BunnySlime, 0, 0, 100, Color.Crimson, 1);
-            SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.AngryDistant with { MaxInstances = 0, PitchVariance = 0.5f });
-            for(int i = 0; i <20; i++)
+            SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.AngryDistant with { Volume = 0.4f, PitchVariance = 0.3f}, Player.Center);
+            for (int i = 0; i <20; i++)
             {
                 int fireBrightness = Main.rand.Next(40);
                 Color fireColor = new Color(fireBrightness, fireBrightness, fireBrightness);
@@ -477,110 +553,15 @@ namespace HeavenlyArsenal.ArsenalPlayer
         }
 
 
-        public void retaliate()
-        {
-            for(int i = 0; i < 10; i++)
-            {
-
-            }
-        }
-        /*
-        public void SetImmuneTimeForAllTypes(int time)
-        {
-            immune = true;
-            immuneTime = time;
-            for (int i = 0; i < hurtCooldowns.Length; i++)
-            {
-                hurtCooldowns[i] = time;
-            }
-        }
-
-        public void ShadowDodge()
-        {
-            SetImmuneTimeForAllTypes(longInvince ? 120 : 80);
-            if (whoAmI != Main.myPlayer)
-                return;
-
-            for (int i = 0; i < maxBuffs; i++)
-            {
-                if (buffTime[i] > 0 && buffType[i] == 59)
-                    DelBuff(i);
-            }
-
-            PutHallowedArmorSetBonusOnCooldown();
-            NetMessage.SendData(62, -1, -1, null, whoAmI, 2f);
-        }
-
-        private void PutHallowedArmorSetBonusOnCooldown()
-        {
-            shadowDodgeTimer = 1800;
-        }
-
-        public void BrainOfConfusionDodge()
-        {
-            SetImmuneTimeForAllTypes(longInvince ? 120 : 80);
-            brainOfConfusionDodgeAnimationCounter = 300;
-            if (whoAmI == Main.myPlayer)
-            {
-                AddBuff(321, 240, quiet: false);
-                NetMessage.SendData(62, -1, -1, null, whoAmI, 4f);
-            }
-        }
-
-        public void NinjaDodge()
-        {
-            SetImmuneTimeForAllTypes(longInvince ? 120 : 80);
-            for (int i = 0; i < 100; i++)
-            {
-                int num = Dust.NewDust(new Vector2(position.X, position.Y), width, height, 31, 0f, 0f, 100, default(Color), 2f);
-                Main.dust[num].position.X += Main.rand.Next(-20, 21);
-                Main.dust[num].position.Y += Main.rand.Next(-20, 21);
-                Main.dust[num].velocity *= 0.4f;
-                Main.dust[num].scale *= 1f + (float)Main.rand.Next(40) * 0.01f;
-                Main.dust[num].shader = GameShaders.Armor.GetSecondaryShader(cWaist, this);
-                if (Main.rand.Next(2) == 0)
-                {
-                    Main.dust[num].scale *= 1f + (float)Main.rand.Next(40) * 0.01f;
-                    Main.dust[num].noGravity = true;
-                }
-            }
-
-            int num2 = Gore.NewGore(new Vector2(position.X + (float)(width / 2) - 24f, position.Y + (float)(height / 2) - 24f), default(Vector2), Main.rand.Next(61, 64));
-            Main.gore[num2].scale = 1.5f;
-            Main.gore[num2].velocity.X = (float)Main.rand.Next(-50, 51) * 0.01f;
-            Main.gore[num2].velocity.Y = (float)Main.rand.Next(-50, 51) * 0.01f;
-            Main.gore[num2].velocity *= 0.4f;
-            num2 = Gore.NewGore(new Vector2(position.X + (float)(width / 2) - 24f, position.Y + (float)(height / 2) - 24f), default(Vector2), Main.rand.Next(61, 64));
-            Main.gore[num2].scale = 1.5f;
-            Main.gore[num2].velocity.X = 1.5f + (float)Main.rand.Next(-50, 51) * 0.01f;
-            Main.gore[num2].velocity.Y = 1.5f + (float)Main.rand.Next(-50, 51) * 0.01f;
-            Main.gore[num2].velocity *= 0.4f;
-            num2 = Gore.NewGore(new Vector2(position.X + (float)(width / 2) - 24f, position.Y + (float)(height / 2) - 24f), default(Vector2), Main.rand.Next(61, 64));
-            Main.gore[num2].scale = 1.5f;
-            Main.gore[num2].velocity.X = -1.5f - (float)Main.rand.Next(-50, 51) * 0.01f;
-            Main.gore[num2].velocity.Y = 1.5f + (float)Main.rand.Next(-50, 51) * 0.01f;
-            Main.gore[num2].velocity *= 0.4f;
-            num2 = Gore.NewGore(new Vector2(position.X + (float)(width / 2) - 24f, position.Y + (float)(height / 2) - 24f), default(Vector2), Main.rand.Next(61, 64));
-            Main.gore[num2].scale = 1.5f;
-            Main.gore[num2].velocity.X = 1.5f + (float)Main.rand.Next(-50, 51) * 0.01f;
-            Main.gore[num2].velocity.Y = -1.5f - (float)Main.rand.Next(-50, 51) * 0.01f;
-            Main.gore[num2].velocity *= 0.4f;
-            num2 = Gore.NewGore(new Vector2(position.X + (float)(width / 2) - 24f, position.Y + (float)(height / 2) - 24f), default(Vector2), Main.rand.Next(61, 64));
-            Main.gore[num2].scale = 1.5f;
-            Main.gore[num2].velocity.X = -1.5f - (float)Main.rand.Next(-50, 51) * 0.01f;
-            Main.gore[num2].velocity.Y = -1.5f - (float)Main.rand.Next(-50, 51) * 0.01f;
-            Main.gore[num2].velocity *= 0.4f;
-            if (whoAmI == Main.myPlayer)
-                NetMessage.SendData(62, -1, -1, null, whoAmI, 1f);
-        }
-        */
+       
+  
         public override void ResetEffects()
         {
             IsDashing = false;
             SetActive = false;
             ChestplateEquipped = false;
             VoidBeltEquipped = false;
-         
+            
 
         }
     }

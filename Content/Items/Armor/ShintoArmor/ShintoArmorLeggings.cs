@@ -52,20 +52,13 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             player.accRunSpeed *= 0.5f;
             player.runSlowdown *= 2f;
             var modPlayer = player.Calamity();
-            modPlayer.shadowSpeed = true;
             player.moveSpeed += 0.3f;
 
             player.autoJump = true;
             player.jumpSpeedBoost += 1.6f;
             player.noFallDmg = true;
             player.GetModPlayer<ShintoArmorPlayer>().VoidBeltEquipped = true;
-            //ModContent.GetModPlayer<ShintoArmorPlayer>().ShadowVeil = true;
-            if (player.GetModPlayer<ShintoArmorPlayer>().empoweredDash == true)
-            {
-                modPlayer.DashID = AbyssDash.ID;
-            }
-            else
-                modPlayer.DashID = ShintoArmorDash.ID;
+            modPlayer.DashID = ShintoArmorDash.ID;
             player.dashType = 0;
             player.spikedBoots = 2;
         }
@@ -96,30 +89,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         }
 	}
 
-    public class HipSwordBackLayer : PlayerDrawLayer
-    {
-        public override Position GetDefaultPosition() => new AfterParent(PlayerDrawLayers.BackAcc);
-        public override bool GetDefaultVisibility(PlayerDrawSet drawInfo) =>
-            drawInfo.drawPlayer.active && drawInfo.drawPlayer.GetModPlayer<ShintoArmorPlayer>().VoidBeltEquipped;
-
-        protected override void Draw(ref PlayerDrawSet drawInfo)
-        {
-            
-            DrawSword(ref drawInfo);
-        }
-
-        private void DrawSword(ref PlayerDrawSet drawInfo)
-        {
-            Texture2D texture = ModContent.Request<Texture2D>("HeavenlyArsenal/Assets/Textures/Extra/SheathedSword").Value;
-
-            Vector2 position = drawInfo.Position + new Vector2(12f, 30f) - Main.screenPosition;
-            //todo: lerp rotation based on player velocity
-            float Rot = MathHelper.Lerp(-0.3f, 0.3f, MathHelper.Clamp((drawInfo.drawPlayer.velocity.X + 8f) / 16f, 0f, 1f)
-            );
-
-            Main.EntitySpriteDraw(texture, position, null, Color.White, Rot, texture.Size() / 2, 1f, drawInfo.playerEffect, 0);
-        }
-    }
+  
 
    
 }

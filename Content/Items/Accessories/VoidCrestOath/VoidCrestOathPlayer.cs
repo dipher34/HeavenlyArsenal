@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using HeavenlyArsenal.Content.Projectiles;
 using Microsoft.Xna.Framework;
 using static Luminance.Luminance;
 using Terraria;
@@ -10,6 +9,7 @@ using Terraria.ModLoader;
 using NoxusBoss.Content.NPCs.Bosses.Avatar.Projectiles;
 using NoxusBoss.Content.NPCs.Bosses.NamelessDeity.Projectiles;
 using HeavenlyArsenal.Common.Ui;
+using HeavenlyArsenal.Content.Projectiles;
 
 namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
 {

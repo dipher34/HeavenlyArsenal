@@ -1,6 +1,7 @@
 ﻿using CalamityMod;
 using CalamityMod.NPCs.Providence;
 using HeavenlyArsenal.Content.Items.Materials.BloodMoon;
+using HeavenlyArsenal.Content.Items.Weapons.Summon.BadSun;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Content.Particles.Metaballs;
@@ -150,7 +151,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
 
         public override void SetStaticDefaults()
         {
-            // Prevent this NPC from dropping coins or souls, and from despawning to inactivity.
+           
             NPCID.Sets.CantTakeLunchMoney[Type] = true;
             NPCID.Sets.CannotDropSouls[Type] = true;
             NPCID.Sets.DoesntDespawnToInactivityAndCountsNPCSlots[Type] = true;
@@ -171,6 +172,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
             NPC.knockBackResist = 0;
             
             SegmentPositions = new List<Vector2>();
+            NPC.buffImmune[ModContent.BuffType<BlissFallen>()] = true;
         }
 
         public override void Load()
@@ -183,7 +185,10 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
       
         public override void OnSpawn(IEntitySource source)
         {
-           
+            UmbralLeechGores = new Asset<Texture2D>[7];
+            for (int i = 1; i <= 7; i++)
+                UmbralLeechGores[i - 1] = ModContent.Request<Texture2D>($"HeavenlyArsenal/Content/Gores/Enemy/BloodMoon/UmbralLeech/UmbralLeechGore{i}");
+
             int count;
             if (SegmentNum == 0)
             {
@@ -331,7 +336,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
         public override bool? CanFallThroughPlatforms()
         {
             return true;
-        }
+        }   
         public override void AI()
         {
             //Actual AI
@@ -784,7 +789,15 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
         }
 
 
-
+        public override bool? DrawHealthBar(byte hbPosition, ref float scale, ref Vector2 position)
+        {
+            // Only the middle segment (rounded down) draws the health bar.
+            int middleSegment = SegmentCount / 2;
+            position = new Vector2(0, 20);
+            if ((int)SegmentNum == middleSegment)
+                return base.DrawHealthBar(hbPosition, ref scale, ref position);
+            return false;
+        }
         public override bool CheckDead()
         {
             // Head should go into DeathAnim.
@@ -865,13 +878,21 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
                     metaball.CreateParticle(bloodSpawnPosition, bloodVelocity, Main.rand.NextFloat(10f, 40f), Main.rand.NextFloat(2f));
                 }
                 SoundEngine.PlaySound(DeathNoise with { MaxInstances = 0}, NPC.Center);
-
-                //createGore();
+                
+    
+                for (int i = 0; i < Segments?.Count; i++)
+                {
+                    if (Segments[i] != null && Segments[i].active)
+                        createGore(Segments[i]);
+                }
+                // Also spawn gore for the head itself
+                createGore(NPC);
                 
                 NPC.HitEffect();
                 NPC.NPCLoot();
                 NPC.active = false;
                
+                
                 NPC.netUpdate = true;
 
                 if (NPC.netSpam >= 10)
@@ -881,7 +902,10 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
             DeathAnimationTimer++;
             //Main.NewText($"DeathTimer: {DeathAnimationTimer}");
         }
-
+        public override void OnKill()
+        {
+            //createGore();
+        }
         
         public static Asset<Texture2D>[] UmbralLeechGores
         {
@@ -901,7 +925,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
                     // Head segment
                     variant = 0;
                 }
-                else if (SegmentNum == SegmentCount)
+                if (SegmentNum == SegmentCount)
                 {
                     // Tail segment
                     variant = UmbralLeechGores.Length - 1;
@@ -913,17 +937,17 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
                 }
 
                 texture = UmbralLeechGores[variant].Value;
-                goreID = ModContent.Find<ModGore>(Mod.Name, $"UmbralLeechGores{variant + 1}").Type;
+                goreID = ModContent.Find<ModGore>(Mod.Name, $"UmbralLeechGore{variant + 1}").Type;
             }
         }
-        private void createGore()
+        private void createGore(NPC npc)
         {
             if (Main.netMode == NetmodeID.Server)
                 return;
             //thanks lucille
             GetGoreInfo(out _, out int goreID);
 
-            Gore.NewGore(NPC.GetSource_FromThis(), NPC.Center, Vector2.Zero, goreID, NPC.scale);
+            Gore.NewGore(NPC.GetSource_FromThis(), npc.Center, Vector2.Zero, goreID, NPC.scale);
         }
         public override bool PreKill()
         {
@@ -955,12 +979,13 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
         }
         public override float SpawnChance(NPCSpawnInfo spawnInfo)
         {
-            if (Main.bloodMoon && BossDownedSaveSystem.HasDefeated<Providence>())
-                return SpawnCondition.OverworldNightMonster.Chance * 0.1f;
+            if (Main.bloodMoon && DownedBossSystem.downedProvidence)
+                return SpawnCondition.OverworldNightMonster.Chance * 0.5f;
             return 0f;
 
         }
-
+        
+    
         #endregion
 
         public override void ModifyNPCLoot(NPCLoot npcLoot)
@@ -1151,13 +1176,12 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
             
             if(CurrentState == UmbralLeechAI.FeedTelegraph && Time < 45 && SegmentNum ==0)
             {
-                DrawTelegraph(lightColor);
+                //DrawTelegraph(lightColor);
             }
 
             Texture2D texture = 
                 ModContent.Request<Texture2D>(
-                "HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/Leech/NewLeech"
-            ).Value;
+                "HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/Leech/NewLeech").Value;
 
             //Texture2D outline = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/Leech/UmbralLeech2").Value;
             SpriteEffects Leech = NPC.direction == 1 ? SpriteEffects.FlipVertically : SpriteEffects.None;
@@ -1174,9 +1198,10 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
                 //Utils.DrawBorderString(Main.spriteBatch, "| Direction : " + NPC.direction, NPC.Center - Vector2.UnitY * 160 - Main.screenPosition, Color.White);
                 //Utils.DrawBorderString(Main.spriteBatch, "| DeathTimer: " + DeathAnimationTimer.ToString(), NPC.Center - Vector2.UnitY * 140 - Main.screenPosition, Color.White);
 
-
             }
-           
+            //Utils.DrawBorderString(Main.spriteBatch, SegmentNum.ToString(), NPC.Center - Main.screenPosition + Vector2.UnitY * 100, Color.AntiqueWhite);
+
+
             if (SegmentNum == SegmentCount)
             {
                 row = 0;
@@ -1208,9 +1233,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
             Vector2 origin = sourceRect.Size() / 2f;
           
            
-            Main.EntitySpriteDraw(
-                texture,
-                NPC.Center - Main.screenPosition,
+            Main.EntitySpriteDraw(texture, NPC.Center - Main.screenPosition,
                 sourceRect,
                 lightColor,
                 NPC.rotation,

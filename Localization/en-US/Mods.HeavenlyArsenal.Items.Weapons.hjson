@@ -102,4 +102,13 @@ Summon: {
 			[c/ff4dff:There can be only one.]
 			'''
 	}
+
+	BadSunItem: {
+		DisplayName: Bad Sun Item
+		Tooltip:
+			'''
+			Hey, that apple... its quite good, actually
+			- Nameless Deity
+			'''
+	}
 }

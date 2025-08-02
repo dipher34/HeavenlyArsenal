@@ -49,7 +49,7 @@ namespace HeavenlyArsenal.Content.Particles.Metaballs.NoxusGasMetaball
                 // Only draw if there is at least one active EntropicBlast projectile
                 int entropicBlastType = ModContent.ProjectileType<EntropicBlast>();
                 int entropicCrystalType = ModContent.ProjectileType<EntropicBlast>();
-                return true;//Main.projectile.Any(p => p.active && (p.type == entropicBlastType)|| p.type == entropicCrystalType);
+                return Main.projectile.Any(p => p.active && (p.type == entropicBlastType)|| p.type == entropicCrystalType);
             }
             
         }
@@ -80,10 +80,8 @@ namespace HeavenlyArsenal.Content.Particles.Metaballs.NoxusGasMetaball
 
         public override void DrawInstances()
         {
-            string texturestring = "HeavenlyArsenal/Content/Particles/Metaballs/BasicCircle";
-            //if (ModLoader.HasMod("CalRemix"))
-            //    texturestring = "CalRemix/Core/Graphics/Metaballs/BasicCircle";
-            Texture2D circle = ModContent.Request<Texture2D>(texturestring).Value;
+            
+            Texture2D circle = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Particles/Metaballs/BasicCircle").Value;
             foreach (GasParticle particle in GasParticles)
                 Main.spriteBatch.Draw(circle, particle.Center - Main.screenPosition, null, Color.Purple, 0f, circle.Size() * 0.5f, new Vector2(particle.Size) / circle.Size(), 0, 0f);
 
@@ -96,6 +94,6 @@ namespace HeavenlyArsenal.Content.Particles.Metaballs.NoxusGasMetaball
                     p.ModProjectile.PreDraw(ref c);
                 }
             }
-        }
+            }
     }
 }
