@@ -38,6 +38,8 @@
 	  <Compile Remove="Content\Buffs\ShintoArmorEnrage.cs" />
 	  <Compile Remove="Content\Items\Accessories\NDWings.cs" />
 	  <Compile Remove="Content\Items\Misc\GoodAppleSling.cs" />
+	  <Compile Remove="Content\Items\Weapons\Melee\CircularSaw.cs" />
+	  <Compile Remove="Content\Items\Weapons\Melee\Rapture.cs" />
 	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\Goreca\Goreca.cs" />
 	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\Leech\UmbralLeech.cs" />
 	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\Leech\UmbralLeech2.cs" />
@@ -49,6 +51,7 @@
 	  <Compile Remove="Content\Projectiles\Misc\CosmicWatergun_proj.cs" />
 	  <Compile Remove="Content\Projectiles\Misc\GoodAppleSlingFolder\GoodAppleProj.cs" />
 	  <Compile Remove="Content\Projectiles\Misc\GoodAppleSlingFolder\GoodAppleSlingHeld.cs" />
+	  <Compile Remove="Content\Projectiles\Weapons\Melee\CircularSawProjectile.cs" />
 	  <Compile Remove="Content\Projectiles\Weapons\Melee\FileName.cs" />
 	  <Compile Remove="Content\Projectiles\Weapons\Ranged\AvatarBow_Held.cs" />
 	  <Compile Remove="Core\Overrides\CeaselessRiftOverride.cs" />

@@ -127,17 +127,6 @@ namespace HeavenlyArsenal.Core.Systems
                ModContent.ItemType<LifeAndCessation>(), 1
 
                 ));
-            //solynel
-            tradeDefinitions.Add(new TradeDefinition(
-               //item to trade
-               ItemID.BlandWhip,
-               1000f,
-               ItemReturnType.None,
-               //Items to get back
-
-               ModContent.ItemType<SolynWhip_Item>(), 1
-
-                ));
 
             //coin for coin
             tradeDefinitions.Add(new TradeDefinition(

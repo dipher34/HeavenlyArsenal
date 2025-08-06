@@ -35,7 +35,7 @@ public class ShintoArmorDash : PlayerDashEffect
         Time = 0;
         SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.HarshGlitch with { PitchVariance = 0.45f, MaxInstances = 0, }, player.Center, null);
         SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.ArmSwing with { PitchVariance = 0.25f, MaxInstances = 0, }, player.Center, null);
-        player.GetModPlayer<ShintoArmorPlayer>().IsDashing = true;
+        
         player.SetImmuneTimeForAllTypes(20); 
         for (int i = 0; i < Main.rand.Next(1, 5); i++)
         {
@@ -51,7 +51,6 @@ public class ShintoArmorDash : PlayerDashEffect
 
     public override void MidDashEffects(Player player, ref float dashSpeed, ref float dashSpeedDecelerationFactor, ref float runSpeedDecelerationFactor)
     {
-        player.GetModPlayer<ShintoArmorPlayer>().IsDashing = true;
         Time++;
         //if (Time % 1 == 0)
         //AntishadowCrack darkParticle = AntishadowCrack.pool.RequestParticle();

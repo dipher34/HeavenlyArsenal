@@ -346,14 +346,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
                 switch (CurrentState)
                 {
                     case UmbralLeechAI.Idle:
-                        // Look for a player
-                        Player p = FindClosestPlayer(PlayerDetectionRange);
-                        if (p != null)
-                        {
-                            currentTarget = p;
-                            NPC.target = p.whoAmI;
-                            CurrentState = UmbralLeechAI.SeekTarget;
-                        }
+                        HandleIdle();
                         break;
 
                     case UmbralLeechAI.SeekTarget:
@@ -757,7 +750,14 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
 
         private void HandleIdle()
         {
-
+            // Look for a player
+            Player p = FindClosestPlayer(PlayerDetectionRange);
+            if (p != null)
+            {
+                currentTarget = p;
+                NPC.target = p.whoAmI;
+                CurrentState = UmbralLeechAI.SeekTarget;
+            }
         }
         private void HandleSeekTarget()
         {

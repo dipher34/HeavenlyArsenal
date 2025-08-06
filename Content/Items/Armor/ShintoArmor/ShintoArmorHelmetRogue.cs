@@ -11,6 +11,7 @@ using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
 
+
 namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 {
 	// The AutoloadEquip attribute automatically attaches an equip texture to this item.

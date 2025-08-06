@@ -256,6 +256,16 @@ Mods: {
 				DisplayName: Bad Sun Item
 				Tooltip: ""
 			}
+
+			EdgyDualSwords: {
+				DisplayName: Edgy Dual Swords
+				Tooltip: ""
+			}
+
+			ButterflyStaff: {
+				DisplayName: Butterfly Staff
+				Tooltip: ""
+			}
 		}
 
 		Biomes: {
