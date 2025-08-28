@@ -14,11 +14,11 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
         public override string Texture =>  MiscTexturesRegistry.InvisiblePixel.Path;
         ///<summary>
         /// the current blood in this npc.
-        ///<summary/>
+        ///</summary>
         public int blood;
         ///<summary>
         /// the total cap of blood this npc can hold.
-        ///<summary/>
+        ///</summary>
         public virtual int bloodBankMax;
 
         //todo: a target NPC, a target Player (maybe use entity? and just exclude projectiles)
@@ -27,8 +27,8 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
         public NPC NPCTarget = null;
 
         public Entity currentTarget = null;
-        #region Snackrifice:tm:
         
+        #region Snackrifice:tm:
         /// <summary>
         /// How likely this npc is to recieve a buff when another npc is sacrificed.
         /// </summary>
@@ -38,8 +38,18 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
         /// Determine whether this npc can be sacrificed. 
         /// </summary>
         public virtual bool canBeSacrificed;
-        
-        
+
+        ///<summary>
+        ///
+        ///</summary>
+        public virtual float calculateSacrificeValue(NPC npc)
+        {
+            float bloodPercent = blood / bloodBankMax;
+            float lifePercent = npc.life / (float)npc.lifeMax;
+
+            float value = Utils.Clamp(bloodPercent + lifePercent, 0, 1);
+            return value;
+        }
         #endregion
     }
 }
