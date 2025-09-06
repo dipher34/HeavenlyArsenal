@@ -47,20 +47,35 @@ namespace HeavenlyArsenal.Content.Items.Accessories.Nightfall
         }
         public override void ModifyWeaponCrit(Item item, ref float crit)
         {
+           
             // Create an interpolant out of damage bucket total / damagebucketmax
             // Increase the crit chance of the player based on that interpolant x 100
             if (NightfallActive && DamageBucketMax > 0)
             {
-
+                
               
                 float interpolant = Math.Clamp((float)DamageBucketTotal / DamageBucketMax, 0f, 1f);
+                //bruh
+                /*
                 if (item.crit > 0)
                 {
 
                     crit += (1 + interpolant) * item.crit;
                     CritModifier = (int)crit;
+                    Main.NewText($" {CritModifier}");
                 }
-                
+                */
+
+                if(crit > 0)
+                {
+                    //todo: factor in item attack speed/whatever to help further balance this crit chance increase;
+                    //faster attacking weapons should get less crit chance, and slower weapons should get more crit chance.
+                    //
+                    crit += (1 + interpolant) * 25;
+                    CritModifier = (int)crit;
+
+                    Main.NewText($" {CritModifier}");
+                }
             }
         }
         public override void PostUpdateMiscEffects()

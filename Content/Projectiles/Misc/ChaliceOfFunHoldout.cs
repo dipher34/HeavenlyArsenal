@@ -23,8 +23,8 @@ using NoxusBoss.Assets;
 using Luminance.Core.Graphics;
 using Humanizer;
 using Terraria.ID;
-using HeavenlyArsenal.ArsenalPlayer;
 using HeavenlyArsenal.Content.Buffs.Stims;
+using HeavenlyArsenal.Content.Items.Consumables.CombatStim;
 
 namespace HeavenlyArsenal.Content.Projectiles.Misc
 {

@@ -90,6 +90,14 @@ public static class AssetDirectory
             public static readonly SoundStyle Hit = new SoundStyle(AssetPath + "Sounds/Items/Accessories/Nightfall/Nightfall_Hit");
 
         }
+
+       public static class Items
+        {
+            public static class CombatStim
+            {
+                public static readonly SoundStyle PsychosisWhisper = new SoundStyle(AssetPath + "Sounds/Items/CombatStim/PsychosisWhisper_",5);
+            }
+        }
     }
 
     public static class Effects

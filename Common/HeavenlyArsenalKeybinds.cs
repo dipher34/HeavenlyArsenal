@@ -13,14 +13,18 @@ namespace HeavenlyArsenal.Common
         public override void ProcessTriggers(TriggersSet triggersSet)
         {
             var bloodArmorPlayer = Player.GetModPlayer<BloodArmorPlayer>();
-           
-            if (KeybindSystem.HaemsongBind.JustPressed && (bloodArmorPlayer.BloodArmorEquipped))
+            var modPlayer = Player.GetModPlayer<AwakenedBloodPlayer>();
+            if (KeybindSystem.HaemsongBind.JustPressed)
             {
                 SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.ArmJutOut with { Volume = 0.2f, Pitch = -1f }, Player.Center, null);
+               
                 bloodArmorPlayer.CurrentForm = bloodArmorPlayer.CurrentForm == BloodArmorForm.Offense
                     ? BloodArmorForm.Defense
                     : BloodArmorForm.Offense;
                
+                modPlayer.CurrentForm = modPlayer.CurrentForm == AwakenedBloodPlayer.Form.Offsense
+                    ? AwakenedBloodPlayer.Form.Defense
+                    : AwakenedBloodPlayer.Form.Offsense;
             }
 
         }

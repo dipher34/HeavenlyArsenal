@@ -826,7 +826,7 @@ public class AntishadowAssassin : ModProjectile
         if (Time <= slashTime)
         {
             if (Time % 4f == 0f)
-                SoundEngine.PlaySound((target.Organic() ? Murasama.OrganicHit : Murasama.InorganicHit) with { MaxInstances = 16, Volume = 0.5f });
+                SoundEngine.PlaySound((target.Organic() ? Murasama.OrganicHit : Murasama.InorganicHit) with { MaxInstances = 16, Volume = 0.5f, PitchVariance = 0.2f });
 
             Projectile.Center = target.Center;
             Projectile.velocity = target.velocity.SafeNormalize((target.position - target.oldPosition).SafeNormalize(Vector2.UnitX * Projectile.spriteDirection));

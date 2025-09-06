@@ -60,18 +60,17 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         
         public override void UpdateArmorSet(Player player)
         {
+           
             //player.setBonus = this.GetLocalizedValue("SetBonus") + "\n";
             player.setBonus = Language.GetOrRegister(("Items.Armor.AwakenedBloodArmor.AwakenedBloodHelm.SetBonus")).Value;
             player.setBonus = this.GetLocalizedValue("SetBonus");
             var modPlayer = player.Calamity();
             player.GetAttackSpeed<MeleeDamageClass>() += 0.18f;
             modPlayer.bloodflareSet = true;
-            modPlayer.bloodflareMelee = true;
-            modPlayer.abyssalDivingSuitPlates = true;
-            modPlayer.abyssalAmulet = true;
+          
             modPlayer.reaverRegen = true;
-            player.GetModPlayer<BloodArmorPlayer>().BloodArmorEquipped = true;
-
+            //player.GetModPlayer<BloodArmorPlayer>().BloodArmorEquipped = true;
+            player.GetModPlayer<AwakenedBloodPlayer>().AwakenedBloodSetActive = true;
             player.crimsonRegen = true;
             player.aggro += 900;
         }
@@ -85,11 +84,10 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         }
         public override void ModifyTooltips(List<TooltipLine> tooltips)
         {
-            // Add this tooltip before vanilla armor tooltips. Do not add tooltip if the item is in vanity slot.
+           
             Player player = Main.LocalPlayer;
             int bodySlot = player.armor[10].type == Item.type ? 10 : -1;
-            // In Terraria, armor[10..13] are vanity slots for body, legs, head, etc.
-            // Body vanity slot is armor[10]
+            
             bool isInVanitySlot = false;
 
             if (player.armor[10].type == Item.type)
@@ -98,7 +96,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             }
             if (isInVanitySlot)
                 return;
-            // build a single combined tooltip line
+           
             string text =
                 $"+{DamageBoost * 100:F0}% to all damage\n" +
                 $"+{CritBoost}% crit chance";
@@ -109,7 +107,6 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                 OverrideColor = new Color(200, 50, 50)  // optional
             };
 
-            // Insert before vanilla armor tooltips (which have Mod == "Terraria" and Name == "Tooltip#")
             int insertIndex = tooltips.FindIndex(t => t.Mod == "Terraria" && t.Name.StartsWith("Tooltip"));
             if (insertIndex == -1)
                 tooltips.Add(line);

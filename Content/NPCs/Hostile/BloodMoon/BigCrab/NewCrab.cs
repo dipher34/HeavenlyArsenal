@@ -286,7 +286,6 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
             texture.Frame(5, 1, 0, 0);
             Main.EntitySpriteDraw(texture, DrawPos, frame, drawColor, Rot, origin, NPC.scale, Direction, 0);
 
-            Rectangle CrabFrame = new Rectangle(0, BodyFrame * frameHeight, texture.Width, frameHeight);
 
             Utils.DrawBorderString(spriteBatch, FingerAnimationCompletionA.ToString(), DrawPos - Vector2.UnitY * 120, Color.AliceBlue);
             return false;

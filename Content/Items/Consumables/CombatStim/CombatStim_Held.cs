@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Terraria;
 using Terraria.ModLoader;
 
-namespace HeavenlyArsenal.Content.Projectiles.Misc
+namespace HeavenlyArsenal.Content.Items.Consumables.CombatStim
 {
     class CombatStim_Held : ModProjectile
     {

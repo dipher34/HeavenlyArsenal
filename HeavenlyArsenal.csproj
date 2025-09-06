@@ -17,6 +17,7 @@
 	  <AdditionalFiles Remove="Content\Projectiles\Weapons\Rogue\ND_Rogue\**" />
 	  <AdditionalFiles Remove="Content\Subworlds\**" />
 	  <AdditionalFiles Remove="Content\Tiles\ForgottenShrine\**" />
+	  <AdditionalFiles Remove="Content\Tiles\Generic\**" />
 	  <AdditionalFiles Remove="Content\Waters\**" />
 	  <AdditionalFiles Remove="Core\Autoloaders\**" />
 	  <AdditionalFiles Remove="Core\Fixes\**" />
@@ -30,6 +31,7 @@
 	  <Compile Remove="Content\Projectiles\Weapons\Rogue\ND_Rogue\**" />
 	  <Compile Remove="Content\Subworlds\**" />
 	  <Compile Remove="Content\Tiles\ForgottenShrine\**" />
+	  <Compile Remove="Content\Tiles\Generic\**" />
 	  <Compile Remove="Content\Waters\**" />
 	  <Compile Remove="Core\Autoloaders\**" />
 	  <Compile Remove="Core\Fixes\**" />
@@ -43,6 +45,7 @@
 	  <EmbeddedResource Remove="Content\Projectiles\Weapons\Rogue\ND_Rogue\**" />
 	  <EmbeddedResource Remove="Content\Subworlds\**" />
 	  <EmbeddedResource Remove="Content\Tiles\ForgottenShrine\**" />
+	  <EmbeddedResource Remove="Content\Tiles\Generic\**" />
 	  <EmbeddedResource Remove="Content\Waters\**" />
 	  <EmbeddedResource Remove="Core\Autoloaders\**" />
 	  <EmbeddedResource Remove="Core\Fixes\**" />
@@ -56,6 +59,7 @@
 	  <None Remove="Content\Projectiles\Weapons\Rogue\ND_Rogue\**" />
 	  <None Remove="Content\Subworlds\**" />
 	  <None Remove="Content\Tiles\ForgottenShrine\**" />
+	  <None Remove="Content\Tiles\Generic\**" />
 	  <None Remove="Content\Waters\**" />
 	  <None Remove="Core\Autoloaders\**" />
 	  <None Remove="Core\Fixes\**" />
@@ -65,6 +69,7 @@
 	  <AdditionalFiles Remove="Content\Projectiles\Weapons\Ranged\AvatarBow_Held.png" />
 	</ItemGroup>
 	<ItemGroup>
+	  <Compile Remove="Common\Graphics\FramedFastParticleSystem.cs" />
 	  <Compile Remove="Common\Graphics\PrimitiveTrail.cs" />
 	  <Compile Remove="Common\utils\Debug.cs" />
 	  <Compile Remove="Common\utils\MusicKiller.cs" />

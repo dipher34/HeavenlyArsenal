@@ -256,7 +256,6 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         private void On_Main_DrawInfernoRings(On_Main.orig_DrawInfernoRings orig, Main self)
         {
             orig(self);
-           
             DrawDyeableShader(Main.spriteBatch);
             
                 

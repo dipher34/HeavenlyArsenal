@@ -3,12 +3,14 @@ using CalamityMod.Enums;
 using HeavenlyArsenal.Content.Items.Weapons.Magic.RocheLimit;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using NoxusBoss.Assets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -95,7 +97,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Rogue.WeeabouScythe
             get;
             set;
         }
-        public int TimerMax = 300;
+        public int TimerMax = 120;
         public int Timer = 0;
         public bool IsBeingEdgy = false;
         public override void PostUpdateMiscEffects()
@@ -111,9 +113,9 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Rogue.WeeabouScythe
                     return;
                 }
 
-                targetedNPC.GetGlobalNPC<RocheLimitGlobalNPC>().BeingShredded = true;
+                targetedNPC.GetGlobalNPC<LobotomizeTarget>().BeingLobotomized = true;
 
-                if(Timer> 30 && Timer% 2 == 0)
+                if (Timer> 30 && Timer% 2 == 0)
                 {
                     // Calculate the slash's direction. This is randomized a bit but generally favors appearing to be facing towards the player, as through Nameless is
                     // slicing his hands back and forth while flying towards the player.
@@ -126,6 +128,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Rogue.WeeabouScythe
                    
 
                     Vector2 SlashVelocity = Main.rand.NextVector2Unit();
+                    SoundEngine.PlaySound(GennedAssets.Sounds.NamelessDeity.SliceTelegraph, targetedNPC.Center) ;
                     Projectile.NewProjectileDirect(Player.GetSource_FromThis(), targetedNPC.Center - slashSpawnPosition + Main.rand.NextVector2Unit() * randomOffset, Vector2.Zero, ModContent.ProjectileType<LightSlash>(), 1000, 0, Player.whoAmI, slashDirection);
                 }
 
@@ -136,14 +139,15 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Rogue.WeeabouScythe
                     targetedNPC.StrikeInstantKill();
                 }
 
-                Main.NewText($"{Timer}");
+                //Main.NewText($"{Timer}");
             }
         }
         public override void PreUpdateMovement()
         {
             if (IsBeingEdgy)
             {
-                Player.direction = Math.Sign(Player.Center.X - targetedNPC.Center.X);
+                if(targetedNPC != null)
+                    Player.direction = Math.Sign(Player.Center.X - targetedNPC.Center.X);
                 Player.velocity = Vector2.Zero;
             }
             else
@@ -158,5 +162,24 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Rogue.WeeabouScythe
             
         }
 
+    }
+
+    internal class LobotomizeTarget : GlobalNPC
+    {
+        public override bool InstancePerEntity => true;
+        public bool BeingLobotomized = false;
+
+        public override bool PreAI(NPC npc)
+        {
+            if(BeingLobotomized)
+            return false;
+            else
+                return base.PreAI(npc);
+        }
+        public override void ResetEffects(NPC npc)
+        {
+            BeingLobotomized = false;
+        }
+       
     }
 }

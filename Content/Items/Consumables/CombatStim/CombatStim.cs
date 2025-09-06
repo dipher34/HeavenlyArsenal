@@ -1,9 +1,9 @@
 ﻿using CalamityMod.Items.Materials;
 using CalamityMod.Items.Potions;
-using HeavenlyArsenal.ArsenalPlayer;
 using HeavenlyArsenal.Content.Buffs.Stims;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using NoxusBoss.Assets;
 using NoxusBoss.Core.Graphics.GeneralScreenEffects;
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ using Terraria.Localization;
 using Terraria.ModLoader;
 using Player = Terraria.Player;
 
-namespace HeavenlyArsenal.Content.Items.Consumables
+namespace HeavenlyArsenal.Content.Items.Consumables.CombatStim
 {
     class CombatStim : ModItem
     {
@@ -48,24 +48,35 @@ namespace HeavenlyArsenal.Content.Items.Consumables
             Item.scale = 0.4f;
             Item.autoReuse = true;
            
-            Item.buffTime = 60;
             Item.buffType = ModContent.BuffType<CombatStimBuff>();
-            Item.UseSound = TakeStim with { PitchVariance = 0.2f, Volume = 0.4f};
+           
         }
-        //public override void 
+
+        private int CalculateStimDuration(Player player)
+        {
+            int Stimsused = player.GetModPlayer<StimPlayer>().stimsUsed;
+            
+            return Math.Abs(Stimsused - 160) * 10 / 60;
+        }
+
         public override void OnConsumeItem(Player player)
         {
+            int Stimsused = player.GetModPlayer<StimPlayer>().stimsUsed;
             if (Main.myPlayer == player.whoAmI)
             {
+
                 if (player.GetModPlayer<StimPlayer>().Addicted)
                 {
                     player.HealEffect(-150, true);
                     player.statLife -= 150;
+                    SoundEngine.PlaySound(TakeStim with { Pitch = 1f, PitchVariance = 0.2f, Volume = 0.4f }, player.Center);
+                    SoundEngine.PlaySound(GennedAssets.Sounds.Common.EarRinging with { Pitch = 0.1f + Stimsused/10, Volume = 0.01f }, player.Center);
                 }
                 else
                 {
                     player.HealEffect(-50, true);
                     player.statLife -= 50;
+                    SoundEngine.PlaySound(TakeStim with { PitchVariance = 0.2f, Volume = 0.4f }, player.Center);
                 }
                 GeneralScreenEffectSystem.ChromaticAberration.Start(player.Center, 3f, 10);
                 GeneralScreenEffectSystem.RadialBlur.Start(player.Center, 1, 60);
@@ -89,15 +100,17 @@ namespace HeavenlyArsenal.Content.Items.Consumables
                     player.KillMe(PlayerDeathReason.ByCustomReason(NetworkText.FromLiteral(deathMessage)), 10000.0, 0, false);
                 }
             }
-            player.AddBuff(ModContent.BuffType<CombatStimBuff>(), (int)(Math.Abs(player.GetModPlayer<StimPlayer>().stimsUsed - 160) * 10), true, false);
+
+            int StimDuration = CalculateStimDuration(player);
+            player.AddBuff(ModContent.BuffType<CombatStimBuff>(), StimDuration, true, false);
         }
             
         public override void UseAnimation(Player player)
         {
             if(player.whoAmI == Main.myPlayer)
             {
-            player.itemLocation = new Vector2(player.Center.X - 40, player.Center.Y + 130);
-            player.itemRotation = MathHelper.ToRadians(45f * player.direction);
+                player.itemLocation = new Vector2(player.Center.X - 40, player.Center.Y + 130);
+                player.itemRotation = MathHelper.ToRadians(45f * player.direction);
             }
            
         }
@@ -109,12 +122,12 @@ namespace HeavenlyArsenal.Content.Items.Consumables
             //  Main.NewText($"<player>: stim started", Color.Green);
             if (player.itemAnimation > 0)
             {
-                float progress = 1f - (player.itemAnimation / (float)Item.useAnimation);
+                float progress = 1f - player.itemAnimation / (float)Item.useAnimation;
                 Vector2 injectionOffset = new Vector2(16 * player.direction, 2);
                 if (progress < 0.2f)
                 {
                     player.itemLocation = player.MountedCenter
-                                    + (injectionOffset * (1 - progress / 0.2f));
+                                    + injectionOffset * (1 - progress / 0.2f);
                     player.itemRotation = player.direction * MathHelper.Lerp(
                         MathHelper.ToRadians(10),   // start angle
                         MathHelper.ToRadians(43),   // end angle (pointing in)
@@ -139,23 +152,42 @@ namespace HeavenlyArsenal.Content.Items.Consumables
             player.SetCompositeArmBack(true, Player.CompositeArmStretchAmount.Full, player.itemRotation - player.direction*MathHelper.PiOver2*1.5f);
         }
         #endregion
+
         public override void ModifyTooltips(List<TooltipLine> tooltips)
         {
             Player player = Main.LocalPlayer;
-            TooltipLine line = new TooltipLine(Mod, "CombatStimTooltip", ((Math.Abs(player.GetModPlayer<StimPlayer>().stimsUsed - 160) * 10) / 60).ToString() + " second duration");
-            line.OverrideColor = Color.Lime;
+
+
+            int stimDuration = CalculateStimDuration(player);
+
+            TooltipLine line = new TooltipLine(Mod, "CombatStimTooltip", stimDuration + " second duration")
+            {
+                OverrideColor = Color.White
+            };
             tooltips.Add(line);
-           
         }
 
         public override bool PreDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale)
         {
-
             Texture2D texture = TextureAssets.Item[Type].Value;
-            Rectangle StimFrame = new Rectangle(1, 3, 46, 46);
+            Rectangle StimFrame = texture.Frame(1, 3, 0, 0);//new Rectangle(1, 3, 46, 46);
 
-            Main.EntitySpriteDraw(texture, position, StimFrame, drawColor, 0f, origin, scale*0.999f, SpriteEffects.None, 0);
-            return false;//base.PreDrawInInventory(spriteBatch, position, frame, drawColor, itemColor, origin, scale);
+            Main.EntitySpriteDraw(texture, position, StimFrame, drawColor, 0f, origin, scale, SpriteEffects.None, 0);
+
+            return false;
+        }
+
+        public override bool PreDrawInWorld(SpriteBatch spriteBatch, Color lightColor, Color alphaColor, ref float rotation, ref float scale, int whoAmI)
+        {
+            Texture2D texture = TextureAssets.Item[Type].Value;
+            Rectangle StimFrame = texture.Frame(1, 3, 0, 0);
+
+            Vector2 DrawPos = Item.position - Main.screenPosition;
+            DrawPos += new Vector2(0, -12);
+            Vector2 Origin = new Vector2(texture.Width/2, StimFrame.Height/2);
+            Main.EntitySpriteDraw(texture, DrawPos, StimFrame, lightColor, 0f, Origin, scale, SpriteEffects.None, 0);
+
+            return false;
         }
 
         public override void AddRecipes()

@@ -39,7 +39,7 @@ public class LightSlash : ModProjectile
     public override void AI()
     {
         Projectile.Opacity = (float)Math.Pow(1f - Time / Lifetime, 0.75f);
-        Projectile.scale = float.Lerp(0.7f, 1.1f, Projectile.identity % 6f / 6f) * 0.8f;
+        Projectile.scale = float.Lerp(0.1f, 0.5f, Projectile.identity % 6f / 6f) * 0.8f;
 
         // Increment the time.
         Time++;
