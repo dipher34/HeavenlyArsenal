@@ -1,7 +1,10 @@
-﻿using HeavenlyArsenal.Common;
+﻿
+using HeavenlyArsenal.Common;
 using HeavenlyArsenal.Content.Buffs.Stims;
+using HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor;
 using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
 using System;
 using System.Collections.Generic;
@@ -11,6 +14,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Terraria;
 using Terraria.Audio;
+using Terraria.DataStructures;
 using Terraria.Graphics;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -162,5 +166,75 @@ namespace HeavenlyArsenal.Content.Items.Consumables.CombatStim
             addictionChance = 0f;
             timeSinceLastStim = 0;
         }
+    }
+
+    internal class StimDraw : PlayerDrawLayer
+    {
+        public override Position GetDefaultPosition() => new AfterParent(PlayerDrawLayers.Head);
+        public override bool GetDefaultVisibility(PlayerDrawSet drawInfo) => true;// drawInfo.drawPlayer.head == EquipLoader.GetEquipSlot(Mod, nameof(ShintoArmorHelmetAll), EquipType.Head);
+
+        public float Wane;
+        
+        public override bool IsHeadLayer => false;
+
+        protected override void Draw(ref PlayerDrawSet drawInfo)
+        {
+            // DrawDebug(ref drawInfo);
+
+            ManageStimVFX(drawInfo.drawPlayer);
+        }
+        public float d;
+        public void ManageStimVFX(Player player)
+        {
+            //prevent horrid visual effects if the right config option is selected
+            if (!HeavenlyArsenalClientConfig.Instance.StimVFX)
+                return;
+            
+
+            var stimPlayer = player.GetModPlayer<StimPlayer>();
+
+
+            if (player.HasBuff(ModContent.BuffType<CombatStimBuff>()))
+            {
+                Wane = (float)Math.Clamp(2 * stimPlayer.stimsUsed / stimPlayer.MAX_STIMS_USED, 0.1f, 2);
+            }
+            else
+            {
+                // Smoothly return to 0
+                Wane = MathHelper.Lerp(Wane, 0f, 0.1f); // adjust 0.1f for smoothness
+            }
+
+            d = MathHelper.Lerp(d, Math.Clamp(stimPlayer.stimsUsed, 0, 20), 0.001f);
+
+            ManagedScreenFilter suctionShader = ShaderManager.GetFilter("HeavenlyArsenal.StimAddicted");
+
+            suctionShader.TrySetParameter("globalTime", Main.GlobalTimeWrappedHourly);
+            suctionShader.TrySetParameter("intensityFactor", Wane);
+            suctionShader.TrySetParameter("psychadelicExponent", 0);
+            suctionShader.TrySetParameter("psychedelicColorTint", Color.Crimson.ToVector4());
+            suctionShader.TrySetParameter("colorAccentuationFactor", d);
+            suctionShader.SetTexture(GennedAssets.Textures.Noise.VoronoiNoise, 0, SamplerState.AnisotropicWrap);
+
+            suctionShader.SetTexture(GennedAssets.Textures.Noise.VoronoiNoise, 1, SamplerState.AnisotropicWrap);
+            suctionShader.SetTexture(GennedAssets.Textures.Noise.VoronoiNoise, 2);
+
+            suctionShader.Activate();
+
+            //sampler baseTexture : register(s0);
+            //sampler psychedelicTexture : register(s1);
+            //sampler noiseTexture : register(s2);
+
+            //float globalTime;
+            //float opacity;
+            // float intensityFactor;
+            // float psychedelicExponent;
+            // float colorAccentuationFactor;
+            // float3 colorToAccentuate;
+            // float4 goldColor;
+            //  float4 psychedelicColorTint;
+
+        }
+       
+
     }
 }

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
+using Terraria.GameContent.Bestiary;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -14,6 +15,17 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
 {
     public class Umbralarva : BloodmoonBaseNPC
     {
+
+        public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
+        {
+            bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[]
+            {
+                BestiaryDatabaseNPCsPopulator.CommonTags.SpawnConditions.Events.BloodMoon,
+                new FlavorTextBestiaryInfoElement("Mods.HeavenlyArsenal.Bestiary.Umbralarva")
+            });
+        }
+
+
         public override int bloodBankMax => 2000;
 
         public override bool canBeSacrificed => segmentNum == 0;

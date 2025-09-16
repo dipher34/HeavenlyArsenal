@@ -1,4 +1,5 @@
-﻿using HeavenlyArsenal.Content.Items.Weapons.Magic.RocheLimit;
+﻿using CalamityMod.Enums;
+using HeavenlyArsenal.Content.Items.Weapons.Magic.RocheLimit;
 using Luminance.Common.Utilities;
 using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
@@ -6,9 +7,11 @@ using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
 using NoxusBoss.Content.Items.MiscOPTools;
 using NoxusBoss.Core.CrossCompatibility.Inbound;
+using NoxusBoss.Core.Graphics.GeneralScreenEffects;
 using NoxusBoss.Core.World.GameScenes.AvatarAppearances;
 using System;
 using Terraria;
+using Terraria.Audio;
 using Terraria.GameContent;
 using Terraria.GameContent.Bestiary;
 using Terraria.ID;
@@ -19,8 +22,24 @@ namespace HeavenlyArsenal.Content.NPCs
 {
     public partial class AnAffrontToGod : ModNPC
     {
-        
+        public float DashDirection
+        {
+            get => NPC.localAI[0];
+            set => NPC.localAI[0] = value;
+        }
+        public bool Dashing = false;
+        public int PlayerIndex
+        {
+            get => (int)NPC.ai[2];
+            set => NPC.ai[2] = value;
+        }
+        public int DashCount
+        {
+            get => (int)NPC.ai[1];
+            set => NPC.ai[1] = value;
+        }
 
+        public ref float Timer => ref NPC.ai[0];
         public override void SetStaticDefaults() 
         {
             EmptinessSprayer.NPCsToNotDelete[Type] = true;
@@ -34,7 +53,7 @@ namespace HeavenlyArsenal.Content.NPCs
 
         public override void SetDefaults()
         {
-            NPC.CloneDefaults(NPCID.KingSlime);
+            //NPC.CloneDefaults(NPCID.KingSlime);
             NPC.damage = 104384;
             NPC.lifeMax = 3349340;
             NPC.defense = 603;
@@ -51,8 +70,8 @@ namespace HeavenlyArsenal.Content.NPCs
         {
             bestiaryEntry.Info.AddRange(new IBestiaryInfoElement[]
             {
-                BestiaryDatabaseNPCsPopulator.CommonTags.SpawnConditions.Times.NightTime,
-                new FlavorTextBestiaryInfoElement("Mods.CalamityMod.Bestiary.AstrumAureus")
+                BestiaryDatabaseNPCsPopulator.CommonTags.SpawnConditions.Biomes.Ocean,
+                new FlavorTextBestiaryInfoElement("Mods.HeavenlyArsenal.Bestiary.AnAffrontToGod")
             });
         }
         public enum AATGState
@@ -66,20 +85,121 @@ namespace HeavenlyArsenal.Content.NPCs
             Scream
         }
 
-
+        public AATGState CurrentState = AATGState.Idle;
         public override bool PreAI()
         {
             return true;
         }
         public override void AI()
         {
+            StateMachine();
 
-            //AstrumAureusAI.VanillaAstrumAureusAI(NPC, Mod);
+            Timer++;
         }
 
 
+        public void StateMachine()
+        {
+            switch (CurrentState){
 
-   
+                case AATGState.Idle:
+                    DoIdle();
+                    break;
+                case AATGState.Walking:
+                    DoWalking(); 
+                    break;
+                case AATGState.Scream:
+                    Scream();
+                    break;
+                
+            }
+        }
+        public void DoIdle()
+        {
+            PlayerIndex = -1;
+            if (PlayerIndex == -1)
+            {
+                PlayerIndex = NPC.FindClosestPlayer();
+            }
+
+            if (PlayerIndex != -1)
+            {
+                DashCount = 3;
+                CurrentState = AATGState.Walking;
+            }
+        }
+        public void DoWalking()
+        {
+            if(PlayerIndex == -1)
+            {
+                CurrentState = AATGState.Idle;
+                return;
+            }
+            else
+            {
+                Player Target = Main.player[PlayerIndex];
+
+                
+
+                if (Timer < 1000)
+                {
+                    Vector2 toTarget = NPC.Center.AngleTo(Target.Center).ToRotationVector2();
+
+                    NPC.velocity = Vector2.Lerp(NPC.velocity, NPC.velocity + toTarget, 0.5f);
+                }
+                else
+                {
+                    
+
+                    //todo: system to dash towards the player
+
+                    if (DashCount > 1)
+                    {
+                        if (!Dashing) 
+                        {
+                            DashDirection = NPC.Center.AngleTo(Target.Center);
+                            if (DashDirection != 0) 
+                            Dashing = true;
+                        }
+                        if (Dashing)
+                        {
+                            NPC.noTileCollide = true;
+                            if (Timer++ > 360)
+                                NPC.Center = Vector2.Lerp(NPC.Center, NPC.Center + DashDirection.ToRotationVector2(), 0.5f);
+                            else
+                            {
+
+                                Dashing = true;
+                            }
+                        }
+                    }
+                    if(DashCount == 1)
+                    {
+                        NPC.Center = Target.Center + Vector2.UnitX * 300;
+                        CurrentState = AATGState.Scream;
+                        Timer = 0;
+                        NPC.noTileCollide = true;
+
+                    }
+
+                }
+            }
+        }
+        public void Scream()
+        {
+            float MaxScreamtime = 360;
+            if(Timer== 0)
+            {
+                SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.Scream with { MaxInstances = 1 }, NPC.Center);
+                GeneralScreenEffectSystem.RadialBlur.Start(NPC.Center, 40, (int)MaxScreamtime);//.RadialBlur.Start(Player.Center, 3f, 90);
+                NPC.immune[NPC.whoAmI] = (int)MaxScreamtime;
+            }
+
+            if (Timer == MaxScreamtime)
+            {
+                CurrentState = AATGState.Idle;
+            }
+        }
 
         public override bool ModifyCollisionData(Rectangle victimHitbox, ref int immunityCooldownSlot, ref MultipliableFloat damageMultiplier, ref Rectangle npcHitbox)
         {
@@ -117,6 +237,7 @@ namespace HeavenlyArsenal.Content.NPCs
             //Main.NewText($"{LillyPos - Main.screenPosition}");
             Main.EntitySpriteDraw(LillyTexture, LillyPos - Main.screenPosition, Lillyframe, drawColor, wind, Lorigin, LillyScale, spriteEffects, 0f);
 
+            Utils.DrawBorderString(spriteBatch, Timer.ToString(), NPC.Center - screenPos - Vector2.UnitY * 100, Color.AntiqueWhite);
             return false;
         }
     }

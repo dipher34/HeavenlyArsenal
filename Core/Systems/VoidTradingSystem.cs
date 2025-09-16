@@ -9,7 +9,7 @@ using HeavenlyArsenal.Content.Items.Armor.ShintoArmor;
 using HeavenlyArsenal.Content.Items.Misc;
 using HeavenlyArsenal.Content.Items.Weapons.Magic;
 using HeavenlyArsenal.Content.Items.Weapons.Magic.RocheLimit;
-using HeavenlyArsenal.Content.Items.Weapons.Melee;
+using HeavenlyArsenal.Content.Items.Weapons.Melee.AvatarSpear;
 using HeavenlyArsenal.Content.Items.Weapons.Summon;
 using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;

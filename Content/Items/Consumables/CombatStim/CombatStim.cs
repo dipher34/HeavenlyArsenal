@@ -54,9 +54,9 @@ namespace HeavenlyArsenal.Content.Items.Consumables.CombatStim
 
         private int CalculateStimDuration(Player player)
         {
-            int Stimsused = player.GetModPlayer<StimPlayer>().stimsUsed;
-            
-            return Math.Abs(Stimsused - 160) * 10 / 60;
+            int Stimsused = player.GetModPlayer<StimPlayer>().stimsUsed + 1;
+            int a = Math.Abs(Stimsused - 160) * 10 / 60;
+            return a;
         }
 
         public override void OnConsumeItem(Player player)
@@ -86,23 +86,23 @@ namespace HeavenlyArsenal.Content.Items.Consumables.CombatStim
             {
                 if (player.GetModPlayer<StimPlayer>().Addicted)
                 {
-                    string deathMessage = Language.GetTextValue("Mods.HeavenlyArsenal.PlayerDeathMessages.CombatStimAddicted" + Main.rand.Next(1, 5 + 1), player.name);
+                    string deathMessage = Language.GetTextValue("Mods.HeavenlyArsenal.PlayerDeathMessages.CombatStimAddicted" + Main.rand.Next(1, 7 + 1), player.name);
                     player.KillMe(PlayerDeathReason.ByCustomReason(NetworkText.FromLiteral(deathMessage)), 10000.0, 0, false);
                 }
                 else if (player.GetModPlayer<StimPlayer>().Withdrawl)
                 {
-                    string deathMessage = Language.GetTextValue("Mods.HeavenlyArsenal.PlayerDeathMessages.CombatStim" + Main.rand.Next(1, 3 + 1), player.name);
+                    string deathMessage = Language.GetTextValue("Mods.HeavenlyArsenal.PlayerDeathMessages.CombatStim" + Main.rand.Next(1, 5 + 1), player.name);
                     player.KillMe(PlayerDeathReason.ByCustomReason(NetworkText.FromLiteral(deathMessage)), 10000.0, 0, false);
                 }
                 else
                 {
-                    string deathMessage = Language.GetTextValue("Mods.HeavenlyArsenal.PlayerDeathMessages.CombatStim" + Main.rand.Next(1, 4 + 1), player.name);
+                    string deathMessage = Language.GetTextValue("Mods.HeavenlyArsenal.PlayerDeathMessages.CombatStim" + Main.rand.Next(1, 5 + 1), player.name);
                     player.KillMe(PlayerDeathReason.ByCustomReason(NetworkText.FromLiteral(deathMessage)), 10000.0, 0, false);
                 }
             }
 
             int StimDuration = CalculateStimDuration(player);
-            player.AddBuff(ModContent.BuffType<CombatStimBuff>(), StimDuration, true, false);
+            player.AddBuff(ModContent.BuffType<CombatStimBuff>(), StimDuration * 60, true, false);
         }
             
         public override void UseAnimation(Player player)

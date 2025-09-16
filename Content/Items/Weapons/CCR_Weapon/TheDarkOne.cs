@@ -1,4 +1,8 @@
-﻿using Luminance.Core.Graphics;
+﻿using HeavenlyArsenal.Common.Players;
+using Luminance.Assets;
+using Luminance.Common.Easings;
+using Luminance.Common.Utilities;
+using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
@@ -23,16 +27,18 @@ namespace HeavenlyArsenal.Content.Items.Weapons.CCR_Weapon
     public class TheDarkOne : ModProjectile
     {
         #region setup  
+        public PiecewiseCurve StringCurve;
+        public override bool? CanDamage() => false;
 
         private Vector2 BowTop;
         private Vector2 BowMiddle;
         private Vector2 BowBottom;
-
+        public float t = 0;
         public ref float Time => ref Projectile.ai[0];
         public ref float Charge => ref Projectile.ai[1];
+        public ref float ChargeInterp => ref Projectile.ai[2];
 
-
-        private int ChargeCap = 5;
+        public const int ChargeCap = 5;
         private DarkOneState CurrentState = DarkOneState.Pullout;
 
         public ref Terraria.Player Owner => ref Main.player[Projectile.owner];
@@ -91,7 +97,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.CCR_Weapon
 
             BowTop = Projectile.Center + new Vector2(15, -60).RotatedBy(Projectile.rotation);
             BowBottom = Projectile.Center + new Vector2(15, 60).RotatedBy(Projectile.rotation);
-            BowMiddle = (BowTop + BowBottom) / 2 - new Vector2(10, -10).RotatedBy(Projectile.rotation) * 0;
+            BowMiddle = (BowTop + BowBottom) / 2 - new Vector2(40, 0).RotatedBy(Projectile.rotation) * ChargeInterp;
         }
 
         private void StateMachine()
@@ -139,6 +145,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.CCR_Weapon
             if (Charge > 0)
                 Charge--;
 
+            ChargeInterp = float.Lerp(ChargeInterp, 0, 0.06f);
             Projectile.rotation = Projectile.rotation.AngleLerp(new Vector2(10*Owner.direction,10).ToRotation(), 0.35f);
         }
         private void HandleCharge()
@@ -146,13 +153,14 @@ namespace HeavenlyArsenal.Content.Items.Weapons.CCR_Weapon
             //todo: lerp projectile rotation to face 90 degrees up, with partial rotation towards the mouse
             float MouseX = Utils.AngleTo(Projectile.Center, Main.MouseWorld);// + MathHelper.PiOver2;//MathHelper.SmoothStep(Owner.Center.X - Main.MouseWorld.X, -5,5);
             MouseX = MouseX.AngleLerp(-MathHelper.PiOver2, 0.5f);
+            Owner.direction = Math.Sign(Main.MouseWorld.X - Owner.Center.X);
             Projectile.rotation = Projectile.rotation.AngleLerp(MouseX , 0.1f);
             if(Time % 40 == 0 &&  Owner.controlUseItem && Charge < 5) // ChargeCap)
             {
                 Charge++;
                 SoundEngine.PlaySound(GennedAssets.Sounds.Common.TwinkleMuffled with { Pitch = Charge/5 });
             }
-
+            ChargeInterp = float.Lerp(ChargeInterp, 1, 0.02f);
 
             if (!Owner.controlUseItem && Charge <= 0)
                 CurrentState = DarkOneState.Idle;
@@ -167,6 +175,20 @@ namespace HeavenlyArsenal.Content.Items.Weapons.CCR_Weapon
             float MouseX = Utils.AngleTo(Projectile.Center, Main.MouseWorld);// + MathHelper.PiOver2;//MathHelper.SmoothStep(Owner.Center.X - Main.MouseWorld.X, -5,5);
             MouseX = MouseX.AngleLerp(-MathHelper.PiOver2, 0.5f);
             Projectile.rotation = Projectile.rotation.AngleLerp(MouseX, 0.1f);
+            if (StringCurve == null)
+                StringCurve = new PiecewiseCurve()
+                    .Add(EasingCurves.Elastic, EasingType.Out, 0f, 1f, 1f);
+            
+            t = Utils.Clamp(t + 0.005f, 0, 1);
+            ChargeInterp = StringCurve.Evaluate(t);
+
+            if (Owner.ownedProjectileCounts[ModContent.ProjectileType <CrystalArrow>()] < 1)
+            {
+                Projectile a = Projectile.NewProjectileDirect(Projectile.GetSource_FromThis(), BowMiddle, Projectile.rotation.ToRotationVector2() * 10, ModContent.ProjectileType<CrystalArrow>(), 30, 0);
+                a.ai[2] = Charge;
+            }
+            
+            /*
             int CrystalAmount = Charge > 4 ? (int)Charge/2  : (int)Charge;
             float spawnHeight = 600f;
             float horizSpread = 200f;
@@ -199,7 +221,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.CCR_Weapon
                     ai1: 0f
                 );
 
-            }
+            }*/
             if (Time > 30 * Charge)
                 CurrentState = DarkOneState.Idle;
             
@@ -215,15 +237,33 @@ namespace HeavenlyArsenal.Content.Items.Weapons.CCR_Weapon
         #endregion
 
 
-        public override bool? CanDamage() => false;
-
-        private void drawVoid()
+        public void DrawArrow(ref Color lightColor, SpriteEffects a)
         {
+            Texture2D Arrow = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Items/Weapons/CCR_Weapon/CrystalArrow").Value;
+            Texture2D GlowArrow = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Items/Weapons/CCR_Weapon/CrystalArrow_Glow").Value;
 
+            Vector2 DrawPos = BowMiddle - Main.screenPosition;
+            DrawPos += new Vector2(Arrow.Width/2 - 20, 0).RotatedBy(Projectile.rotation);
+            //DrawPos += new Vector2(50,0).RotatedBy(Projectile.rotation)+ new Vector2(100, 0).RotatedBy(Projectile.rotation)*(0);
+            float Rot = Projectile.rotation;
+
+            Main.EntitySpriteDraw(Arrow, DrawPos, null, lightColor, Rot, Arrow.Size()*0.5f, 1, a);
+            if(Charge >= 5)
+            Main.EntitySpriteDraw(GlowArrow, DrawPos, null, lightColor, Rot, Arrow.Size() * 0.5f, 1, a);
         }
-        private void drawString(ref Color Thing, Vector2 StartPos, Vector2 EndPos)
+
+
+        private void drawString(ref Color lightColor)
         {
+            Color Bowstring = lightColor.MultiplyRGB(Color.Purple);
+            Utils.DrawLine(Main.spriteBatch, BowTop, BowMiddle, Bowstring, Bowstring, 2);
+            Utils.DrawLine(Main.spriteBatch, BowMiddle, BowBottom, Bowstring, Bowstring, 2);
+
             
+        }
+        public void DrawBow(ref Color lightColor)
+        {
+
         }
         public override bool PreDraw(ref Color lightColor)
         {
@@ -232,20 +272,11 @@ namespace HeavenlyArsenal.Content.Items.Weapons.CCR_Weapon
             SpriteEffects effects = Owner.direction == -1 ? SpriteEffects.FlipVertically: SpriteEffects.None;
             Vector2 origin = new Vector2(texture.Width/8, texture.Height / 2);
             float chargeOffset = Charge * Projectile.scale * 2f;
-            if (Charge > 0)
-            {
-                for (int i = 0; i < ChargeCap; i++)
-                {
-                    Vector2 drawOffset = (MathHelper.TwoPi * i / 3f).ToRotationVector2() * chargeOffset;
-                    Main.spriteBatch.Draw(texture, drawPosition + drawOffset, null, Color.Purple, Projectile.rotation, origin, Projectile.scale, effects, 0f);
-                }
-            }
+          
             Main.EntitySpriteDraw(texture, drawPosition, null, lightColor, Projectile.rotation, origin, Projectile.scale, effects, 0);
-
-            Utils.DrawLine(Main.spriteBatch, BowMiddle, BowTop, Color.Purple);
-            Utils.DrawLine(Main.spriteBatch, BowMiddle, BowBottom,Color.Purple);
-
-
+            DrawArrow(ref lightColor, effects);
+            drawString(ref lightColor);
+            //Owner.GetModPlayer<HidePlayer>().ShouldHide = true;
             /*
             Main.spriteBatch.End();
             Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.AnisotropicWrap, DepthStencilState.None, Main.Rasterizer, null, Main.Transform);

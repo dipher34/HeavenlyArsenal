@@ -102,10 +102,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                 $"+{CritBoost}% crit chance";
 
             // create and add it
-            TooltipLine line = new TooltipLine(Mod, "AwakenedBloodHelm", text)
-            {
-                OverrideColor = new Color(200, 50, 50)  // optional
-            };
+            TooltipLine line = new TooltipLine(Mod, "AwakenedBloodHelm", text);
 
             int insertIndex = tooltips.FindIndex(t => t.Mod == "Terraria" && t.Name.StartsWith("Tooltip"));
             if (insertIndex == -1)
@@ -119,8 +116,8 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                      AddIngredient<OmegaBlueHelmet>().
                      AddRecipeGroup("HeavenlyArsenal:BloodflareHelmets", 1).
                      AddIngredient<YharonSoulFragment>(15).
-                     //AddIngredient<UmbralLeechDrop>(3).
-                     AddCondition(conditions: Condition.BloodMoon).
+                     AddIngredient<UmbralLeechDrop>(3).
+                     AddCondition(conditions:Condition.EclipseOrBloodMoon).
                      AddTile<CosmicAnvil>().
                      Register();
 

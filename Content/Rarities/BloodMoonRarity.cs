@@ -2,26 +2,23 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
-using NoxusBoss.Core.GlobalInstances;
 using ReLogic.Graphics;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Terraria;
 using Terraria.GameContent;
 using Terraria.ModLoader;
-using Terraria.UI.Chat;
 using static Luminance.Common.Utilities.Utilities;
+using static NoxusBoss.Assets.GennedAssets.Sounds;
+using Item = Terraria.Item;
 
 namespace HeavenlyArsenal.Content.Rarities
 {
     public class BloodMoonRarity : ModRarity
     {
         public override Color RarityColor => new Color(220, 20, 70);
-
+            
+        
 
     }
 
@@ -65,27 +62,28 @@ namespace HeavenlyArsenal.Content.Rarities
                 string text = item.Name;
                 DynamicSpriteFont font = FontAssets.MouseText.Value;
 
-                Vector2 basePos = new Vector2(line.X, line.Y); // where the tooltip system wants to draw the name
+                Vector2 basePos = new Vector2(line.X, line.Y);  
                 float time = Main.GlobalTimeWrappedHourly;
 
-                // texture used to draw droplets. Replace with a round droplet texture if you have one.
+               
                 Texture2D dropletTex = GennedAssets.Textures.GreyscaleTextures.WhitePixel;
 
-                // ensure droplets exist and are attached to each letter
+                
                 EnsureDroplets(item.type, text, font);
 
-                // Draw the item name ourselves (so the name remains legible)
-                // Draw with a border so the name stays readable over the effect
                 Vector2 measured = font.MeasureString(text);
                 Vector2 nameOrigin = measured * 0.5f;
                 Vector2 namePos = basePos;
 
+                
                 // Draw the name with a simple border for legibility (colors are example)
                 //Utils.DrawBorderStringFourWay(Main.spriteBatch, font, text, namePos, Color.Red, Color.Black, Vector2.Zero, 1f);
                 Utils.DrawBorderString(Main.spriteBatch, text, namePos, Color.Red, 1f);
                 // Update & draw droplets
                 List<Droplet> list = dropletMap[item.type];
                 Vector2 nameLeft = namePos - nameOrigin;
+                DrawEclipse(namePos + nameOrigin);
+
 
                 for (int i = 0; i < list.Count; i++)
                 {
@@ -96,23 +94,22 @@ namespace HeavenlyArsenal.Content.Rarities
                     float fallMultiplier = 0.5f;    // base falling speed multiplier
                     float dt = 1f; // per-tick increment; tooltip updates once per frame/tick in Terraria
                     d.VerticalOffset += d.speed * fallMultiplier * dt;
+                    
 
-                    // small horizontal sway so drops feel organic
                     float sway = (float)System.Math.Sin(time * 3f + d.phase) * 2f;
 
-                    // reset when droplet falls past a threshold under the name
                     float resetThreshold = measured.Y + 20f + d.size * 6f;
                     if (d.VerticalOffset > resetThreshold)
                     {
-                        // reset above the name with a small random offset
+                        
                         d.VerticalOffset = Main.rand.NextFloat(-10f, -2f);
                         d.speed = Main.rand.NextFloat(10f, 28f); // randomize fall speed
                         d.phase = Main.rand.NextFloat(MathHelper.TwoPi);
                         d.size = Main.rand.NextFloat(4f, 9f);
                         d.alpha = Main.rand.NextFloat(0.6f, 1f);
                     }
+                    
 
-                    // compute draw position: nameLeft + anchor + (sway, VerticalOffset)
                     Vector2 drawPos = nameLeft + new Vector2(d.anchor.X + 60 + sway, d.VerticalOffset + measured.Y *1f);
 
                     // draw the droplet: dropletTex is 1x1 so we scale width/height
@@ -137,8 +134,7 @@ namespace HeavenlyArsenal.Content.Rarities
                         0f
                     );
 
-                    // optional: draw a tiny trail (a thin line) from the char baseline to the drop
-                    // you can comment this out if you don't want the trail
+                        
                     Vector2 charBaseline = nameLeft + new Vector2(d.anchor.X + 60, measured.Y * 0.0f);
                     Vector2 TrailOrigin = new Vector2(0.5f, -0.115f);
 
@@ -184,14 +180,56 @@ namespace HeavenlyArsenal.Content.Rarities
                     
                     Utils.DrawBorderString(Main.spriteBatch, item.Name, namePos + DrawOffset, Color.DarkRed * 0.5f, 1 * (1+textScaleInterp), 0, 0);
                 }
-                Utils.DrawBorderString(Main.spriteBatch, item.Name,namePos, Color.Red);
+
+                Color A = Color.Lerp(new Color(220, 20, 70), Color.Red, (float)Math.Sin(Main.GlobalTimeWrappedHourly));
+
+                Utils.DrawBorderString(Main.spriteBatch, item.Name, namePos, A);
                 return false;
             }
 
             return base.PreDrawTooltipLine(item, line, ref yOffset);
         }
 
-        // create droplets for this item type if not present or if text length changed
+        public void DrawEclipse(Vector2 NamePos)
+        {
+            Texture2D placeholder = GennedAssets.Textures.GreyscaleTextures.BloomCirclePinpoint;
+            Vector2 ModifiedPos = NamePos + new Vector2(0   , 0);
+            Vector2 EclipseOrigin = placeholder.Size() * 0.5f;
+
+            Vector2 t = new Vector2(1,0.9f);
+            Main.EntitySpriteDraw(placeholder, ModifiedPos, null, Color.Crimson with { A = 0}, 0, EclipseOrigin, t, SpriteEffects.None);
+            Main.spriteBatch.End();
+            Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.AnisotropicWrap, DepthStencilState.None, Main.Rasterizer, null, Main.UIScaleMatrix);
+      
+            Vector2 particleDrawCenter = ModifiedPos + new Vector2(0f, 0f);
+            Texture2D glow = AssetDirectory.Textures.BigGlowball.Value;
+
+            Vector2 Scale = new Vector2(0.1f);
+
+            Main.EntitySpriteDraw(glow, particleDrawCenter - Main.screenPosition, glow.Frame(), Color.Red with { A = 200 }, 0, glow.Size() * 0.5f, new Vector2(0.12f, 0.25f), 0, 0);
+            Texture2D innerRiftTexture = AssetDirectory.Textures.VoidLake.Value;
+            Color edgeColor = new Color(1f, 0.06f, 0.06f);
+           
+            ManagedShader riftShader = ShaderManager.GetShader("NoxusBoss.DarkPortalShader");
+            riftShader.TrySetParameter("time", Main.GlobalTimeWrappedHourly * 0.1f);
+            riftShader.TrySetParameter("baseCutoffRadius", 0.24f);
+            riftShader.TrySetParameter("swirlOutwardnessExponent", 0.2f);
+            riftShader.TrySetParameter("swirlOutwardnessFactor", 3f);
+            riftShader.TrySetParameter("vanishInterpolant", 0.01f );
+            riftShader.TrySetParameter("edgeColor", edgeColor.ToVector4());
+            riftShader.TrySetParameter("edgeColorBias", 0.1f);
+            riftShader.SetTexture(GennedAssets.Textures.Noise.WavyBlotchNoise, 1, SamplerState.AnisotropicWrap);
+            riftShader.SetTexture(GennedAssets.Textures.Noise.BurnNoise, 2, SamplerState.AnisotropicWrap);
+            riftShader.Apply();
+
+            Main.spriteBatch.Draw(innerRiftTexture, particleDrawCenter, null, Color.White, 0 + MathHelper.Pi, innerRiftTexture.Size() * 0.5f, Scale, 0, 0);
+
+            Main.spriteBatch.End();
+
+            Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.UIScaleMatrix);
+
+
+        }
         private void EnsureDroplets(int itemType, string text, DynamicSpriteFont font)
         {
             // If we already have a list and its length matches number of letters (or is greater), do nothing.

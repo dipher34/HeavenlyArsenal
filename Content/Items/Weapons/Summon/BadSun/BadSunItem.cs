@@ -59,7 +59,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BadSun
         }
         public override bool PreDrawTooltip(ReadOnlyCollection<TooltipLine> lines, ref int x, ref int y)
         {
-            //todo: overwrite the 
+            
             return base.PreDrawTooltip(lines, ref x, ref y);
         }
     }

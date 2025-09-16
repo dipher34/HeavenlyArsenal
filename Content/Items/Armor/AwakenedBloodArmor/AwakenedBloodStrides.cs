@@ -47,19 +47,33 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         public override void ModifyTooltips(List<TooltipLine> tooltips)
         {
 
-            // build a single combined tooltip line
+            Player player = Main.LocalPlayer;
+            int bodySlot = player.armor[10].type == Item.type ? 10 : -1;
+
+            bool isInVanitySlot = false;
+
+            if (player.armor[12].type == Item.type)
+            {
+                isInVanitySlot = true;
+            }
+            if (isInVanitySlot)
+                return;
+
             string text =
-                $"+{MoveSpeedBoost * 100:F0}% movement speed\n" +
-                $"+{DamageBoost * 100:F0}% all damage\n" +
-                $"+{CritBoost}% crit chance";
+               $"+{MoveSpeedBoost * 100:F0}% movement speed\n" +
+               $"+{DamageBoost * 100:F0}% all damage\n" +
+               $"+{CritBoost}% crit chance";
 
             // create and add it
-            TooltipLine line = new TooltipLine(Mod, "AwakenedBloodStrides", text)
-            {
-                OverrideColor = new Color(200, 50, 50)  // optional
-            };
-            tooltips.Add(line);
+            TooltipLine line = new TooltipLine(Mod, "AwakenedBloodHelm", text);
+
+            int insertIndex = tooltips.FindIndex(t => t.Mod == "Terraria" && t.Name.StartsWith("Tooltip"));
+            if (insertIndex == -1)
+                tooltips.Add(line);
+            else
+                tooltips.Insert(insertIndex, line);
         }
+      
         public override void AddRecipes()
         {
             CreateRecipe().

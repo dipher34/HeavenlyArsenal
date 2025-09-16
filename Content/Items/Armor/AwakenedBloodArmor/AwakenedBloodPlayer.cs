@@ -5,6 +5,7 @@ using CalamityMod.Particles;
 using CalamityMod.Projectiles.Melee;
 using HeavenlyArsenal.Common.Ui;
 using HeavenlyArsenal.Content.Items.Armor.ShintoArmor;
+using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon;
 using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -88,20 +89,30 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             AwakenedBloodSetActive = false;
           
         }
-
         public override void ArmorSetBonusActivated()
         {
             if (!AwakenedBloodSetActive)
                 return;
 
-            int value = 76;
-            if(value > 75 && !BloodBoostActive)
+            if(CurrentForm == Form.Offsense)
             {
-                BloodBoostDrainTimer = 0;
-                BloodBoostActive = true;
-                SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.BloodCry);
+                int value = 76;
+                if (value > 75 && !BloodBoostActive)
+                {
+                    BloodBoostDrainTimer = 0;
+                    BloodBoostActive = true;
+                    SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.BloodCry);
+                }
+
             }
-                
+            else if (CurrentForm == Form.Defense)
+            {
+                Player.HealEffect(clot, true);
+                Player.statLife += clot;
+                clot = 0;
+            }
+
+
         }
 
         
@@ -109,8 +120,9 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
-            if(AwakenedBloodSetActive && GainTimer <= 0)
+            if(AwakenedBloodSetActive && GainTimer <= 0 )//&& !BlackListProjectileNPCs.BlackListedNPCs.Contains(target.type))
             {
+               
                
                 GainBlood();
                 ControlResource();
@@ -119,7 +131,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         }
         public override void OnHitNPCWithItem(Item item, NPC target, NPC.HitInfo hit, int damageDone)
         {
-            if (AwakenedBloodSetActive && GainTimer <= 0)
+            if (AwakenedBloodSetActive && GainTimer <= 0) //&& !BlackListProjectileNPCs.BlackListedNPCs.Contains(target.type))
             {
                 GainTimer = 20;
                 GainBlood();
@@ -128,7 +140,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         }
         public override void OnHitNPCWithProj(Projectile proj, NPC target, NPC.HitInfo hit, int damageDone)
         {
-            if (AwakenedBloodSetActive && GainTimer <= 0)
+            if (AwakenedBloodSetActive && GainTimer <= 0 )// && !BlackListProjectileNPCs.BlackListedNPCs.Contains(target.type))
             {
                 
                 GainBlood();
@@ -323,7 +335,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
 
         protected override void Draw(ref PlayerDrawSet drawInfo)
         {
-            DrawDebug(ref drawInfo);
+           // DrawDebug(ref drawInfo);
 
             ManageBloodBoostVFX(drawInfo.drawPlayer);
         }
@@ -332,20 +344,25 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
 
             var bloodplayer = player.GetModPlayer<AwakenedBloodPlayer>();
 
+            if (!bloodplayer.AwakenedBloodSetActive && bloodplayer.blood <=0)
+                return;
+
             if (!bloodplayer.BloodBoostActive)
                 return;
-            float Wane =(float) Math.Clamp(Math.Tanh(bloodplayer.blood),0,0.2f);
-            ManagedScreenFilter suctionShader = ShaderManager.GetFilter("HeavenlyArsenal.ColdShader");
+            float Wane = 1;
+
+          
+            ManagedScreenFilter suctionShader = ShaderManager.GetFilter("HeavenlyArsenal.BloodFrenzy");
 
             suctionShader.TrySetParameter("globalTime", Main.GlobalTimeWrappedHourly);
-            suctionShader.TrySetParameter("intensityFactor", Wane);
-            suctionShader.TrySetParameter("psychadelicExponent", 1);
-            suctionShader.SetTexture(GennedAssets.Textures.Noise.VoronoiNoise, 1, SamplerState.AnisotropicWrap);
-            suctionShader.TrySetParameter("psychedelicColorTint", new Vector4(1, 0, 0.1f, 100   ));
-            suctionShader.TrySetParameter("colorAccentuationFactor",0.1f);
-            //suctionShader.TrySetParameter("noiseTexture", GennedAssets.Textures.Noise.TechyNoise);
+            suctionShader.TrySetParameter("intensityFactor", 1);
+            suctionShader.TrySetParameter("opacity", 00);
+            suctionShader.TrySetParameter("psychadelicExponent", 0);
+            suctionShader.TrySetParameter("psychedelicColorTint", Color.Crimson.ToVector4());
+            suctionShader.TrySetParameter("colorAccentuationFactor", 0f);
 
-            suctionShader.TrySetParameter("opacity", 0);
+            suctionShader.SetTexture(GennedAssets.Textures.Extra.BloodWater, 2);
+
             suctionShader.Activate();
             
             //sampler baseTexture : register(s0);

@@ -19,7 +19,11 @@ Materials: {
 
 AncientCoin: {
 	DisplayName: Corroded Coin
-	Tooltip: it might be more rust than metal at this point
+	Tooltip:
+		'''
+		it might be more rust than metal at this point
+		perhaps you could trade it somewhere?
+		'''
 }
 
 ChaliceOfFun: {
@@ -37,9 +41,8 @@ UmbralLeechDrop: {
 	DisplayName: Bloody Tendril
 	Tooltip:
 		'''
-		its still moving...
-
-		gross....
+		severed from the fearsome umbral leech
+		its still wiggling...
 
 		'''
 }

@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss;
 using NoxusBoss.Content.NPCs.Bosses.CeaselessVoid;
 using NoxusBoss.Content.NPCs.Friendly;
+using NoxusBoss.Core.Graphics.SwagRain;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,7 +51,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
         public override void EditSpawnPool(IDictionary<int, float> pool, NPCSpawnInfo spawnInfo)
         {
             // Only affect surface, night, Blood Moon
-            if (Main.bloodMoon && !Main.dayTime && spawnInfo.Player.ZoneOverworldHeight && NPC.downedMoonlord)
+            if (Main.bloodMoon && !Main.dayTime && spawnInfo.Player.ZoneOverworldHeight && RiftEclipseBloodMoonRainSystem.EffectActive)
             {
                 // Clear all vanilla spawns
                 pool.Clear();
@@ -60,7 +61,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
                 pool[ModContent.NPCType<ArtilleryCrab>()] = SpawnCondition.OverworldNightMonster.Chance * 0.12f;
                 pool[ModContent.NPCType<UmbralLeech>()] = SpawnCondition.OverworldNightMonster.Chance * 0.074f;
                 
-                pool[ModContent.NPCType<RitualAltar>()] = SpawnCondition.OverworldNightMonster.Chance * 0.02f;
+                pool[ModContent.NPCType<RitualAltar>()] = SpawnCondition.OverworldNightMonster.Chance * 0.06f;
                 // add as many as you like
             }
         }
@@ -71,10 +72,10 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
             {
                 // spawnRate is how often spawns happen (lower = more frequent)
                 // maxSpawns is how many can exist near the player at once
-                spawnRate = 30; // vanilla ~600; lowering makes spawns faster
-                maxSpawns = 10; // tweak for your event
+                spawnRate = 60; // vanilla ~600; lowering makes spawns faster
+                maxSpawns = 20; // tweak for your event
+            }
         }
-    }
     }
     public abstract class BloodmoonBaseNPC : ModNPC
     {

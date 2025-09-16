@@ -2,6 +2,7 @@
 using CalamityMod.Projectiles;
 using HeavenlyArsenal.Common.utils;
 using HeavenlyArsenal.Content.Items.Weapons.Summon.SolynButterfly;
+using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech;
 using Luminance.Assets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -110,10 +111,12 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
 
             if (blood > bloodBankMax / 5)
             {
-                blood = (int)Math.Sqrt(blood);
+              
 
                 foreach (NPC npc in Main.npc)
                 {
+                    if (npc.life <= 1)
+                        continue;
                     if (BlackListProjectileNPCs.BlackListedNPCs.Contains(npc.type))
                         continue;
                     if (npc.type == NPC.type) //don't buff yourself or other ritual altars
@@ -125,7 +128,18 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
                     if (npc.GetGlobalNPC<RitualBuffNPC>().hasRitualBuff)
                         continue;
 
+                    if(npc.type == ModContent.NPCType<UmbralLeech>())
+                    {
 
+                        UmbralLeech a = npc.ModNPC as UmbralLeech;
+                        if (a != null) 
+                        {
+                            if (a.HeadID != npc.whoAmI)
+                                continue;
+                        }
+
+                    }
+                    
 
                     nearbyNpcs.Add(npc);
 
@@ -142,16 +156,17 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
                     float bPrio = (b.ModNPC is BloodmoonBaseNPC bBloodmoon) ? bBloodmoon.buffPrio : 0f;
                     return bPrio.CompareTo(aPrio); // descending order, highest prio first
                 });
-                
-                NPC target = nearbyNpcs[0];
 
+                NPC target = nearbyNpcs[0];
+                blood -= bloodBankMax / 5;
                 if (!target.GetGlobalNPC<RitualBuffNPC>().hasRitualBuff)
                 {
                     target.GetGlobalNPC<RitualBuffNPC>().BuffGranter = NPC;
                     target.GetGlobalNPC<RitualBuffNPC>().ApplyRitualBuff();
-                    CombatText.NewText(target.Hitbox, Color.Red, "Buffed!");
+                    CombatText.NewText(target.Hitbox, Color.Red, "Buffed!", true);
                 }
             }
+           
 
 
         }
@@ -163,7 +178,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
                 if (BlackListProjectileNPCs.BlackListedNPCs.Contains(npc.type))
                     continue;
 
-                if(npc.type == NPC.type) //don't sacrifice yourself or other ritual altars
+                if(npc.type == NPC.type) 
                     continue;
 
                 if(npc.immortal || npc.dontTakeDamage)
@@ -185,7 +200,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
                         a.Priest = this;
                         isSacrificing = true;
                         SoundEngine.PlaySound(SoundID.Item3, NPC.position);
-                        break; //only sacrifice one at a time
+                        break; 
                     }
                 }
 

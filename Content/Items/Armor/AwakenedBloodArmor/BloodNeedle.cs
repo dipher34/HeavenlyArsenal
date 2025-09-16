@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Terraria;
+using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.GameContent.Animations;
@@ -95,7 +96,6 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             Projectile.usesLocalNPCImmunity = true;
             Projectile.localNPCHitCooldown = 15;
             Projectile.knockBack = 0;
-            Projectile.extraUpdates = 2;
         }
         #endregion
 
@@ -117,6 +117,14 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             DespawnChecks();
             TargetAndAttack();
 
+
+            if (Player.GetModPlayer<AwakenedBloodPlayer>().BloodBoostActive)
+            {
+                Projectile.extraUpdates = 2;
+            }
+            else
+
+                Projectile.extraUpdates = 3;
             ManageTentacles();
             Time++;
          
@@ -129,7 +137,9 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             {
                 Projectile.Kill();
             }
-            if (!Player.active || Player.GetModPlayer<AwakenedBloodPlayer>().CurrentForm != AwakenedBloodPlayer.Form.Offsense)//|| Player.GetModPlayer<BloodArmorPlayer>().CurrentForm != BloodArmorForm.Offense || Player.GetModPlayer<BloodArmorPlayer>().BloodArmorEquipped != true)
+            if (!Player.active 
+                || Player.GetModPlayer<AwakenedBloodPlayer>().CurrentForm != AwakenedBloodPlayer.Form.Offsense
+                || Player.GetModPlayer<AwakenedBloodPlayer>().AwakenedBloodSetActive != true)
             {
                 // If the player is no longer wearing the armor, retract the needles towards the player and then delete them.
                 Vector2 toPlayer = Player.MountedCenter - Projectile.Center;
@@ -171,10 +181,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                 }
             }
 
-            Vector2 jitter = new Vector2(
-                MathF.Sin(Time * 0.05f + Index * 1.5f),
-                MathF.Cos(Time * 0.05f + Index * 1.5f)
-            ) * Main.rand.NextFloat(2);
+         
 
             //Projectile.direction = Player.direction;
             if (TimeInner <= 0)
@@ -198,11 +205,13 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             );
             Vector2 tipOffset = localTip.RotatedBy(Projectile.rotation);
 
+            Vector2 jitter = new Vector2(0, (float)Math.Cos((Time+Index*100)/40));
+
             tentacle.segments[0].position = Projectile.Center - tipOffset + Projectile.velocity;
             tentacle.segments[1].position = tentacle.segments[0].position - tipOffset + Projectile.velocity;
-            tentacle.segments[^1].position = Player.MountedCenter + jitter;
+            tentacle.segments[^1].position = Player.MountedCenter + jitter/2;
             
-            Projectile.Center += jitter / 10;
+            Projectile.Center += jitter/10;
             tentacle.Update();
         }
         public void TargetAndAttack()
@@ -224,9 +233,10 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             if (Target != null)
             {
                 bool npcDeadOrInactive = !Target.active || Target.life <= 0 || Target.friendly;
-                bool armorLost = !Player.active;
-                                 //|| Player.GetModPlayer<BloodArmorPlayer>().CurrentForm != BloodArmorForm.Offense
-                                 //|| !Player.GetModPlayer<BloodArmorPlayer>().BloodArmorEquipped;
+                bool armorLost = !Player.active
+                    || Player.GetModPlayer<AwakenedBloodPlayer>().CurrentForm != AwakenedBloodPlayer.Form.Offsense
+                    || !Player.GetModPlayer<AwakenedBloodPlayer>().AwakenedBloodSetActive;
+                    
                 bool tooFarFromPlayer = Vector2.Distance(Target.Center, Player.MountedCenter) > (TargetRange + 100f);
 
 
@@ -308,11 +318,16 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                     float angleDifference = MathHelper.ToDegrees(Math.Abs(MathHelper.WrapAngle(Projectile.rotation - (direction.ToRotation() - MathHelper.PiOver2))));
                     if (TimeInner < windUpDuration || angleDifference > 30f)
                     {
+                       
                         // wind-up (no movement)
                         Projectile.velocity = Vector2.Zero;
                     }
                     else
                     {
+                        if (TimeInner == windUpDuration + 1)
+                        {
+                            SoundEngine.PlaySound(AssetDirectory.Sounds.Projectiles.BloodNeedle.NeedleStrike with { Pitch = 0.1f, PitchVariance = 0.4f, MaxInstances = 16});
+                        }
                         Projectile.velocity = direction * stabSpeed;
                     }
                     TimeInner++;
@@ -602,8 +617,8 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             SpriteEffects sprite = Player.direction * Player.gravDir < 0 ? SpriteEffects.FlipHorizontally : 0;
 
             Vector2 headDrawPos = new Vector2(0, 0) + Projectile.Center - Main.screenPosition;
-          
-            if(!Projectile.isAPreviewDummy)
+
+            if (!Projectile.isAPreviewDummy && Index == 1)
             {/*
                 Utils.DrawBorderString(Main.spriteBatch, "| Attack variation: " + AttackVariation.ToString(), Projectile.Center - Vector2.UnitY * 120 - Main.screenPosition, Color.White);
                 Utils.DrawBorderString(Main.spriteBatch, "| Index: " + Index.ToString() + " | Direction: " + Projectile.direction.ToString() + " | TimeInner: " + TimeInner.ToString(), Projectile.Center - Vector2.UnitY * 140 - Main.screenPosition, Color.White);

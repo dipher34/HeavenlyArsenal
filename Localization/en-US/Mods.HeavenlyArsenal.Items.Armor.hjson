@@ -65,7 +65,7 @@ ShintoArmor: {
 
 AwakenedBloodArmor: {
 	AwakenedBloodHelm: {
-		DisplayName: Sentient Helm
+		DisplayName: Sanguine Helm
 		SetBonus:
 			'''
 			covers you in a sentient amalgam of flesh and bone
@@ -77,20 +77,18 @@ AwakenedBloodArmor: {
 			blood will eventually decay into clot- while in offense form, reaching max blood will send you into a frenzy where you deal increased damage.
 			while in defense form, clot will be consumed to grant healing.
 			'''
-		Tooltip:
-			'''
-			"i found myself in the middle of a crowd, a sea of multicolored fabric in all directions."
-			"the crowd parted, and i saw a tall, pale figure. i heard a name whispered... 'Nyarlathotep'."
-			'''
+		Tooltip: ... weak...
+		AltTooltip: ""
+		ShiftTooltip: ""
 	}
 
 	AwakenedBloodplate: {
-		DisplayName: Sentient Carapice
-		Tooltip: an alien heartbeat pulsates alongside your own
+		DisplayName: Sanguine Heart
+		Tooltip: ""
 	}
 
 	AwakenedBloodStrides: {
-		DisplayName: Sentient Sabatons
+		DisplayName: Sanguine Cuisses
 		Tooltip: '''"i awoke from my slumber, gasping for air. "'''
 	}
 }

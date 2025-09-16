@@ -20,7 +20,7 @@ namespace HeavenlyArsenal.Content.Items.Consumables.CombatStim
         public ref float InjectionY => ref Projectile.localAI[1];
 
         public Vector2 InjectionPosition => new Vector2(InjectionX, InjectionY); //stores the location of the stim on the player so that the injection can be drawn on the player in the correct place.
-        public override string Texture => "HeavenlyArsenal/Content/Items/Consumables/CombatStim";
+        public override string Texture => "HeavenlyArsenal/Content/Items/Consumables/CombatStim/CombatStim";
         public override void SetDefaults()
         {
             Projectile.width = Projectile.height = 32;

@@ -131,7 +131,7 @@ namespace HeavenlyArsenal.Content.Projectiles
                
                 tri = new TriangleShape(
                     Projectile.Center + new Vector2(0, -16),
-                    Projectile.Center + new Vector2(-12, 8),
+                    Projectile.Center + new Vector2(-12, -8),
                     Projectile.Center + new Vector2(12, 8),
                     Color.Orange
                 );

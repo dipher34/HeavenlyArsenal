@@ -1,19 +1,7 @@
-using CalamityMod.Items;
-using CalamityMod.NPCs.TownNPCs;
 using CalamityMod.UI.CalamitasEnchants;
-using CalamityMod;
-using HeavenlyArsenal.ArsenalPlayer;
-using HeavenlyArsenal.Content.Items.Weapons.Melee;
-using HeavenlyArsenal.Content.Projectiles.Weapons.Melee.AvatarSpear;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework;
-using Steamworks;
-using Terraria;
-using Terraria.GameContent;
-using Terraria.ID;
-using Terraria.ModLoader;
-using NoxusBoss.Core.World.GameScenes.AvatarUniverseExploration;
 using System.Collections.Generic;
+using Terraria;
+using Terraria.ModLoader;
 
 
 namespace HeavenlyArsenal.Core.Globals;

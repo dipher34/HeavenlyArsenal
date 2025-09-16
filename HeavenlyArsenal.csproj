@@ -82,8 +82,7 @@
 	  <Compile Remove="Content\Items\Misc\GoodAppleSling.cs" />
 	  <Compile Remove="Content\Items\Misc\IdolSummoner.cs" />
 	  <Compile Remove="Content\Items\Weapons\Melee\CircularSaw.cs" />
-	  <Compile Remove="Content\Items\Weapons\Melee\Rapture.cs" />
-	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\Goreca\Goreca.cs" />
+	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\AwakenedBloodZombie.cs" />
 	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\Leech\UmbralLeech2.cs" />
 	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\Leech\UmbralLeech_Baby.cs" />
 	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\NobleWorm.cs" />
@@ -94,8 +93,7 @@
 	  <Compile Remove="Content\Particles\SpiritCandleParticle.cs" />
 	  <Compile Remove="Content\Projectiles\Misc\CombatStim_Held.cs" />
 	  <Compile Remove="Content\Projectiles\Misc\CosmicWatergun_proj.cs" />
-	  <Compile Remove="Content\Projectiles\Misc\GoodAppleSlingFolder\GoodAppleProj.cs" />
-	  <Compile Remove="Content\Projectiles\Misc\GoodAppleSlingFolder\GoodAppleSlingHeld.cs" />
+	  <Compile Remove="Content\Projectiles\VectorModProjectile.cs" />
 	  <Compile Remove="Content\Projectiles\Weapons\Melee\CircularSawProjectile.cs" />
 	  <Compile Remove="Content\Projectiles\Weapons\Melee\FileName.cs" />
 	  <Compile Remove="Content\Projectiles\Weapons\Ranged\AvatarBow_Held.cs" />
@@ -109,9 +107,11 @@
 	  <None Remove="Shaders\shittyshader.fx" />
 	</ItemGroup>
 	<ItemGroup>
+	  <Folder Include="Assets\Sounds\Items\Melee\" />
 	  <Folder Include="Common\Scenes\" />
 	  <Folder Include="Content\Gores\Enemy\BloodMoon\UmbralLeech\" />
 	  <Folder Include="Content\Projectiles\Weapons\Rogue\" />
+	  <Folder Include="Content\Projectiles\Weapons\Summon\" />
 	  <Folder Include="Core\Overrides\" />
 	  <Folder Include="Core\Visuals\" />
 	</ItemGroup>
