@@ -57,8 +57,6 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         public int MaxResource = 100;
         #endregion
 
-    
-
         public override void PreUpdate()
         {
             if (GainTimer > 0)
@@ -349,8 +347,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
 
             if (!bloodplayer.BloodBoostActive)
                 return;
-            float Wane = 1;
-
+            
           
             ManagedScreenFilter suctionShader = ShaderManager.GetFilter("HeavenlyArsenal.BloodFrenzy");
 

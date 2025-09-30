@@ -1,13 +1,8 @@
 ﻿using HeavenlyArsenal.Core;
-using Humanizer;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Terraria;
 using Terraria.Graphics.Renderers;
 
@@ -17,6 +12,9 @@ namespace HeavenlyArsenal.Content.Particles
     {
         public static ParticlePool<LightFlash> pool = new ParticlePool<LightFlash>(500, GetNewParticle<LightFlash>);
 
+        public bool AltTexture;
+        public int altTexFrame;
+
         public Vector2 position;
         public Vector2 Velocity;
         public float Rotation;
@@ -25,7 +23,7 @@ namespace HeavenlyArsenal.Content.Particles
         public int TimeLeft;
         public float Scale;
         public Color GlowColor;
-        public void Prepare(Vector2 position, Vector2 velocity, float rotation, int lifeTime, float scale, Color glowColor)
+        public void Prepare(Vector2 position, Vector2 velocity, float rotation, int lifeTime, float scale, Color glowColor, bool CollapseExplosion = false)
         {
             this.position = position;
             Velocity = velocity;
@@ -34,6 +32,7 @@ namespace HeavenlyArsenal.Content.Particles
             Scale = scale;
             GlowColor = glowColor;
             progress = 0;
+            AltTexture = CollapseExplosion;
         }
 
         public override void FetchFromPool()
@@ -42,10 +41,15 @@ namespace HeavenlyArsenal.Content.Particles
             Velocity = Vector2.Zero;
             MaxTime = 40;
             TimeLeft = 0;
+            altTexFrame = -1;
         }
 
         public override void Update(ref ParticleRendererSettings settings)
         {
+            if (altTexFrame == -1)
+            {
+                altTexFrame = Main.rand.Next(0, 2);
+            }
             position += Velocity;
             Velocity *= 0.8f;
             progress = float.Lerp(progress, 20, 0.2f);
@@ -59,29 +63,42 @@ namespace HeavenlyArsenal.Content.Particles
         public override void Draw(ref ParticleRendererSettings settings, SpriteBatch spritebatch)
         {
             Texture2D Spire = GennedAssets.Textures.GreyscaleTextures.ChromaticSpires;
-            Texture2D Star = GennedAssets.Textures.GreyscaleTextures.FourPointedStar;
+
+            Texture2D Star = !AltTexture ? GennedAssets.Textures.GreyscaleTextures.FourPointedStar : GennedAssets.Textures.GreyscaleTextures.RadialFlare;
+
             Texture2D texture = GennedAssets.Textures.GreyscaleTextures.ChromaticBurst;
-           
+
+            Texture2D Glowtex = GennedAssets.Textures.GreyscaleTextures.BloomFlare;
 
 
             Vector2 DrawPos = position - Main.screenPosition;
             SpriteEffects flip = SpriteEffects.None;
-            Vector2 GlowSize = new Vector2(0.05f, 0.05f) * Scale * (float)Math.Abs(1+ Math.Cos(TimeLeft/60));// * (1f + progress * 0.5f) * 0.05f;
+            Vector2 GlowSize = new Vector2(0.05f, 0.05f) * Scale * (float)Math.Abs(1 + Math.Cos(TimeLeft / 60));// * (1f + progress * 0.5f) * 0.05f;
 
             Vector2 Size = new Vector2(0.055f) * progress * Scale;
 
-            Vector2 GlowOrigin =    Spire.Size() * 0.5f;
+            Vector2 GlowOrigin = Spire.Size() * 0.5f;
             Vector2 TexOrigin = texture.Size() * 0.5f;
+
+            Rectangle StarRect = !AltTexture ? Star.Frame() : Star.Frame(1, 2, 0, altTexFrame);
+
+            Vector2 starOrigin = !AltTexture ? Star.Size() * 0.5f : new Vector2(Star.Width / 2, StarRect.Height / 2);
 
             Color Adjusted = GlowColor with { A = 0 } * (20 - progress);
 
+
+            Main.spriteBatch.Draw(Glowtex, DrawPos, Glowtex.Frame(), Adjusted, Rotation, Glowtex.Size() * 0.5f, Size*0.6f, flip, 0);
+            Vector2 StarSize = !AltTexture ? Size : Size*0.6f;
+
             Main.spriteBatch.Draw(Spire, DrawPos, Spire.Frame(), Adjusted, Rotation, GlowOrigin, Size, flip, 0);
 
-            Main.spriteBatch.Draw(texture, DrawPos, null, Adjusted, Rotation, TexOrigin, Size * 0.5f, flip, 0);
-            Main.spriteBatch.Draw(Star, DrawPos, null, Adjusted, Rotation + MathHelper.ToRadians(90), Star.Size() * 0.5f,Size, flip, 0);
+            Main.spriteBatch.Draw(texture, DrawPos, texture.Frame(), Adjusted, Rotation, TexOrigin, Size * 0.5f, flip, 0);
 
+            Main.spriteBatch.Draw(Star, DrawPos, StarRect, Adjusted, Rotation + MathHelper.ToRadians(90), starOrigin, StarSize, flip, 0);
+
+            
         }
 
-        
+
     }
 }

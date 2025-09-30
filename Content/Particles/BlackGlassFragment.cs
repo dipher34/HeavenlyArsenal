@@ -1,7 +1,6 @@
 ﻿using HeavenlyArsenal.Core;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using NoxusBoss.Assets;
 using Terraria;
 using Terraria.Graphics.Renderers;
 using Terraria.ModLoader;
@@ -57,7 +56,7 @@ namespace HeavenlyArsenal.Content.Particles
             TimeLeft = 0;
             progress = 0;
             //Variance = Rotation.ToRotationVector2()*10;
-            
+
         }
 
         public override void Update(ref ParticleRendererSettings settings)
@@ -65,10 +64,10 @@ namespace HeavenlyArsenal.Content.Particles
             Scale = float.Lerp(Scale, EndScale, 0.02f);
             Velocity *= Main.rand.NextFloat(0.9f, 0.99f);
             position += Velocity;
-          
-               
 
-            
+
+
+
 
 
             Rotation += MathHelper.ToRadians(1);
@@ -90,17 +89,17 @@ namespace HeavenlyArsenal.Content.Particles
 
             Vector2 DrawPos = position - Main.screenPosition;
 
-            Vector2 Origin = new Vector2(texRect.Width/2, texRect.Height/2);
-            Vector2 GlowOrigin = new Vector2(GlowtexRect.Width / 2, GlowtexRect.Height/2 );
+            Vector2 Origin = new Vector2(texRect.Width / 2, texRect.Height / 2);
+            Vector2 GlowOrigin = new Vector2(GlowtexRect.Width / 2, GlowtexRect.Height / 2);
 
             float Rot = Rotation;
             float value = progress;
-            float adjustedScale = Scale * 1.4f;
+            float adjustedScale = Scale * 1.4f * 0.25f;
 
-            Color AdjustedColor = GlowColor *1.5f;
+            Color AdjustedColor = GlowColor * 1.5f;
 
 
-            Main.EntitySpriteDraw(texGlow, DrawPos, GlowtexRect, AdjustedColor, Rot, Origin, adjustedScale, SpriteEffects.None);
+            Main.EntitySpriteDraw(texGlow, DrawPos, GlowtexRect, AdjustedColor with { A = 0 }, Rot, GlowOrigin, adjustedScale, SpriteEffects.None);
 
             Main.EntitySpriteDraw(tex, DrawPos, texRect, Color.AntiqueWhite, Rot, Origin, adjustedScale, SpriteEffects.None);
 

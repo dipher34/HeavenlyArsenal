@@ -80,14 +80,26 @@ Magic: {
 Melee: {
 	AvatarLonginus: {
 		DisplayName: Dormant Splinter
+		EmpoweredName: Unending Cycle of Retribution
 		Tooltip:
 			'''
-			<left> Cycles through several extremely fast attacks. 
-			as you attack, you build up (insert resource that isnt heat here) At max (Resource), The Spear awakens and gains a new set of attacks.
-			<right> at any point will throw the spear 
+			<left> Cycles through several extremely fast attacks.
+			as you attack, you build up Heat. At max Heat, the Spear awakens and gains a new set of attacks
+			<right> at any point will throw the spear
 			The spear can pass through blocks, and will attempt to drag you to its location
-			If thrown with over (insert percentage ) (resource), you will create a small glowing orb that rapidly racks into the hit target 
-			Once the orb collides, You teleport inside of the target, dealing massive damage.\
+			If thrown with over 50% Heat, you will create a small glowing orb that rapidly rakes into the hit target
+			Once the orb collides, you teleport inside of the target, dealing massive damage.
+			'''
+	}
+
+	Rapture: {
+		DisplayName: Rapture
+		Tooltip:
+			'''
+			Coming soon to a town near you!
+
+			activate setbonus to clear the empowered form for now.
+
 			'''
 	}
 }
@@ -110,5 +122,10 @@ Summon: {
 			Hey, that apple... its quite good, actually
 			- Nameless Deity
 			'''
+	}
+
+	ViscousWhip_Item: {
+		DisplayName: Bloody Sting
+		Tooltip: ""
 	}
 }

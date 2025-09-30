@@ -81,6 +81,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
     {
         public override string Texture => MiscTexturesRegistry.InvisiblePixelPath;
     
+        
       
         
         ///<summary>
@@ -132,7 +133,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
 
         public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
         {
-            Utils.DrawBorderString(spriteBatch, $"{blood}/{bloodBankMax}%, {blood}/{bloodBankMax}", NPC.Center - screenPos + new Vector2(0, -40), Color.Red);
+            //Utils.DrawBorderString(spriteBatch, $"{blood}/{bloodBankMax}%, {blood}/{bloodBankMax}", NPC.Center - screenPos + new Vector2(0, -40), Color.Red);
 
 
             return base.PreDraw(spriteBatch, screenPos, drawColor);

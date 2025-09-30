@@ -6,6 +6,7 @@
 	<!-- General -->
 	<PropertyGroup>
 	  <OutputType>Library</OutputType>
+	  <LangVersion>preview</LangVersion>
 	</PropertyGroup>
 	<ItemGroup>
 	  <AdditionalFiles Remove="Assets\Textures\Backpacks\**" />
@@ -82,6 +83,7 @@
 	  <Compile Remove="Content\Items\Misc\GoodAppleSling.cs" />
 	  <Compile Remove="Content\Items\Misc\IdolSummoner.cs" />
 	  <Compile Remove="Content\Items\Weapons\Melee\CircularSaw.cs" />
+	  <Compile Remove="Content\Items\YangSoul.cs" />
 	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\AwakenedBloodZombie.cs" />
 	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\Leech\UmbralLeech2.cs" />
 	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\Leech\UmbralLeech_Baby.cs" />
@@ -110,6 +112,7 @@
 	  <Folder Include="Assets\Sounds\Items\Melee\" />
 	  <Folder Include="Common\Scenes\" />
 	  <Folder Include="Content\Gores\Enemy\BloodMoon\UmbralLeech\" />
+	  <Folder Include="Content\Items\Weapons\Summon\LeechStaff\" />
 	  <Folder Include="Content\Projectiles\Weapons\Rogue\" />
 	  <Folder Include="Content\Projectiles\Weapons\Summon\" />
 	  <Folder Include="Core\Overrides\" />

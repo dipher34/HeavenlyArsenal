@@ -525,12 +525,12 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
         private void Explode()
         {
             SoundEngine.PlaySound(SoundID.Item14, NPC.Center);
-            Projectile.NewProjectile(NPC.GetSource_Death(), NPC.Center, Vector2.Zero,
-                ProjectileID.DD2ExplosiveTrapT3Explosion, NPC.damage, 0f, NPC.whoAmI);
+           // Projectile.NewProjectile(NPC.GetSource_Death(), NPC.Center, Vector2.Zero,
+            //    ProjectileID.DD2ExplosiveTrapT3Explosion, NPC.damage, 0f, NPC.whoAmI);
             for (int i = 0; i < 20; i++)
                 Dust.NewDust(NPC.position, NPC.width, NPC.height, DustID.Blood,
                     Main.rand.NextFloat(-3, 3), Main.rand.NextFloat(-3, 3));
-            NPC.StrikeInstantKill();
+            NPC.active = false;
         }
     }
 

@@ -16,6 +16,34 @@ public static class AssetDirectory
     public static class Textures
     {
 
+        public static class Items
+        {
+            public static class Accessories
+            {
+                public static class VoidCrestOath
+                {
+                    public static readonly Asset<Texture2D> VoidSigil = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/Items/Accessories/Temp");
+                    public static readonly Asset<Texture2D> VoidSigil2 = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/Items/Accessories/Alt");
+
+                }
+                /*
+                public static class Nightfall
+                {
+                    public static readonly Asset<Texture2D> Nightfall = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/Items/Accessories/Nightfall/Nightfall");
+                    public static readonly Asset<Texture2D> Nightfall_Glow = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/Items/Accessories/Nightfall/Nightfall_Glow");
+                    public static readonly Asset<Texture2D> Nightfall_Orb = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/Items/Accessories/Nightfall/Nightfall_Orb");
+                }
+                public static class CombatStim
+                {
+                    public static readonly Asset<Texture2D> CombatStim = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/Items/Accessories/CombatStim/CombatStim");
+                    public static readonly Asset<Texture2D> CombatStim_Glow = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/Items/Accessories/CombatStim/CombatStim_Glow");
+                }
+                */
+            }
+        }
+
+
+
         #region blockaroz stuff
         public static readonly Asset<Texture2D> BigGlowball = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/Extra/BigGlowball");
         public static readonly Asset<Texture2D> VoidLake = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/Extra/VoidLake");

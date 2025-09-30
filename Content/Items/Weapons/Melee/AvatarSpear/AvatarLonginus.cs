@@ -1,10 +1,12 @@
-﻿using CalamityMod.Rarities;
+﻿using CalamityMod;
+using CalamityMod.Items;
+using CalamityMod.Rarities;
 using Microsoft.Xna.Framework;
-using System.Collections.Generic;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.GameContent.Creative;
 using Terraria.ID;
+using Terraria.Localization;
 using Terraria.ModLoader;
 using static NoxusBoss.Assets.GennedAssets.Sounds;
 
@@ -24,6 +26,8 @@ public class AvatarLonginus : ModItem
     {
         Item.rare = ModContent.RarityType<HotPink>();
 
+        Item.CanBeEnchantedBySomething();
+        Item.IsEnchantable();
         Item.damage = 7537;
         Item.shootSpeed = 40f;
         Item.crit = 43;
@@ -32,7 +36,10 @@ public class AvatarLonginus : ModItem
         Item.useTime = 40;
         Item.reuseDelay = 40;
 
-        Item.DamageType = DamageClass.Melee;
+        Item.value = 102393;
+        // Item.buyPrice(1, 46, 30, 2);
+        
+        Item.DamageType = ModContent.GetInstance<TrueMeleeDamageClass>();
         Item.useAnimation = 0;
         Item.useTurn = true;
         Item.channel = true;
@@ -45,11 +52,37 @@ public class AvatarLonginus : ModItem
         Item.shoot = ModContent.ProjectileType<AvatarLonginusHeld>();
     }
 
-
-    public override void ModifyTooltips(List<TooltipLine> tooltips)
+    private string _lastApplied;
+    public override void UpdateInventory(Player player)
     {
-        Player player = Main.LocalPlayer;
-        // Access the projectile AvatarLonginusHeld and check the public bool IsEmpowered
+        string coreName = ComputeDynamicName(player);
+        string desired = coreName;
+
+        if (_lastApplied != desired)
+        {
+            if (string.IsNullOrEmpty(coreName))
+                Item.ClearNameOverride();     
+            else
+                Item.SetNameOverride(desired);
+
+            _lastApplied = desired;
+        }
+
+
+        if (player.GetModPlayer<AvatarSpearHeatPlayer>().Empowered)
+        {
+            Item.damage = 10_930;
+        }
+        else
+            Item.damage = 7_537;
+    }
+
+   
+    private string ComputeDynamicName(Player player)
+    {
+       
+        string actualName = (string)this.GetLocalization("DisplayName");
+        string AwakenedName = (string)this.GetLocalization("EmpoweredName");
         if (player.ownedProjectileCounts[Item.shoot] > 0)
         {
             foreach (Projectile projectile in Main.projectile)
@@ -59,20 +92,18 @@ public class AvatarLonginus : ModItem
                     AvatarLonginusHeld avatarSpear = projectile.ModProjectile as AvatarLonginusHeld;
                     if (avatarSpear != null && avatarSpear.IsEmpowered)
                     {
-                        foreach (var tooltip in tooltips)
-                        {
-                            if (tooltip.Mod == "Terraria" && tooltip.Name == "ItemName")
-                            {
-                                tooltip.Text = "UNENDING CYCLE OF RETRIBUTION"; // Change the item name
-                                break;
-                            }
-                        }
+
+                        return AwakenedName;
                     }
                     break;
                 }
             }
         }
+
+        return actualName;
     }
+   
+
     private bool SpearOut(Player player) => player.ownedProjectileCounts[Item.shoot] > 0;
 
     public override void HoldItem(Player player)

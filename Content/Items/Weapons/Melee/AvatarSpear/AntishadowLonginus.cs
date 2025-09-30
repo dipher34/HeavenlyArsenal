@@ -48,7 +48,7 @@ public class AntishadowLonginus : ModProjectile
 		if (Target > 0 && Target <= Main.npc.Length)
 		{
 			targetNPC = Main.npc[(int)(Target - 1)];
-			if (!targetNPC.active || targetNPC.lifeMax < 5 || targetNPC.friendly)
+			if (!targetNPC.active || targetNPC.lifeMax < 5 || targetNPC.friendly || targetNPC.dontTakeDamage)
 				valid = false;
 		}
 

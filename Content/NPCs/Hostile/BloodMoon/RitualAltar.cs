@@ -440,7 +440,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
             {
                 if (npc.ModNPC is BloodmoonBaseNPC bloodmoonNpc)
                 {
-                    Utils.DrawBorderString(spriteBatch, $"{hasRitualBuff}, Buffgranter: {r}, Timer: {ritualBuffTimer}, type:{BuffType.ToString()}", Vector2.UnitX * -60 + npc.Center - Main.screenPosition - Vector2.UnitY * -30, Color.Red);
+                    //Utils.DrawBorderString(spriteBatch, $"{hasRitualBuff}, Buffgranter: {r}, Timer: {ritualBuffTimer}, type:{BuffType.ToString()}", Vector2.UnitX * -60 + npc.Center - Main.screenPosition - Vector2.UnitY * -30, Color.Red);
 
                 }
             }

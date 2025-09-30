@@ -59,7 +59,7 @@ namespace HeavenlyArsenal.Content.Rarities
 
             if (item.rare == ModContent.RarityType<BloodMoonRarity>() && line.Mod == "Terraria" && line.Name == "ItemName")
             {
-                string text = item.Name;
+                string text = item.AffixName();
                 DynamicSpriteFont font = FontAssets.MouseText.Value;
 
                 Vector2 basePos = new Vector2(line.X, line.Y);  
@@ -173,17 +173,11 @@ namespace HeavenlyArsenal.Content.Rarities
 
 
                 float textScaleInterp = 0;//(float)Math.Abs(Math.Sin(time));
-                for(int u = 0; u < 12; u++)
-                {
-
-                    Vector2 DrawOffset = new Vector2(0, 1).RotatedBy(u);
-                    
-                    Utils.DrawBorderString(Main.spriteBatch, item.Name, namePos + DrawOffset, Color.DarkRed * 0.5f, 1 * (1+textScaleInterp), 0, 0);
-                }
+              
 
                 Color A = Color.Lerp(new Color(220, 20, 70), Color.Red, (float)Math.Sin(Main.GlobalTimeWrappedHourly));
 
-                Utils.DrawBorderString(Main.spriteBatch, item.Name, namePos, A);
+                Utils.DrawBorderString(Main.spriteBatch, text, namePos, A);
                 return false;
             }
 

@@ -2,11 +2,6 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Terraria;
 using Terraria.Graphics.Renderers;
 
@@ -52,8 +47,7 @@ namespace HeavenlyArsenal.Content.Particles
             Velocity *= 0.5f;
             position += Velocity;
             progress = float.Lerp(progress, 1, 0.25f);
-
-            
+            Rotation = Velocity.ToRotation();
             if (progress >= 1)
                 ShouldBeRemovedFromRenderer = true;
         }
@@ -61,18 +55,21 @@ namespace HeavenlyArsenal.Content.Particles
         public override void Draw(ref ParticleRendererSettings settings, SpriteBatch spritebatch)
         {
             Texture2D tex = GennedAssets.Textures.GreyscaleTextures.BloomCirclePinpoint;
+            Texture2D tex2 = GennedAssets.Textures.GreyscaleTextures.Star;
 
 
             Vector2 DrawPos = position - Main.screenPosition;
             Vector2 Origin = tex.Size() * 0.5f;
-
+            Vector2 Origin2 = new Vector2(tex.Width/2, 0);
             float Rot = Rotation;
-            float scale = Scale * (1-progress);
+            float scale = Scale * (1 - progress);
 
             Color AdjustedColor = GlowColor with { A = 0 };
 
+            Vector2 AdjustedScale = new Vector2(scale, scale) * 0.25f;
             Main.EntitySpriteDraw(tex, DrawPos, null, AdjustedColor, Rot, Origin, scale, SpriteEffects.None);
-            
+            Main.EntitySpriteDraw(tex2, DrawPos, null, AdjustedColor, Rot + MathHelper.PiOver2, Origin2, AdjustedScale, SpriteEffects.None);
+
         }
 
 

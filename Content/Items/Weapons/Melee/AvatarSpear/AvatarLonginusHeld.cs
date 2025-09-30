@@ -111,8 +111,12 @@ public class AvatarLonginusHeld : ModProjectile
         {
             CurrentFrame = (int)float.Lerp(CurrentFrame, 11, 0.25f);
         }
+        else
+        {
+            CurrentFrame = (int)float.Lerp(CurrentFrame, 1, 0.25f);
+        }
 
-        Projectile.damage = (int)Player.GetTotalDamage(DamageClass.Melee).ApplyTo(Player.HeldItem.damage);
+            Projectile.damage = (int)Player.GetTotalDamage(DamageClass.Melee).ApplyTo(Player.HeldItem.damage);
         Player.heldProj = Projectile.whoAmI;
 
         throwMode = false;

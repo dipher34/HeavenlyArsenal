@@ -1,5 +1,6 @@
 ﻿using CalamityMod;
 using CalamityMod.NPCs.DevourerofGods;
+using CalamityMod.NPCs.OldDuke;
 using Luminance.Assets;
 using Luminance.Common.Utilities;
 using Luminance.Core.Graphics;
@@ -11,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using Terraria;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
 using static HeavenlyArsenal.Content.Items.Weapons.Melee.AvatarSpear.AvatarLonginusHeld;
@@ -86,9 +88,11 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
 
         public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
         {
+           
             if (target.SuperArmor)
             {
                 modifiers = modifiers with { SuperArmor = false };
+                
             }
                 
             AddableFloat value = AddableFloat.Zero + 1f;
@@ -98,12 +102,13 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             MultipliableFloat DamageMulti = MultipliableFloat.One * 1.1f;
             modifiers.TargetDamageMultiplier = DamageMulti;
             modifiers.Defense = StatModifier.Default * 0.0f;
+
             target.Calamity().unbreakableDR = false;
             target.Calamity().DR = 0;
             modifiers.CritDamage = StatModifier.Default + 0.2f;
 
             //i see your parasite wank and despair, l-man
-            if (ModLoader.HasMod("SRPTerraria"))
+            if (ModLoader.HasMod("SRPTerraria") && target.ModNPC != null)
             {
                 Type npcType = target.ModNPC.GetType();
                 Type parasiteBase = ModLoader.TryGetMod("SRPTerraria", out Mod srpMod)
@@ -113,12 +118,11 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
                 if (parasiteBase != null && parasiteBase.IsAssignableFrom(npcType))
                 {
                     // adapt to this, fucker
-                    NPC.HitInfo a = target.CalculateHitInfo(Projectile.damage, 0, damageVariation: true);
-                    CombatText.NewText(target.getRect(), Color.Orange, a.Damage , true);
-                    
-                    target.life -= a.Damage;
-                    if(target.life <= 0)
-                        target.checkDead();
+                  
+                    CombatText.NewText(target.getRect(), Color.Orange, Projectile.damage, true);
+
+                    target.life -= Projectile.damage;
+                    target.checkDead();
                     target.HitEffect();
                 }
             }

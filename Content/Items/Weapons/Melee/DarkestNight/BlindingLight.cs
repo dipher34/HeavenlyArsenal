@@ -1,23 +1,14 @@
-﻿using CalamityMod.NPCs.TownNPCs;
-using HeavenlyArsenal.Common.Graphics;
+﻿using HeavenlyArsenal.Common.Graphics;
 using HeavenlyArsenal.Content.Particles;
 using Luminance.Assets;
-using Luminance.Common.DataStructures;
 using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
-using NoxusBoss.Content.NPCs.Bosses.Draedon;
-using NoxusBoss.Content.NPCs.Friendly;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.GameContent;
-using Terraria.Graphics;
 using Terraria.ID;
 using Terraria.ModLoader;
 using static Luminance.Common.Utilities.Utilities;
@@ -39,22 +30,23 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             Projectile.tileCollide = false;
             Projectile.ignoreWater = true;
             Projectile.DamageType = DamageClass.Melee;
-            
+            Projectile.damage = 1;
+
         }
         public override void SetStaticDefaults()
         {
-            ProjectileID.Sets.TrailCacheLength[Type] = 20   ;
+            ProjectileID.Sets.TrailCacheLength[Type] = 20;
             ProjectileID.Sets.TrailingMode[Type] = 3;
         }
         public override void OnSpawn(IEntitySource source)
         {
-         
+
         }
         public override void AI()
         {
             Projectile.timeLeft++;
             NPC target = Projectile.FindTargetWithinRange(2500);
-            float speedMulti = Time*2 / 5;
+            float speedMulti = Time * 2 / 5;
             //Main.NewText(speedMulti);
             if (Time > 5)
             {
@@ -62,7 +54,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
                 {
                     Projectile.Kill();
                 }
-                else  
+                else
                 {
                     if (target.GetGlobalNPC<Collapse>().CollapseStage >= 3)
                     {
@@ -81,25 +73,33 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
                             }
                         }
                     }
-                    
-                    Projectile.velocity = (target.Center - Projectile.Center)*0.2f;
+
+                    Projectile.velocity = (target.Center - Projectile.Center) * (0.2f + Time / 100);
                     //Main.NewText(Projectile.velocity);
                     //Projectile.Center = Vector2.Lerp(Projectile.Center, target.Center, 0.02f);
-                    
+
                 }
             }
-            
+
 
             Time++;
         }
 
+        public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
+        {
+            if (!target.SuperArmor)
+            {
+                modifiers = modifiers with { SuperArmor = true };
+
+            }
+        }
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
             BlindingLight_hitVFX particle = BlindingLight_hitVFX.pool.RequestParticle();
+            Vector2 AdjustedVelocity = Projectile.velocity * 10;
+            Vector2 AdjustedPos = Projectile.Center + AdjustedVelocity;
 
-            Vector2 AdjustedPos = Projectile.Center;
-
-            Vector2 AdjustedVelocity = Projectile.velocity;
+           
             float rotation = Projectile.rotation + MathHelper.ToRadians(Main.rand.NextFloat(-20, 20));
             float Scale = 1;
 
@@ -108,7 +108,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
         }
 
 
-       
+
         public override bool PreDraw(ref Color lightColor)
         {
             Texture2D placeholder = GennedAssets.Textures.GreyscaleTextures.FourPointedStar;
@@ -121,7 +121,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             SpriteEffects spriteEffects = SpriteEffects.None;
 
             Color a = Color.AntiqueWhite with { A = 0 };
-            float thing = 0.1f*(float)Math.Cos((Main.GlobalTimeWrappedHourly%5 + Projectile.whoAmI) * 15)+0.1f;
+            float thing = 0.1f * (float)Math.Cos((Main.GlobalTimeWrappedHourly % 5 + Projectile.whoAmI) * 15) + 0.1f;
             float Value = thing;
             //(float)Math.Clamp(Math.Abs(Math.Sin((Main.GlobalTimeWrappedHourly + Projectile.whoAmI) * 10)), 0.5f, 1) * 0.5f;
             float Rotation = Projectile.rotation;
@@ -130,7 +130,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             Vector2 TotalScale = new Vector2(1, 1) * Value;
             Main.EntitySpriteDraw(placeholder, DrawPos, null, a, Rotation, TexOrigin, TotalScale, spriteEffects);
 
-            Main.EntitySpriteDraw(Glow, DrawPos, null, a, Rotation, Glorigin, TotalScale*3f, spriteEffects);
+            Main.EntitySpriteDraw(Glow, DrawPos, null, a, Rotation, Glorigin, TotalScale * 3f, spriteEffects);
             //Utils.DrawBorderString(Main.spriteBatch, Projectile.damage.ToString(), DrawPos, Color.AntiqueWhite);
             return false;
         }
@@ -146,7 +146,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
         public Color BoltColorFunction(float completionRatio)
         {
             float sineOffset = CalculateSinusoidalOffset(completionRatio);
-            return Color.Lerp(Color.White, Color.Black, sineOffset * 0.5f + 0.5f);
+            return RainbowColorGenerator.TrailColorFunction(completionRatio);//Color.Lerp(Color.White, Color.Black, sineOffset * 0.5f + 0.5f);
         }
 
         public float CalculateSinusoidalOffset(float completionRatio)
@@ -187,38 +187,5 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             PrimitiveRenderer.RenderTrail(trailPositions, settings, 12);
         }
 
-        private float TrailWidthFunction(float p) => 10 *  30  * Projectile.direction;
-        private Color TrailColorFunction(float p)
-        {
-            // Cycle hue over [0, 360), scaled by p
-            // You can also multiply p to make the cycle repeat faster/slower
-            //float hue = (p * 360f) % 360f;
-            float hue = (p * 360f + Main.GlobalTimeWrappedHourly * 120f) % 360f;
-
-            return HsvToColor(hue, 0.75f, 1f, 0);
-        }
-
-
-        private Color HsvToColor(float h, float s, float v, byte alpha = 255)
-        {
-            int hi = (int)(h / 60f) % 6;
-            float f = h / 60f - MathF.Floor(h / 60f);
-
-            v = v * 255f;
-            int vi = (int)v;
-            int p = (int)(v * (1f - s));
-            int q = (int)(v * (1f - f * s));
-            int t = (int)(v * (1f - (1f - f) * s));
-
-            return hi switch
-            {
-                0 => new Color(vi, t, p, alpha),
-                1 => new Color(q, vi, p, alpha),
-                2 => new Color(p, vi, t, alpha),
-                3 => new Color(p, q, vi, alpha),
-                4 => new Color(t, p, vi, alpha),
-                _ => new Color(vi, p, q, alpha),
-            };
-        }
     }
 }

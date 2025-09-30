@@ -14,8 +14,12 @@ ElectricVambrace: {
 }
 
 VoidCrestOath: {
-	DisplayName: Void Crest Oath
-	Tooltip: ""
+	DisplayName: Foreign Halo of Deep Void
+	Tooltip:
+		'''
+		todo: write somehting about the antiprojectile system
+		Causes rifts to tear out of reality to spear incoming projectiles.
+		'''
 }
 
 ChiUpgrade: {
@@ -28,5 +32,57 @@ ChiUpgrade: {
 
 		additionally, you gain increased crit chance based on the total damage you've dealt recently
 		"Now, you are balanced."
+		'''
+}
+
+Accessory_Thing: {
+	DisplayName: Radiant Rampart
+	Tooltip:
+		'''
+		Grants +1 to +5 HP/s life regen based on missing health
+		Grants +1 HP/s life regen and an additional 1 HP/s when inflicted with a damage debuff
+		Standing still grants +2 HP/s life regen
+		Grants 20 defense and continuous healing while afflicted with any debuff
+		The healing eventually slows down if debuffed for an extended period of time
+		Massively boosts natural life regen while afflicted with any debuff
+		Each debuff beyond the first grants 8 additional defense
+		Granted defense fades away slowly when not afflicted with any debuffs
+		Makes weak damage-over-time debuffs harmless and halves the duration of all but the strongest debuffs
+
+		Causes stars to fall and increases invincibility after taking damage
+		Grants bonus invincibility frames based on missing health (10 frames at full HP → 40 frames at 25% or less HP)
+		Being struck for over 200 damage grants 30 additional invincibility frames
+		Grants immunity to knockback
+		Puts a protective shell around the owner when below 50% life that reduces damage taken
+		Absorbs 25% of damage dealt to nearby teammates while above 25% life
+
+		You emit shining blue light if visibility is enabled
+		"A once putrid crystal, now glimmering with immaculate purity"
+		'''
+}
+
+RadiantRampartItem: {
+	DisplayName: Radiant Rampart
+	Tooltip:
+		'''
+		Grants +1 to +5 HP/s life regen based on missing health
+		Grants +1 HP/s life regen and an additional 1 HP/s when inflicted with a damage debuff
+		Standing still grants +2 HP/s life regen
+		Grants 20 defense and continuous healing while afflicted with any debuff
+		The healing eventually slows down if debuffed for an extended period of time
+		Massively boosts natural life regen while afflicted with any debuff
+		Each debuff beyond the first grants 8 additional defense
+		Granted defense fades away slowly when not afflicted with any debuffs
+		Makes weak damage-over-time debuffs harmless and halves the duration of all but the strongest debuffs
+
+		Causes stars to fall and increases invincibility after taking damage
+		Grants bonus invincibility frames based on missing health (10 frames at full HP → 40 frames at 25% or less HP)
+		Being struck for over 200 damage grants 30 additional invincibility frames
+		Grants immunity to knockback
+		Puts a protective shell around the owner when below 50% life that reduces damage taken
+		Absorbs 25% of damage dealt to nearby teammates while above 25% life
+
+		You emit shining blue light if visibility is enabled
+		How radiant!
 		'''
 }

@@ -37,7 +37,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         public int rechargeRate;
         public int lastHitDamage;
 
-        public float barrierDamageReduction = 0.25f;
+        public float barrierDamageReduction = 0.85f;
         public float barrierSizeInterp = 0;
         public bool ShadowShieldVisible = true;
         public bool ShadowVeil;

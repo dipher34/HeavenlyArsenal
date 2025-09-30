@@ -14,7 +14,7 @@ namespace HeavenlyArsenal.Common
         {
             var bloodArmorPlayer = Player.GetModPlayer<BloodArmorPlayer>();
             var modPlayer = Player.GetModPlayer<AwakenedBloodPlayer>();
-            if (KeybindSystem.HaemsongBind.JustPressed)
+            if (KeybindSystem.HaemsongBind.JustPressed && modPlayer.AwakenedBloodSetActive)
             {
                 SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.ArmJutOut with { Volume = 0.2f, Pitch = -1f }, Player.Center, null);
                

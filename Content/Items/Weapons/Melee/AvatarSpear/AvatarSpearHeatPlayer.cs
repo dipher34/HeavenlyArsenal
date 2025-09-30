@@ -14,6 +14,12 @@ public class AvatarSpearHeatPlayer : ModPlayer
 {
     public float HeatAcculumationTimer { get; private set; }
 
+
+    public bool Empowered 
+    { 
+        get;
+        set;
+    }
     /// <summary>
     /// Max is 1f
     /// </summary>
@@ -48,6 +54,7 @@ public class AvatarSpearHeatPlayer : ModPlayer
 
     public override void PostUpdateBuffs()
     {
+        //Main.NewText(Heat);
         const float SevenSeconds = 1f / (7 * 60f);
 
         if (!Active && HeatAcculumationTimer > 0)

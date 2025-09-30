@@ -1,21 +1,32 @@
-﻿using System;
+﻿using HeavenlyArsenal.Common.Ui;
+using HeavenlyArsenal.Content.Projectiles;
+using Microsoft.Xna.Framework;
+using NoxusBoss.Assets;
+using NoxusBoss.Content.NPCs.Bosses.Avatar.Projectiles;
+using NoxusBoss.Content.NPCs.Bosses.Draedon.Projectiles;
+using NoxusBoss.Content.NPCs.Bosses.NamelessDeity.Projectiles;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.Xna.Framework;
-using static Luminance.Luminance;
 using Terraria;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
-using NoxusBoss.Content.NPCs.Bosses.Avatar.Projectiles;
-using NoxusBoss.Content.NPCs.Bosses.NamelessDeity.Projectiles;
-using HeavenlyArsenal.Common.Ui;
-using HeavenlyArsenal.Content.Projectiles;
 
 namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
 {
     public class VoidCrestOathPlayer : ModPlayer
     {
-     
+        #region values
+
+        /// <summary>
+        /// the max (8 second) cooldown after which Voidcrest must recharge.
+        /// </summary>
+        public int CooldownMax = 16 * 60;
+        /// <summary>
+        /// 
+        /// </summary>
+        public int Cooldown;
         /// <summary>
         /// True if the accessory is actively equipped in an accessory slot.
         /// (Not in a vanity slot.)
@@ -25,13 +36,7 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
         /// <summary>
         /// If true, the accessory is in a vanity slot and only provides cosmetic effects.
         /// </summary>
-        public bool NotVanity;
-
-        /// <summary>
-        /// True if the conflicting accessory WarBannerOftheSun is equipped.
-        /// </summary>
-        public bool warBannerOftheSunEquipped;
-
+        public bool Vanity;
         /// <summary>
         /// The resource used to "pay" for intercepts.
         /// It will decrease when an interception happens and regenerate slowly.
@@ -51,7 +56,7 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
         /// <summary>
         /// How much resource is regenerated per tick if no intercept is occurring.
         /// </summary>
-        public float InterceptRegenRate = 110;
+        public float InterceptRegenRate = 4;
 
         /// <summary>
         /// A list to keep track of hostile projectile indices that we are watching.
@@ -67,12 +72,12 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
         /// <summary>
         /// Distance at which an intercept is triggered (in pixels).
         /// </summary>
-        private float InterceptDistance = 100f;
+        private float InterceptDistance = 325f;
 
         /// <summary>
         /// Interceptor projectile type. 
         /// </summary>
-        private int interceptorType => ModContent.ProjectileType<VoidCrestInterceptorProjectile>();
+        private int interceptorType => ModContent.ProjectileType<VoidCrest_Spear>();
 
         /// <summary>
         /// The current Projectile to be intercepted
@@ -84,6 +89,9 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
             set;
         }
 
+        public List<int> targetedProjectiles = new List<int>();
+        #endregion
+
 
         private static readonly HashSet<int> BlacklistedProjectiles = new HashSet<int>
         {
@@ -91,100 +99,167 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
             ModContent.ProjectileType<FrostColumn>(), ModContent.ProjectileType<OtherworldlyThorn>(),
             ModContent.ProjectileType<BlackHoleHostile>(), ModContent.ProjectileType<SwordConstellation>(),
             ModContent.ProjectileType<ControlledStar>()
+
+            
             // Add other projectile IDs here
         };
         public override void ResetEffects()
         {
-            
             voidCrestOathEquipped = false;
-           
-            warBannerOftheSunEquipped = false;
+            Vanity = false;
+
+
         }
 
         public override void PostUpdate()
         {
-
-            WeaponBar.DisplayBar(Color.White, Color.Red, InterceptCount / MaxInterceptCount, 0);
-            trackedProjectileIndices.Clear();
-            // If the conflicting accessory is equipped, skip all interception logic.
-            if (warBannerOftheSunEquipped|| !voidCrestOathEquipped || NotVanity)
+            if (!voidCrestOathEquipped || Vanity)
                 return;
-            
-            
-            // Rebuild the tracking list each tick.
+            float value = InterceptCount / MaxInterceptCount;
 
-            //shit implementation i know
+            // Main.NewText(InterceptCount);
+            // Main.NewText(value);
+            WeaponBar.DisplayBar(Color.White, Color.Red, value, 120, BarOffset: new Vector2(0, -40));
 
-            for (int i = 0; i < Main.maxProjectiles; i++)
+            if (Cooldown <= 0)
+                ManageTargeting();
+            else
             {
-                // Only consider projectiles that:
-                //  • Are hostile (enemy projectiles)
-                //  • Are not friendly (not shot by player)
-                //  • Were not spawned by the player (owner check)
+                Cooldown--;
+                if (Cooldown == 1)
+                    InterceptCount = MaxInterceptCount;
+                RegenerateInterceptCount();
+
+            }
+                
+        }
+
+        /// <summary>
+        /// Manages the targeting and interception of hostile projectiles within a specified radius.
+        /// </summary>
+        /// <remarks>This method identifies hostile projectiles within the tracking radius, calculates
+        /// interception costs,  and determines whether the player can afford to intercept them. If interception is
+        /// possible, it spawns  interceptor projectiles to neutralize the targets. The method also handles regeneration
+        /// of interception  resources when no projectiles are intercepted during the current tick.  Projectiles are
+        /// prioritized based on their distance to the player, and certain projectiles are excluded  from targeting
+        /// based on predefined conditions (e.g., blacklisted types, friendly projectiles, or projectiles  already
+        /// intercepted).</remarks>
+        private void ManageTargeting()
+        {
+           
+
+            InterceptCost = 30;
+           
+            trackedProjectileIndices.Clear();
+            targetedProjectiles.RemoveAll(id => !Main.projectile[id].active || Main.projectile[id].friendly);
+
+            InterceptRegenRate = 1;
+            //Main.NewText(InterceptRegenRate);
 
 
-                Projectile proj = Main.projectile[i];
-
-
+            bool interceptedSomethingThisTick = false;
+            foreach (Projectile proj in Main.ActiveProjectiles)
+            {
                 if (BlacklistedProjectiles.Contains(proj.type))
                     continue;
 
-                if (proj.active&& proj.hostile && proj.owner != Player.whoAmI )
+                if (proj.active && proj.hostile && !proj.friendly&& proj.owner != Player.whoAmI && (bool)proj.Globals.Current.CanDamage(proj))
                     continue;
                 float distance = Vector2.Distance(proj.Center, Player.Center);
 
-                if (proj.hostile && proj.type != interceptorType && !proj.friendly && distance <= TrackingRadius) //&& proj.owner != Player.whoAmI)//&& proj.owner != Player.whoAmI)
+                
+                if (proj.hostile &&
+                    proj.type != interceptorType
+                    && !proj.friendly &&
+                    distance <= TrackingRadius
+                    && proj.damage> 0)
                 {
-                    trackedProjectileIndices.Add(i);
+                    trackedProjectileIndices.Add(proj.whoAmI);
                 }
             }
-
-            if (Main.myPlayer == Player.whoAmI)
-            {
-               
-            }
-
-            bool interceptedSomethingThisTick = false;
-           //sort the tracked projectiles by distance to the player
-            trackedProjectileIndices.Sort((a, b) => Vector2.Distance(Main.projectile[a].Center, Player.Center).CompareTo(Vector2.Distance(Main.projectile[b].Center, Player.Center)));  
-            
-
+            trackedProjectileIndices.Sort((a, b) => Vector2.Distance(Main.projectile[a].Center, Player.Center).CompareTo(Vector2.Distance(Main.projectile[b].Center, Player.Center)));
 
             foreach (int index in trackedProjectileIndices.ToList())
-            { 
+            {
 
                 Projectile proj = Main.projectile[index];
-                if (proj != null && proj.owner != Player.whoAmI && proj.type != interceptorType)
+                if (!proj.active
+                    || proj.friendly
+                    || proj.hostile == false
+                    || proj.type == interceptorType
+                    || proj.type == ModContent.ProjectileType<SmallTeslaArc>())
                     continue;
 
                 float distance = Vector2.Distance(proj.Center, Player.Center);
+                if (distance > InterceptDistance)
+                    continue;
+
+                // Calculate cost scaling
                 float sizeFactor = (proj.width * proj.height) / 10000f;
                 float cost = InterceptCost * Math.Max(1f, sizeFactor);
 
-                if (distance <= InterceptDistance && proj.type != interceptorType && !proj.friendly && proj.active)
+                // Only intercept if affordable
+                if (InterceptCount > cost && !targetedProjectiles.Contains(proj.whoAmI))
                 {
-                    if (InterceptCount >= cost)
+                    interceptedSomethingThisTick = true;
+                    // Main.NewText($"adding {proj.Name} {proj.whoAmI} to targetedProjectiles");
+                    targetedProjectiles.Add(proj.whoAmI);
+                    targetedProjectiles.Sort((a, b) =>
                     {
-                        // Spawn interceptor at the projectile's center
-                        Projectile.NewProjectile(
-                            Player.GetSource_FromThis(),
-                            proj.Center, Vector2.Zero, interceptorType, -1,
-                            1f,
-                            Player.whoAmI);
+                        Projectile pa = Main.projectile[a];
+                        Projectile pb = Main.projectile[b];
+                        return pa.whoAmI.CompareTo(pb.whoAmI);
+                    });
+                  
+                    bool alreadyTargeted = Main.projectile.Any(p =>
+                    p.active && p.type == interceptorType &&
+                    p.ModProjectile is VoidCrest_Spear interceptor &&
+                    interceptor.TargetId == proj.whoAmI);
 
-                        CreateInterceptVisualEffect(proj.Center);
+                    if (!alreadyTargeted)
+                    {
                         InterceptCount -= cost;
-                        proj.Kill();
-                        interceptedSomethingThisTick = true;
+
+                        Vector2 d = (proj.Center - proj.velocity);
+
+                        Vector2 adjuster = new Vector2(70 + proj.width + proj.velocity.X * proj.MaxUpdates, proj.velocity.Y * proj.MaxUpdates).RotatedBy(proj.velocity.ToRotation()).RotatedByRandom(MathHelper.ToRadians(35));//.RotatedByRandom(MathHelper.PiOver2);
+                        Vector2 adjustedSpawn = proj.Center + adjuster;// Main.rand.NextVector2CircularEdge(20, 20);
+
+                        Vector2 a = adjuster + proj.Center;
+                        Vector2 Velocity = adjustedSpawn.AngleTo(proj.Center + proj.velocity * 4 * proj.MaxUpdates).ToRotationVector2() * 105;
+
+                        Projectile dad = Projectile.NewProjectileDirect(
+                            Player.GetSource_FromThis(),
+                            adjustedSpawn,
+                            Velocity,
+                            interceptorType,
+                            -1,
+                            1f,
+                            Player.whoAmI
+                        );
+
+                        if (dad.ModProjectile is VoidCrest_Spear mom)
+                        {
+                            mom.TargetId = proj.whoAmI;
+                            mom.BaseSize = proj.Size.X / proj.scale;
+                        }
+
+                        if(InterceptCount <=1)
+                        {
+                            InterceptCount = 0;
+                            Cooldown = CooldownMax;
+                           
+                            SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.Clap, Player.Center);
+                            return;
+                        }
                     }
-                    
+
+
                 }
             }
             if (!interceptedSomethingThisTick)
                 RegenerateInterceptCount();
         }
-
-       
 
         /// <summary>
         /// Regenerates InterceptCount until it reaches the maximum.
@@ -201,29 +276,6 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
             }
         }
 
-        /// <summary>
-        /// Creates a visual effect (dust, particles, etc.) at the specified position.
-        /// 
-        /// </summary>
-        /// <param name="position">The world position for the visual effect.</param>
-        private void CreateInterceptVisualEffect(Vector2 position)
-        {
-            
-            // Example using Terraria dust
-            for (int d = 0; d < 1; d++)
-            {
-                int dustIndex = Dust.NewDust(
-                    position,
-                    10, 10,
-                    DustID.AncientLight,
-                    Main.rand.NextFloat(-3f, 3f),
-                    Main.rand.NextFloat(-3f, 3f),
-                    100,
-                    default,
-                    1.5f
-                );
-                Main.dust[dustIndex].noGravity = true;
-            }
-        }
+      
     }
 }

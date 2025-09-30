@@ -78,3 +78,8 @@ BlissFallen: {
 	DisplayName: Bliss Fallen
 	Description: Mods.HeavenlyArsenal.Buffs.BlissFallen.Description
 }
+
+BloodwhipBuff: {
+	DisplayName: Bloodwhip Buff
+	Description: Mods.HeavenlyArsenal.Buffs.BloodwhipBuff.Description
+}

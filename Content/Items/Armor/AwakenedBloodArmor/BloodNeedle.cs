@@ -440,8 +440,8 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             BloodMetaball metaball = ModContent.GetInstance<BloodMetaball>();
             for (int i = 0; i < 5; i++)
             {
-                Vector2 bloodSpawnPosition = Projectile.Center + new Vector2(30 * Projectile.scale).RotatedBy(Projectile.rotation);
-                Vector2 bloodVelocity = (Main.rand.NextVector2Circular(8f, 8f) + Projectile.velocity / 5) * Main.rand.NextFloat(0.2f, 1.2f);
+                Vector2 bloodSpawnPosition = target.Center;
+                Vector2 bloodVelocity = (Main.rand.NextVector2Circular(8f, 8f) + Projectile.velocity / 5) * Main.rand.NextFloat(0.4f, 4.2f);
                 metaball.CreateParticle(bloodSpawnPosition, bloodVelocity, Main.rand.NextFloat(10f, 40f), Main.rand.NextFloat(2f));
             }
             /*

@@ -130,6 +130,11 @@ Mods: {
 				Tooltip: ""
 			}
 
+			Debug: {
+				DisplayName: Debug
+				Tooltip: ""
+			}
+
 			avatar_FishingRod: {
 				DisplayName: avatar_ Fishing Rod
 				Tooltip: ""
@@ -292,6 +297,21 @@ Mods: {
 
 			Closure: {
 				DisplayName: Closure
+				Tooltip: ""
+			}
+
+			Disruption: {
+				DisplayName: Disruption
+				Tooltip: ""
+			}
+
+			ViscousWhip_Item: {
+				DisplayName: Viscous Whip_ Item
+				Tooltip: ""
+			}
+
+			Accessory_Thing: {
+				DisplayName: Accessory_ Thing
 				Tooltip: ""
 			}
 		}

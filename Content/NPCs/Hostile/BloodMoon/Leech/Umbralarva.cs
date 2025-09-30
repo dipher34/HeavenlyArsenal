@@ -490,6 +490,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
             return false;
         }
 
+        //painj in my ass 
         // Build debug info by scanning NPC list for segments that reference this head via realLife
         public (int headID, List<int> segmentNpcIds, List<Vector2> positions) GetWormDebugInfo()
         {
