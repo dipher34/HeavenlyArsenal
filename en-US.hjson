@@ -314,6 +314,11 @@ Mods: {
 				DisplayName: Accessory_ Thing
 				Tooltip: ""
 			}
+
+			KnifeItem: {
+				DisplayName: Knife Item
+				Tooltip: ""
+			}
 		}
 
 		Biomes: {

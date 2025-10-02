@@ -38,7 +38,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
             Item.useStyle = ItemUseStyleID.Swing;
             Item.useTime = 30;
             Item.useAnimation = 30;
-            Item.shootSpeed = 4f;
+            Item.shootSpeed = 40f;
             Item.knockBack = 3f;
 
             Item.rare = ModContent.RarityType<Rarities.BloodMoonRarity>();

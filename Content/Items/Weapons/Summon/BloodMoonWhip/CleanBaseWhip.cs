@@ -9,6 +9,7 @@ using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.Enums;
+using Terraria.GameContent.Animations;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -17,16 +18,20 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
     /// <summary>
     /// A cleaned-up, easier-to-extend base class for whip projectiles.
     /// Subclasses override virtual properties/methods to change visuals/behavior.
+    /// </summary>
+    /// <remarks>
     /// Key improvements:
     /// - owner item type is captured at spawn time (safer than string compares)
     /// - control points are calculated only when needed
     /// - clearer FlyProgress and HitboxActive semantics
     /// - fewer allocations, clearer override points
-    /// </summary>
+    /// </remarks>
     public abstract class CleanBaseWhip : ModProjectile
     {
-        protected virtual int DefaultSegments => 12;
-        protected virtual float DefaultRangeMult => 1.6f;
+        #region Values
+        public ref float Time => ref Projectile.ai[0];
+        protected static int DefaultSegments => 12;
+        protected static float DefaultRangeMult => 1.0f;
         protected virtual int DefaultHandleHeight => 20;
         protected virtual int DefaultSegHeight => 16;
         protected virtual int DefaultEndHeight => 20;
@@ -34,20 +39,27 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
         public virtual SoundStyle? WhipSound => SoundID.Item153;
         public virtual Color StringColor => Color.White;
 
-        // ----- runtime state -----
         private bool _initialized;
         private int _ownerItemType = ItemID.None; // saved on spawn
         private float _flyTime; // in ticks (accounting for MaxUpdates below)
         private readonly List<Vector2> _controlPoints = new();
 
-        // Expose counts/settings via properties so subclasses can override
-        protected virtual int Segments => DefaultSegments;
-        protected virtual float RangeMult => DefaultRangeMult;
+        public virtual int Segments
+        {
+            get;
+            set;
+        }
+        public virtual float RangeMult 
+        { 
+            get; 
+            set; 
+        }
         protected virtual int handleHeight => DefaultHandleHeight;
         protected virtual int segHeight => DefaultSegHeight;
         protected virtual int endHeight => DefaultEndHeight;
         protected virtual int segTypes => DefaultSegTypes;
 
+        #endregion
         public override void SetStaticDefaults()
         {
             ProjectileID.Sets.IsAWhip[Projectile.type] = true;
@@ -55,49 +67,105 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
 
         public override void SetDefaults()
         {
-            Projectile.DefaultToWhip();
+            Segments = DefaultSegments;
+            RangeMult = DefaultRangeMult;
             Projectile.penetrate = -1;
-            // sensible defaults already assigned via virtual props
+            Projectile.DefaultToWhip();
         }
 
         public override void OnSpawn(IEntitySource source)
         {
             base.OnSpawn(source);
-            // capture the player's held item at spawn if available
             if (Main.player[Projectile.owner].HeldItem != null)
                 _ownerItemType = Main.player[Projectile.owner].HeldItem.type;
+           
         }
 
-        // Helper: compute fly time once per relevant change
+        #region Helpers
+        /// <summary>
+        /// compute fly time once per relevant change
+        /// </summary>
+        /// <returns></returns>
         protected virtual float ComputeFlyTime()
         {
             Player p = Main.player[Projectile.owner];
-            // itemAnimationMax corresponds to how long the player's attack lasts
+           
             int baseAnim = p.itemAnimationMax > 0 ? p.itemAnimationMax : 20;
             return baseAnim * Projectile.MaxUpdates;
         }
 
-        // Public progress 0..1
-        public float FlyProgress => (_flyTime <= 0) ? 0f : (Projectile.ai[0] / _flyTime);
-
-        // Whether the whip's hitbox should currently be active.
-        // Subclasses can override for other behavior.
-        protected virtual bool HitboxActive(float progress)
+        public static void FillWhipControlPointsBetter(Projectile proj, List<Vector2> controlPoints, int segments, float rangeMultiplier, float flyTime)
         {
-            // Example: active between 10% and 70% of the swing, strongest near 50%
-            return progress >= 0.1f && progress <= 0.7f;
+            controlPoints.Clear();
+            Player player = Main.player[proj.owner];
+
+            Vector2 start = Main.GetPlayerArmPosition(proj);
+            Vector2 dir = proj.velocity.SafeNormalize(Vector2.UnitX);
+
+            float progress = Math.Clamp(proj.ai[0] / flyTime, 0f, 1f);
+            float whipLength = proj.velocity.Length() * rangeMultiplier * progress;
+
+            Vector2 tip = start + dir * whipLength;
+
+            // Always add the base (arm)
+            controlPoints.Add(start);
+
+            // Add intermediate segments, including the tip
+            for (int i = 1; i <= segments; i++)
+            {
+                float t = i / (float)segments; // goes 0..1
+                Vector2 point = Vector2.Lerp(start, tip, t);
+
+                // Example sag/curve (optional)
+                float sag = (float)Math.Sin(t * MathHelper.Pi) * 20f * (1f - progress);
+                point += dir.RotatedBy(MathHelper.PiOver2) * sag;
+
+                controlPoints.Add(point);
+            }
         }
 
-        // Called by PreAI to let subclasses alter control points before drawing/collision
+        public float FlyProgress => (_flyTime <= 0) ? 0f : ( Time / _flyTime);
+        protected virtual bool HitboxActive(float progress) => progress >= 0.1f && progress <= 0.7f;
+
+
+        public static void GetWhipSettingsBetter(Projectile proj, out float timeToFlyOut, out int segments, out float rangeMultiplier)
+        {
+            
+            timeToFlyOut = Main.player[proj.owner].itemAnimationMax * proj.MaxUpdates;
+            segments = DefaultSegments;
+            rangeMultiplier = DefaultRangeMult;
+
+            if (proj.ModProjectile is CleanBaseWhip cbw)
+            {
+                segments = cbw.Segments;
+                rangeMultiplier = cbw.RangeMult;
+            }
+        }
+
+        /// <summary>
+        /// Call me in PreAI to let subclasses alter control points before drawing/collision
+        /// </summary>
+        /// <param name="points"></param>
         public virtual void ModifyControlPoints(List<Vector2> points) { }
 
-        // Let subclasses change seg/range/time settings
+        /// <summary>
+        /// kind of important???
+        /// </summary>
+        /// <param name="outFlyTime"></param>
+        /// <param name="outSegments"></param>
+        /// <param name="outRangeMult"></param>
         protected virtual void ModifyWhipSettings(ref float outFlyTime, ref int outSegments, ref float outRangeMult)
         {
             outSegments = Segments;
             outRangeMult = RangeMult;
             outFlyTime = ComputeFlyTime();
+            GetWhipSettingsBetter(Projectile, out float fly, out int segs, out float range);
+            Projectile.GetWhipSettings(Projectile, out outFlyTime, out outSegments, out outRangeMult);
+            // Replace with values from our system
+            
+
         }
+        #endregion
 
         public override bool PreAI()
         {
@@ -106,55 +174,62 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
             if (!_initialized)
             {
                 _initialized = true;
-                // recompute fly time & store
+
+               
+
                 float ft = 0; int segs = 0; float range = 0;
                 ModifyWhipSettings(ref ft, ref segs, ref range);
+
                 _flyTime = ft > 0 ? ft : ComputeFlyTime();
+
+               
+                Segments = segs > 0 ? segs : DefaultSegments;
+                //Main.NewText(Segments);
+                RangeMult = range > 0 ? range : DefaultRangeMult;
+                //Main.NewText(RangeMult);
             }
 
-            // increment animation progress
-            Projectile.ai[0]++;
-            Projectile.Center = Main.GetPlayerArmPosition(Projectile) + Projectile.velocity * (Projectile.ai[0] - 1f);
 
-            // Make the whip face the same direction as the player
+            Time++;
+            Projectile.Center = Main.GetPlayerArmPosition(Projectile) + Projectile.velocity * (Projectile.ai[0] - 1f);
             Projectile.spriteDirection = player.direction;
 
-            // Update rotation — add Pi if facing left so it’s not upside-down
             Projectile.rotation = Projectile.velocity.ToRotation();
             if (Projectile.spriteDirection == -1)
                 Projectile.rotation += MathHelper.Pi;
 
-            // Keep the projectile’s position anchored to the player’s arm
             Projectile.Center = Main.GetPlayerArmPosition(Projectile) + Projectile.velocity * FlyProgress;
 
-            // (Optional) Keep sync with the player’s item animation if needed
             player.heldProj = Projectile.whoAmI;
-            // rotation for sprite
             if (Projectile.velocity.LengthSquared() > 0.0001f)
                 Projectile.rotation = Projectile.velocity.ToRotation() + MathHelper.PiOver2;
 
-            player.heldProj = Projectile.whoAmI;
-
-            // kill when done
-            if (Projectile.ai[0] >= _flyTime)
+            if (Time >= _flyTime)
             {
                 Projectile.Kill();
                 return false;
             }
-
-            // Fill control points once per tick and let subclass alter them
-            _controlPoints.Clear();
-            Projectile.FillWhipControlPoints(Projectile, _controlPoints);
-            ModifyControlPoints(_controlPoints);
-
-            // Play sound at the tip of the whip (example: at mid-swing)
-            if (Math.Abs(Projectile.ai[0] - _flyTime / 2f) < 1f)
+            // Play sound at the tip of the whip
+            //todo: make this a virtual thing so that the time at which the whipcrack sounds can be modified
+            if (Math.Abs(Time - _flyTime / 2f) < 1f)
             {
                 if (WhipSound != null && _controlPoints.Count > 0)
                     SoundEngine.PlaySound(WhipSound.Value, _controlPoints[^1]);
             }
 
-            // Cut tiles if hitbox active
+
+            if (Projectile.ai[0] == (int)(_flyTime / 2f))
+            {
+                Projectile.WhipPointsForCollision.Clear();
+                Projectile.FillWhipControlPoints(Projectile, Projectile.WhipPointsForCollision);
+                Vector2 position = Projectile.WhipPointsForCollision[^1];
+                if (WhipSound != null)
+                {
+                    SoundEngine.PlaySound(WhipSound.Value, position);
+                }
+            }
+
+
             if (HitboxActive(FlyProgress))
             {
                 var half = new Vector2(Projectile.width * Projectile.scale * 0.5f, 0f);
@@ -165,16 +240,12 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
                 }
             }
 
-            // call subclass AI hook
             WhipAI();
             
             return false;
         }
-
-        // Override this for custom per-tick behavior
         protected virtual void WhipAI() { }
 
-        // Called by engine when hitting NPC
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
             // set player's target for minions — maintain old behavior
@@ -216,18 +287,42 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
                 }*/
             }
         }
+        public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
+        {
+            // Build our custom control points
+            List<Vector2> betterPoints = new();
+            GetWhipSettingsBetter(Projectile, out float flyTime, out int segments, out float rangeMult);
+            FillWhipControlPointsBetter(Projectile, betterPoints, segments, rangeMult, flyTime);
 
-        // allow subclasses to give a name for UI/tooltip (optional)
+            // Check collision along each whip segment
+            for (int i = 1; i < betterPoints.Count; i++)
+            {
+                Vector2 p1 = betterPoints[i - 1];
+                Vector2 p2 = betterPoints[i];
+
+                float collisionPoint = 0f;
+                if (Collision.CheckAABBvLineCollision(
+                    targetHitbox.TopLeft(),
+                    targetHitbox.Size(),
+                    p1, p2,
+                    Projectile.width, ref collisionPoint))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public virtual string GetTagEffectName => "";
 
-        // Drawing
+        #region DrawCode
         public override bool PreDraw(ref Color lightColor)
         {
-            // refill (defensive) and allow subclass to modify control points before drawing
             _controlPoints.Clear();
-            Projectile.FillWhipControlPoints(Projectile, _controlPoints);
+            FillWhipControlPointsBetter(Projectile, _controlPoints, Segments, RangeMult, _flyTime);
             ModifyControlPoints(_controlPoints);
-
+            
             DrawStrings(_controlPoints);
             DrawSegs(_controlPoints);
 
@@ -269,7 +364,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
             }
         }
 
-        // Same frame logic as original but exposed to be overridden
+     
         public virtual void GetFrame(int segIndex, int segCount, ref int frameY, ref int frameHeight, ref Vector2 origin)
         {
             Texture2D whipTex = ModContent.Request<Texture2D>(Texture).Value;
@@ -294,5 +389,6 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
         }
 
         public virtual float GetSegScale(int segIndex, int segCount) => 1f;
+        #endregion
     }
 }

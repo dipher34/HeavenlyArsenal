@@ -141,7 +141,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             {
                 if (t == 0)
                 {
-                    swingDirection = (Owner.Center.AngleTo(Main.MouseWorld) + MathHelper.ToRadians(190) * Owner.direction);
+                    swingDirection = Owner.Center.AngleTo(Main.MouseWorld) + MathHelper.ToRadians(190) * Owner.direction;
 
                     SoundEngine.PlaySound(AssetDirectory.Sounds.Items.Weapons.Rapture.Swing with { PitchVariance = 0.2f, Pitch = 0.4f, }, Projectile.Center);
                 }
@@ -169,7 +169,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
 
 
 
-                Projectile.rotation = swingDirection + (MathHelper.TwoPi * swingInterp) * Owner.direction;
+                Projectile.rotation = swingDirection + MathHelper.TwoPi * swingInterp * Owner.direction;
                 Owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, Projectile.rotation - MathHelper.PiOver2);
 
                 if (t >= 0.74)
@@ -186,7 +186,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             {
                 if (t == 0)
                 {
-                    swingDirection = (Owner.Center.AngleTo(Main.MouseWorld) + MathHelper.ToRadians(290) * Owner.direction);
+                    swingDirection = Owner.Center.AngleTo(Main.MouseWorld) + MathHelper.ToRadians(290) * Owner.direction;
                     //Main.NewText($"{Projectile.rotation}");
                     SoundEngine.PlaySound(AssetDirectory.Sounds.Items.Weapons.Rapture.Swing with { PitchVariance = 0.2f, Pitch = 0.6f, }, Projectile.Center);
 
@@ -210,7 +210,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
 
                 t = Math.Clamp(t + 0.005f, 0, 1);
                 swingInterp = SwingCurve.Evaluate(t);
-                Projectile.rotation = swingDirection + (MathHelper.TwoPi * 1.2f * -swingInterp) * Owner.direction;
+                Projectile.rotation = swingDirection + MathHelper.TwoPi * 1.2f * -swingInterp * Owner.direction;
                 Owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, Projectile.rotation - MathHelper.PiOver2); Owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, Projectile.rotation - MathHelper.PiOver2);
 
                 if (t >= 0.74)

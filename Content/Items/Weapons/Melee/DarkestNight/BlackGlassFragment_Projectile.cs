@@ -1,5 +1,4 @@
-﻿using HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
 using NoxusBoss.Core.Utilities;
@@ -9,7 +8,7 @@ using Terraria;
 using Terraria.DataStructures;
 using Terraria.ModLoader;
 
-namespace HeavenlyArsenal.Content.Particles
+namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
 {
     internal class BlackGlassFragment_Projectile : ModProjectile
     {

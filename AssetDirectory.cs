@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using CalamityMod.Items.Accessories;
 using HeavenlyArsenal.Common.utils;
+using Luminance.Common.Utilities;
 using Microsoft.Xna.Framework.Graphics;
 using ReLogic.Content;
 using Terraria.Audio;
@@ -39,6 +40,15 @@ public static class AssetDirectory
                     public static readonly Asset<Texture2D> CombatStim_Glow = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/Items/Accessories/CombatStim/CombatStim_Glow");
                 }
                 */
+            }
+
+            public static class Weapons
+            {
+                public static class Rogue
+                {
+                    public static readonly Asset<Texture2D> BolaBall = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/Items/Weapons/BolaBall");
+
+                }
             }
         }
 

@@ -1,4 +1,5 @@
-﻿using HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath;
+﻿using CalamityMod;
+using HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath;
 using HeavenlyArsenal.Content.Projectiles;
 using Microsoft.Xna.Framework;
 using Terraria;
@@ -44,9 +45,14 @@ namespace HeavenlyArsenal.Common.Players
                     msg += $"Proj {i}: NULL\n";
                 }
             }
-           // msg = $"Cooldown: {Owner.GetModPlayer<VoidCrestOathPlayer>().Cooldown}\n"+ $"InterceptCount: {Owner.GetModPlayer<VoidCrestOathPlayer>().InterceptCount}";
+            // msg = $"Cooldown: {Owner.GetModPlayer<VoidCrestOathPlayer>().Cooldown}\n"+ $"InterceptCount: {Owner.GetModPlayer<VoidCrestOathPlayer>().InterceptCount}";
 
 
+
+
+            msg = $"modStealth: {Owner.Calamity().modStealth} \n"
+                + $"rogueStealth: {Owner.Calamity().rogueStealth}\n"
+                + $"{Owner.Calamity().accStealthGenBoost}";
             Utils.DrawBorderString(Main.spriteBatch, msg, Owner.Center - Main.screenPosition, Color.AntiqueWhite, 1, 0.2f, -0.2f);
         }
     }

@@ -129,3 +129,15 @@ Summon: {
 		Tooltip: ""
 	}
 }
+
+KnifeItem: {
+	DisplayName: Knife Item
+	Tooltip: ""
+}
+
+Rogue: {
+	AvatarRogue: {
+		DisplayName: Avatar Rogue
+		Tooltip: ""
+	}
+}

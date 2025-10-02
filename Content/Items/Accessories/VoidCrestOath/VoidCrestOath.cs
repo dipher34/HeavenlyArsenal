@@ -21,15 +21,12 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
     public class VoidCrestOath : ModItem, ILocalizedModType
     {
         public const string HaloEquippedVariableName = "WearingVoidCrest";
-
         public new string LocalizationCategory => "Items.Accessories";
-      
         public override void SetStaticDefaults()
         {
             Main.RegisterItemAnimation(Item.type, new DrawAnimationVertical(4, 6));
             ItemID.Sets.AnimatesAsSoul[Type] = true;
         }
-
         public override void SetDefaults()
         {
             Item.width = 32;
@@ -38,8 +35,6 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
             Item.rare = ItemRarityID.Purple;
             Item.accessory = true;
         }
-
-        //i don't car </3
         public override void UpdateVanity(Player player)
         {
             VoidCrestOathPlayer modPlayer = player.GetModPlayer<VoidCrestOathPlayer>();
@@ -47,13 +42,10 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
         }
         public override void UpdateAccessory(Player player, bool hideVisual)
         {
+            //i don't car </3
             VoidCrestOathPlayer modPlayer = player.GetModPlayer<VoidCrestOathPlayer>();
-
-
             modPlayer.voidCrestOathEquipped = true;
             modPlayer.Vanity = false;
-
-
         }
         public override bool PreDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale)
         {

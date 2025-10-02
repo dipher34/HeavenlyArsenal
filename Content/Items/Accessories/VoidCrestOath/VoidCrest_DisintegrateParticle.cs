@@ -73,15 +73,16 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
 
             Vector2 scale = new Vector2(5) * (1 - Scale);
 
-            Color BaseColor = Color.Purple with { A = 0 };
+            Color BaseColor = Color.BlueViolet with { A = 0 };
+                //new Color(0, 0,Color.Aqua.B) with { A = 0 };
             Color A = BaseColor  * Opacity;
 
             Color B = BaseColor * Opacity;
             float Rot = MathHelper.ToRadians(90) * 10*(1 - Scale);
 
-            Main.EntitySpriteDraw(Glow, DrawPos, null, BaseColor, Rot, Glow.Size() * 0.5f, scale *0.5f, SpriteEffects.None);
+            Main.EntitySpriteDraw(Glow, DrawPos, null, BaseColor, Rot, Glow.Size() * 0.5f, scale *0.37f, SpriteEffects.None);
 
-            Main.EntitySpriteDraw(texture, DrawPos, frame, A, Rot, Origin, scale, SpriteEffects.None);
+            //Main.EntitySpriteDraw(texture, DrawPos, frame, A, Rot, Origin, scale, SpriteEffects.None);
 
             Main.EntitySpriteDraw(texture2, DrawPos, frame, B, Rot, Origin, scale, SpriteEffects.None);
         }

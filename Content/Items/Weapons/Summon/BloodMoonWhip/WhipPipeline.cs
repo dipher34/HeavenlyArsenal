@@ -23,7 +23,6 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
 
     public interface IWhipMotion
     {
-        // MUST fill controlPoints (clear + add points). Accepts segments, range multiplier, progress.
         void Apply(List<Vector2> controlPoints, Projectile projectile, int segments, float rangeMultiplier, float progress);
     }
 
@@ -52,43 +51,46 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
         {
             if (controlPoints == null || controlPoints.Count == 0) return;
 
-            int s = Math.Clamp(startIndex, 0, controlPoints.Count - 1);
-            int e = Math.Clamp(endIndex, s, controlPoints.Count - 1);
+            int start = Math.Clamp(startIndex, 0, controlPoints.Count - 1);
+            int end = Math.Clamp(endIndex, start, controlPoints.Count - 1);
 
-            // Progress curve → strongest in the middle, weakest at start/end
-            float curvedProgress = influencedByProgress ? (float)Math.Sin(progress * MathHelper.Pi) : 1f;
+            
+            float curvedProgress = influencedByProgress ? 1 - Math.Abs(2 * progress - 1) : 1f;
             float eff = curvedProgress * strength;
 
-            Vector2 pivot = controlPoints[s];
+            Vector2 pivot = controlPoints[start];
             float lastAngle = 0f;
 
             // Apply twirl gradually up to the endIndex
-            for (int i = s; i <= e; i++)
+            for (int i = start; i <= end; i++)
             {
                 Vector2 rel = controlPoints[i] - pivot;
-                float angle = eff * (i - s);
+                float angle = eff * (i - start);
                 rel = rel.RotatedBy(angle);
                 controlPoints[i] = pivot + rel;
 
                 lastAngle = angle;
+               
             }
-
+            
             // Ensure the rest of the whip continues smoothly with the last rotation
-            for (int i = e + 1; i < controlPoints.Count; i++)
+            for (int i = end + 1; i < controlPoints.Count; i++)
             {
                 Vector2 rel = controlPoints[i] - pivot;
                 rel = rel.RotatedBy(lastAngle);
+                //Main.NewText($"PostSegment: {lastAngle}");
                 controlPoints[i] = pivot + rel;
             }
+            
         }
     }
 
     public class SmoothSineModifier : IWhipModifier
     {
+
         private int startIndex, endIndex;
         private float amplitude, frequency, period;
 
-        // Envelope that maps normalized progress (0..1) -> scalar multiplier for amplitude.
         // Default is sin(pi * t) so amplitude ramps up from 0 -> 1 at mid-swing -> 0 at the end.
         public Func<float, float> AmplitudeEnvelope { get; set; } = (t) => MathF.Sin(MathF.PI * MathHelper.Clamp(t, 0f, 1f));
 
@@ -141,8 +143,13 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
         }
     }
 
+    /// <summary>
+    /// pretty much vanilla. 
+    /// mostly exists so that you can tweak the vanilla whip without having to re-create the entire vanilla swing.
+    /// </summary>
     public class VanillaWhipMotion : IWhipMotion
     {
+      
         public void Apply(List<Vector2> controlPoints, Projectile projectile, int segments, float rangeMultiplier, float progress)
         {
             if (controlPoints == null) return;
@@ -159,15 +166,105 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
         }
     }
 
+    /// <summary>
+    /// Stolen from entropy, who stole it from fancy whips. 
+    /// i feel no shame.
+    /// </summary>
+    public class BraidedMotion : IWhipMotion
+    {
+        public void Apply(List<Vector2> controlPoints, Projectile projectile, int segments, float rangeMultiplier, float progress)
+        {
+            controlPoints.Clear();
+
+            // 1) Base arm anchor
+            Vector2 arm = Main.GetPlayerArmPosition(projectile);
+            controlPoints.Add(arm);
+
+            // 2) Parameters
+            float hDistancePercent = progress * 1.5f;
+            float retractionPercent = 0f;
+            if (hDistancePercent > 1f)
+            {
+                retractionPercent = (hDistancePercent - 1f) / 0.5f;
+                hDistancePercent = MathHelper.Lerp(1f, 0f, retractionPercent);
+            }
+
+            float distFactor = (float)(Main.player[projectile.owner].HeldItem.useAnimation * 2) * progress * Main.player[projectile.owner].whipRangeMultiplier;
+            float pxPerSegment = projectile.velocity.Length() * distFactor * hDistancePercent * rangeMultiplier / segments;
+
+            float invH = 1f - hDistancePercent;
+            float smoothH = 1f - invH * invH;
+
+            float rot = -MathHelper.PiOver2;
+            float rot2 = MathHelper.PiOver2 + MathHelper.PiOver2 * projectile.spriteDirection;
+            float rot3 = MathHelper.PiOver2;
+
+            Vector2 prev_p = arm;
+            Vector2 prev_p2 = arm;
+            Vector2 prev_p3 = arm;
+
+            // 3) Build control points
+            for (int i = 0; i < segments; i++)
+            {
+                float segPercent = i / (float)segments;
+
+                // Sine-based oscillation for this segment’s angle
+                float thisRot = 3.707f *
+                                MathF.Sin(2f * segPercent - 3.42f * progress + 0.75f * hDistancePercent) *
+                                -(float)projectile.spriteDirection
+                                + MathHelper.PiOver2;
+
+                // Candidate forward steps
+                Vector2 p = prev_p + Utils.ToRotationVector2(rot) * pxPerSegment * 1.2f;
+                Vector2 p2 = prev_p3 + Utils.ToRotationVector2(rot3) * (pxPerSegment * 2f);
+                Vector2 p3 = prev_p2 + Utils.ToRotationVector2(rot2) * (pxPerSegment * 2f);
+
+                // Blend them
+                Vector2 value = Vector2.Lerp(p2, p, smoothH * 0.9f + 0.1f);
+                Vector2 vector7 = Vector2.Lerp(p3, value, smoothH * 0.7f + 0.3f);
+                Vector2 vector9 = arm + (vector7 - arm) * new Vector2(1.7f, 1.65f);
+                Vector2 offset = vector9 - arm;
+                offset = offset.RotatedBy(projectile.rotation);
+                vector9 = arm + offset;
+                // Add to whip
+                controlPoints.Add(vector9);
+
+                // Update state
+                rot = thisRot;
+                rot2 = thisRot;
+                rot3 = thisRot;
+                prev_p = p;
+                prev_p2 = p3;
+                prev_p3 = p2;
+            }
+        }
+    }
     public class StraightLineMotion : IWhipMotion
     {
+        internal bool firstTime = true;
+        internal float Precision;
+        /// <summary>
+        /// a new straightline motion instance.
+        /// </summary>
+        /// <param name="precision"> this is actually a degree, turned into a radian and used to compute the angular offset of the </param>
+        public StraightLineMotion(float precision = 0)
+        {
+            if (firstTime)
+            {
+                Precision = Main.rand.NextFloat(-precision, precision);
+                firstTime = false;
+            }
+        }
         public void Apply(List<Vector2> controlPoints, Projectile projectile, int segments, float rangeMultiplier, float progress)
         {
             controlPoints.Clear();
             Player player = Main.player[projectile.owner];
             Item heldItem = player.HeldItem;
-
-            float distFactor = (float)(ContentSamples.ItemsByType[heldItem.type].useAnimation * 2) * progress * player.whipRangeMultiplier;
+            //if(progress <= 0.25f)
+            //Main.NewText($"Progress: {progress}");
+           
+            float BellProgress = 1 - Math.Abs(2 * progress - 1);
+            float distFactor = (float)(ContentSamples.ItemsByType[heldItem.type].useAnimation * 2) * BellProgress * player.whipRangeMultiplier;
             float baseSpeed = projectile.velocity.Length();
             if (baseSpeed < 0.0001f) baseSpeed = 12f;
             float pxPerSegment = baseSpeed * distFactor * rangeMultiplier / Math.Max(1, segments);
@@ -175,13 +272,17 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
             Vector2 origin = Main.GetPlayerArmPosition(projectile);
             controlPoints.Add(origin);
 
-            Vector2 forward = projectile.velocity.LengthSquared() > 0.0001f ? Vector2.Normalize(projectile.velocity) : new Vector2(player.direction, 0f);
+            Vector2 forward = projectile.velocity.LengthSquared() > 0.0001f ? Vector2.Normalize(projectile.velocity).RotatedBy(MathHelper.ToRadians(Precision * progress)) : new Vector2(player.direction, 0f);
             for (int i = 1; i <= segments; i++)
             {
                 controlPoints.Add(origin + forward * (pxPerSegment * i));
             }
         }
+
     }
+
+
+
 
     /// <summary>
     /// Vanilla swing baseline, blended toward a designer Bezier shape in mid-swing.
@@ -288,10 +389,9 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
     }
 
 
-
-    // -------------------------
-    // Controller
-    // -------------------------
+    /// <summary>
+    /// 
+    /// </summary>
     public class ModularWhipController
     {
         private readonly IWhipMotion motion;
@@ -301,7 +401,10 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
         {
             this.motion = motion;
         }
-
+        public void Clear()
+        {
+            this.modifiers.Clear();
+        }
         public void AddModifier(IWhipModifier modifier) => modifiers.Add(modifier);
 
         // segments & rangeMultiplier must come from Projectile.GetWhipSettings(...) (or similar) so the motion can size itself.

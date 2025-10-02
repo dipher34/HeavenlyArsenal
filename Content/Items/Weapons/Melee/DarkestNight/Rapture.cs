@@ -1,5 +1,4 @@
-﻿
-using Luminance.Assets;
+﻿using Luminance.Assets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Content.Rarities;

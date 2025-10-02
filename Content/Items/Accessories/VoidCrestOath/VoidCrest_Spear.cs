@@ -85,7 +85,7 @@ namespace HeavenlyArsenal.Content.Projectiles
             {
                 SpawnParticle();
 
-                /*Projectile target = Main.projectile[TargetId];
+                Projectile target = Main.projectile[TargetId];
                 if (target != null)
                 {
 
@@ -93,7 +93,7 @@ namespace HeavenlyArsenal.Content.Projectiles
                     target.active = false;
                     target.Kill();
                     target = null;
-                }*/
+                }
 
             }
 
@@ -114,7 +114,7 @@ namespace HeavenlyArsenal.Content.Projectiles
             Vector2 AdjustedSpawn = Projectile.Center + (Projectile.rotation + MathHelper.ToRadians(10 - 20 * t) * Progress).ToRotationVector2() * 60;
             particle.Prepare(AdjustedSpawn, Velocity, Rot, 120);
 
-            //MoreIndepthRadialScreenDistortionSystem.CreateDistortion(AdjustedSpawn, 400, 10);
+           
             ParticleEngine.BehindProjectiles.Add(particle);
         }
 

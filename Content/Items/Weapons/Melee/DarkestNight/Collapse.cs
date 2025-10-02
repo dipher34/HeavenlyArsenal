@@ -67,7 +67,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
                         Color GlowColor = RainbowColorGenerator.TrailColorFunction(CollapseTimer / 60f) * 0.2f;
                         float rotation = npc.rotation + MathHelper.ToRadians(Main.rand.NextFloat(0, 361));
                         float Scale = 0.5f + CollapseTimer / 17f;
-                        particle.Prepare(npc.Center, Vector2.Zero, rotation, 120 - CollapseTimer, Scale, 0, (float)CollapseTimer / 50f, GlowColor, npc);
+                        particle.Prepare(npc.Center, Vector2.Zero, rotation, 120 - CollapseTimer, Scale, 0, CollapseTimer / 50f, GlowColor, npc);
                         ParticleEngine.ShaderParticles.Add(particle);
                         //}
 
@@ -148,12 +148,12 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
                             int Damage;
                             if (ShellSword != null && ShellSword.CreatorItem != null)
                             {
-                                Damage = Collapser.GetWeaponDamage(ShellSword.CreatorItem) / 5;
+                                Damage = Collapser.GetWeaponDamage(ShellSword.CreatorItem) / 4;
                             }
                             else
-                                Damage = Collapser.HeldItem.damage / 5;
+                                Damage = Collapser.HeldItem.damage / 4;
                             Damage = (int)(Damage * 1.05f);
-                            //Damage += (int)(npc.life * 0.05f);
+                            Damage += (int)(npc.GetLifePercent()* 0.05f);
                             Projectile a = Projectile.NewProjectileDirect(Collapser.GetSource_FromThis(), SpawnPos,
                             Vector2.Zero, ModContent.ProjectileType<RaptureBeam>(), Damage, 30);
 

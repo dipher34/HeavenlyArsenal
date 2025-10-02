@@ -164,7 +164,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             {
                 if (t == 0)
                 {
-                    swingDirection = (Owner.Center.AngleTo(Main.MouseWorld) + MathHelper.ToRadians(-230) * Owner.direction);
+                    swingDirection = Owner.Center.AngleTo(Main.MouseWorld) + MathHelper.ToRadians(-230) * Owner.direction;
                     //Main.NewText($"{Projectile.rotation}");
                     SoundEngine.PlaySound(AssetDirectory.Sounds.Items.Weapons.Rapture.Swing with { PitchVariance = 0.2f, Pitch = 0.4f, }, Projectile.Center);
 
@@ -188,7 +188,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
 
                 t = Math.Clamp(t + 0.0085f, 0, 1);
                 Swinginterp = SwingCurve.Evaluate(t);
-                Projectile.rotation = swingDirection + (MathHelper.TwoPi * Swinginterp) * Owner.direction;
+                Projectile.rotation = swingDirection + MathHelper.TwoPi * Swinginterp * Owner.direction;
                 Owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, Projectile.rotation - MathHelper.PiOver2);
 
                 if (t >= 0.74)
@@ -224,7 +224,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
                 t = Math.Clamp(t + 0.005f, 0, 1);
 
                 Swinginterp = SwingCurve.Evaluate(t);
-                Projectile.rotation = swingDirection + (MathHelper.TwoPi * Swinginterp) * -Owner.direction;
+                Projectile.rotation = swingDirection + MathHelper.TwoPi * Swinginterp * -Owner.direction;
                 Owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, Projectile.rotation - MathHelper.PiOver2);
 
 
@@ -338,7 +338,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             float ToMouse = Owner.Center.AngleTo(Main.MouseWorld);
 
 
-            float desiredHand = Utils.AngleLerp(swingDirection, ToMouse - MathHelper.PiOver2, 0.1f);
+            float desiredHand = swingDirection.AngleLerp(ToMouse - MathHelper.PiOver2, 0.1f);
             swingDirection = desiredHand;
             Owner.direction = Math.Sign(Direction.X);
             Owner.SetCompositeArmBack(true, Player.CompositeArmStretchAmount.Full, swingDirection);
@@ -374,7 +374,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
                 {
                     ScreenShakeSystem.StartShake(1.25f);
                     Vector2 Velocity = Direction.RotatedByRandom(MathHelper.ToRadians(20)) * 10;
-                    int Damage = Projectile.damage / 5;
+                    int Damage = Projectile.damage / 7;
                     Projectile s = Projectile.NewProjectileDirect(Owner.GetSource_FromThis(), AdjustedSpawn, Velocity, ModContent.ProjectileType<BlackGlass>(), Damage, 0);
                     s.rotation = s.velocity.ToRotation();
                     if (i == 0)

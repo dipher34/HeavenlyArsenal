@@ -11,6 +11,7 @@ using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
 using Terraria.ModLoader.Config;
+using static tModPorter.ProgressUpdate;
 
 namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
 {
@@ -22,91 +23,48 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
         public override void OnSpawn(IEntitySource source)
         {
             base.OnSpawn(source);
+
+            SetController();
+
+        }
+
+        public void SetController()
+        {
             Vector2 arm = Main.GetPlayerArmPosition(Projectile);
             Vector2 c1 = arm + new Vector2(50 * Projectile.spriteDirection, -80f);
             Vector2 c2 = arm + new Vector2(150 * Projectile.spriteDirection, 100f);
             Vector2 end = arm + new Vector2(200 * Projectile.spriteDirection, 0f);
 
-            var curve = new BezierCurve(new Vector2(0, 0), new Vector2(60, 80), new Vector2(160, 90), new Vector2(220, 0));
+            //var curve = new BezierCurve(new Vector2(0, 0), new Vector2(60, 80), new Vector2(160, 90), new Vector2(220, 0));
 
-
-            _controller = new ModularWhipController(new CustomMotion(curve));
-            _controller.AddModifier(new SmoothSineModifier(0, 18, 6f, 2f, 1f));
-            _controller.AddModifier(new TwirlModifier(5, 12, 0.15f));
+           
+            float thing = 1 - Math.Abs(2 * FlyProgress - 1);
+            _controller = new ModularWhipController(new BraidedMotion());
+            _controller.AddModifier(new SmoothSineModifier(startIndex: 0, endIndex:Segments, amplitude: 10f, frequency: 6f, period:1f));
+            //_controller.AddModifier(new TwirlModifier(1, 7, -0.12f * Projectile.direction * thing)); 
+            //_controller.AddModifier(new TwirlModifier(8, 16, -0.12f* thing * Projectile.direction, false));
+            //_controller.AddModifier(new TwirlModifier(17,  Segments, -0.15f * Projectile.direction));
         }
 
+          protected override void ModifyWhipSettings(ref float outFlyTime, ref int outSegments, ref float outRangeMult)
+        {
+            outSegments = 30;
+            outRangeMult = 1.15f;
+        }
 
-        
         public override void ModifyControlPoints(List<Vector2> controlPoints)
         {
-            // get whip settings (segments and range multipliers)
-            Projectile.GetWhipSettings(Projectile, out float timeToFlyOut, out int segments, out float rangeMultiplier);
+            GetWhipSettingsBetter(Projectile, out float timeToFlyOut, out int segments, out float rangeMultiplier);
             rangeMultiplier *= Main.player[Projectile.owner].whipRangeMultiplier;
 
-            // IMPORTANT: use the normalized progress from the CleanBaseWhip (0..1)
-            float progress = FlyProgress; // this is Projectile.ai[0] / flyTime inside CleanBaseWhip
+            float progress = FlyProgress;
             progress = MathHelper.Clamp(progress, 0f, 1f);
+            _controller.Clear();
 
-            // now apply the pipeline
+            SetController();
             _controller.Apply(controlPoints, Projectile, segments, rangeMultiplier, progress);
         }
-        /*
-        public override void ModifyControlPoints(List<Vector2> controlPoints)
-        {
-            controlPoints.Clear();
-            Projectile proj = Projectile;
-            Projectile.GetWhipSettings(Projectile, out float timeToFlyOut, out int segments, out float rangeMultiplier);
-
-            Player player = Main.player[proj.owner];
-            rangeMultiplier *= player.whipRangeMultiplier;
-
-            float timePercent = proj.ai[0] / timeToFlyOut;
-            float hDistancePercent = timePercent * 1.5f;
-            float retractionPercent = 0f;
-            if (hDistancePercent > 1f)
-            {
-                retractionPercent = (hDistancePercent - 1f) / 0.5f;
-                hDistancePercent = MathHelper.Lerp(1f, 0f, retractionPercent);
-            }
-
-            Item heldItem = player.HeldItem;
-            float distFactor = (float)(ContentSamples.ItemsByType[heldItem.type].useAnimation * 2) * timePercent * player.whipRangeMultiplier;
-            float pxPerSegment = proj.velocity.Length() * distFactor * hDistancePercent * rangeMultiplier / segments;
-            Vector2 playerArmPosition = Main.GetPlayerArmPosition(proj);
-            Vector2 prev_p = playerArmPosition;
-            float rot = -1.5707964f;
-            Vector2 prev_p2 = prev_p;
-            float rot2 = 1.5707964f + 1.5707964f * proj.spriteDirection;
-            Vector2 prev_p3 = prev_p;
-            float rot3 = 1.5707964f;
-
-            controlPoints.Add(playerArmPosition);
-
-            for (int i = 0; i < segments; i++)
-            {
-                float segmentPercent = (float)i / segments;
-                float thisRotation = 3.7070792f * MathF.Sin(2f * segmentPercent - 3.42f * timePercent + 0.75f * hDistancePercent) * (-(float)proj.spriteDirection) + 1.5707964f;
-                Vector2 p = prev_p + Utils.ToRotationVector2(rot) * pxPerSegment * 1.2f;
-                Vector2 p2 = prev_p3 + Utils.ToRotationVector2(rot3) * (pxPerSegment * 2f);
-                Vector2 vector8 = prev_p2 + Utils.ToRotationVector2(rot2) * (pxPerSegment * 2f);
-                float invHDistance = 1f - hDistancePercent;
-                float smoothHDistPercent = 1f - invHDistance * invHDistance;
-                Vector2 value = Vector2.Lerp(p2, p, smoothHDistPercent * 0.9f + 0.1f);
-                Vector2 vector7 = Vector2.Lerp(vector8, value, smoothHDistPercent * 0.7f + 0.3f);
-                Vector2 vector9 = playerArmPosition + (vector7 - playerArmPosition) * new Vector2(1.7f, 1.65f);
-                float smoothRetractPercent = retractionPercent;
-                smoothRetractPercent *= smoothRetractPercent;
-                Vector2 item = Utils.RotatedBy(vector9, proj.rotation + 0f * smoothRetractPercent * player.direction, playerArmPosition);
-                controlPoints.Add(item);
-                rot = thisRotation;
-                rot3 = thisRotation;
-                rot2 = thisRotation;
-                prev_p = p;
-                prev_p3 = p2;
-                prev_p2 = vector8;
-            }
-        }
-        */
+      
         public override void SetDefaults()
         {
             base.SetDefaults();
@@ -114,7 +72,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
 
         }
 
-        // Keep track of the last tip position for lighting/visuals
+      
         public Vector2 lastTop = Vector2.Zero;
 
         private float Timer
@@ -122,18 +80,8 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
             get => Projectile.ai[0];
             set => Projectile.ai[0] = value;
         }
-
-        // Set the whip settings (segments and range multiplier)
-        protected override void ModifyWhipSettings(ref float outFlyTime, ref int outSegments, ref float outRangeMult)
-        {
-            base.ModifyWhipSettings(ref outFlyTime, ref outSegments, ref outRangeMult);
-            outSegments = 49;
-            outRangeMult = 3f;
-        }
-
-        // Additional per-tick behavior (particles / lighting).
-        // We re-query control points each tick to perform visuals.
-        // Use ModifyControlPoints(...) as the canonical source of control points for visuals/particles
+       
+      
         protected override void WhipAI()
         {
             Player owner = Main.player[Projectile.owner];
@@ -167,14 +115,13 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
             
             Main.player[Projectile.owner].MinionAttackTargetNPC = target.whoAmI;
 
-            // reduce projectile's base damage to mimic the original code
             Projectile.damage = (int)(Projectile.damage * 0.9f);
 
             SoundEngine.PlaySound(SoundID.Item14, target.Center);
 
 
         }
-
+        /*
         private void DrawLine(List<Vector2> list)
         {
             Texture2D texture = GennedAssets.Textures.GreyscaleTextures.WhitePixel;
@@ -196,7 +143,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
                 }
 
                 Main.EntitySpriteDraw(texture, pos - Main.screenPosition, frame, color, rotation, origin, scale, SpriteEffects.None, 0);
-                //Utils.DrawBorderString(Main.spriteBatch, i.ToString(), pos - Main.screenPosition, Color.AntiqueWhite, 0.5f);
+                Utils.DrawBorderString(Main.spriteBatch, i.ToString(), pos - Main.screenPosition, Color.AntiqueWhite, 0.35f);
                 pos += diff;
             }
         }
@@ -241,7 +188,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
                     //Main.spriteBatch.End();
                     //Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Additive, Main.DefaultSamplerState, DepthStencilState.None, RasterizerState.CullCounterClockwise, null, Main.GameViewMatrix.TransformationMatrix);
 
-                    Main.EntitySpriteDraw(thing, pos - Main.screenPosition, null, Color.Crimson with { A = 0 }, rot, thingOffset, scale * 0.05f, SpriteEffects.None);
+                    //Main.EntitySpriteDraw(thing, pos - Main.screenPosition, null, Color.Crimson with { A = 0 }, rot, thingOffset, scale * 0.05f, SpriteEffects.None);
                     //Main.spriteBatch.End();
                     //Main.spriteBatch.Begin();
                 }
@@ -270,13 +217,13 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
                 float rotation = diff.ToRotation() - MathHelper.PiOver2; // This projectile's sprite faces down, so PiOver2 is used to correct rotation.
                 Color color = Lighting.GetColor(element.ToTileCoordinates());
 
-                Main.EntitySpriteDraw(texture, pos - Main.screenPosition, frame, color, rotation, origin, scale, flip, 0);
+                //Main.EntitySpriteDraw(texture, pos - Main.screenPosition, frame, color, rotation, origin, scale, flip, 0);
 
                 pos += diff;
             }
 
             return false;
-        }
+        }*/
 
 
     }

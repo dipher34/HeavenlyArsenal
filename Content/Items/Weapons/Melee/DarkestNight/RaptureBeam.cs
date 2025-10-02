@@ -99,7 +99,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             modifiers.ScalingArmorPenetration = value;
 
 
-            MultipliableFloat DamageMulti = MultipliableFloat.One * 1.1f;
+            MultipliableFloat DamageMulti = MultipliableFloat.One * 1.3f;
             modifiers.TargetDamageMultiplier = DamageMulti;
             modifiers.Defense = StatModifier.Default * 0.0f;
 

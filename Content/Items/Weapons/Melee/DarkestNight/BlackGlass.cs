@@ -163,10 +163,10 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             {
                 
                 Vector2 DrawPos = Projectile.oldPos[i] - Main.screenPosition;
-                DrawPos += (Projectile.Center - Projectile.position);
+                DrawPos += Projectile.Center - Projectile.position;
                 float Rot = Projectile.oldRot[i] + MathHelper.PiOver2;
 
-                Vector2 Scale = Projectile.scale * new Vector2(Math.Clamp(((Projectile.oldPos.Length - i) / 10f) * 2, 0.1f, 2));
+                Vector2 Scale = Projectile.scale * new Vector2(Math.Clamp((Projectile.oldPos.Length - i) / 10f * 2, 0.1f, 2));
                 Main.EntitySpriteDraw(Glow, DrawPos, null, glowColor with { A = 0 }, Rot, Glow.Size() * 0.5f, Scale, spriteEffect);
 
                 Main.EntitySpriteDraw(Base, DrawPos, null, Color.AntiqueWhite, Rot, Origin, Scale, spriteEffect);
