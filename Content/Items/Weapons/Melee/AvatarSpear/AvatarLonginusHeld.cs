@@ -100,8 +100,8 @@ public class AvatarLonginusHeld : ModProjectile
     {
         Projectile.extraUpdates = 3;
         Projectile.timeLeft = 2;
-
-        if (Player.HeldItem.type != ModContent.ItemType<AvatarLonginus>() || Player.CCed || Player.dead)
+        Player.GetModPlayer<AvatarSpearHeatPlayer>().Empowered = IsEmpowered;
+        if (Player.HeldItem.type != ModContent.ItemType<AvatarLonginus>() || Player.CCed || Player.dead || Player.HasBuff(BuffID.Cursed))
         {
             Projectile.Kill();
             return;

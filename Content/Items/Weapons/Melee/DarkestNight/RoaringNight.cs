@@ -58,6 +58,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
         }
         public override void ReceiveExtraAI(BinaryReader reader)
         {
+           // reader.ReadDouble();
             reader.Read();
         }
 
@@ -111,9 +112,10 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             CheckDespawnConditions();
 
             Projectile.timeLeft++;
-            Projectile.Center = Owner.Center;
+            
+            Projectile.Center = Owner.GetFrontHandPositionImproved(Owner.compositeFrontArm);
             Owner.heldProj = Projectile.whoAmI;
-
+            Projectile.velocity = Vector2.Zero;
 
             Projectile.extraUpdates = 7;
             SlashDistance = 245;
@@ -162,6 +164,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             canHit = true;
             if (SwingStage == 0)
             {
+                
                 if (t == 0)
                 {
                     swingDirection = Owner.Center.AngleTo(Main.MouseWorld) + MathHelper.ToRadians(-230) * Owner.direction;
@@ -189,6 +192,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
                 t = Math.Clamp(t + 0.0085f, 0, 1);
                 Swinginterp = SwingCurve.Evaluate(t);
                 Projectile.rotation = swingDirection + MathHelper.TwoPi * Swinginterp * Owner.direction;
+                //Projectile.velocity = Projectile.rotation.ToRotationVector2()*2;
                 Owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, Projectile.rotation - MathHelper.PiOver2);
 
                 if (t >= 0.74)
@@ -225,6 +229,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
 
                 Swinginterp = SwingCurve.Evaluate(t);
                 Projectile.rotation = swingDirection + MathHelper.TwoPi * Swinginterp * -Owner.direction;
+                //Projectile.velocity = Projectile.rotation.ToRotationVector2() * 2;
                 Owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, Projectile.rotation - MathHelper.PiOver2);
 
 
@@ -289,7 +294,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
                 //yes, i stole this from the exoblade.
                 //it'll be replaced later, but i don't have a lot of experience with this kinda thing yet.
                 Vector2 newVelocity = Projectile.velocity * Exoblade.LungeSpeed * (0.24f + 0.76f * 0.5f);
-                Owner.velocity = newVelocity;
+                Owner.velocity += newVelocity;
                 float rotationStrenght = MathHelper.PiOver4 * 0.05f * (float)Math.Pow(JoustProgress, 3);
                 float currentRotation = Projectile.rotation;
                 float idealRotation = Owner.MountedCenter.DirectionTo(Owner.Calamity().mouseWorld).ToRotation();
@@ -344,7 +349,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             Owner.SetCompositeArmBack(true, Player.CompositeArmStretchAmount.Full, swingDirection);
 
             //Owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, 0);
-         
+
             ConeVFXInterp = GlowSizeInterpolant;
             Vector2 AdjustedSpawn = Owner.GetBackHandPositionImproved(Owner.compositeBackArm) + new Vector2(0, -2).RotatedBy(swingDirection);
 
@@ -392,7 +397,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
 
         public void CheckDespawnConditions()
         {
-            if (Owner.HeldItem.type != ModContent.ItemType<Rapture>() || !Owner.active || Owner.dead || Owner.GetModPlayer<GlassPlayer>().Empowered)
+            if (Owner.HeldItem.type != ModContent.ItemType<Rapture>() || !Owner.active || Owner.dead || Owner.GetModPlayer<GlassPlayer>().Empowered || Owner.HasBuff(BuffID.Cursed))
             {
                 Projectile.Kill();
                 return;
@@ -406,6 +411,8 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             SwingCurve = null;
             Swinginterp = 0;
             t = 0;
+            Owner.SetCompositeArmFront(true, Player.CompositeArmStretchAmount.Full, 0);
+            Owner.SetCompositeArmBack(true, Player.CompositeArmStretchAmount.Full, 0);
             Projectile.rotation = Owner.Center.AngleTo(Main.MouseWorld) + MathHelper.ToRadians(-90);
             ResetSlash();
             ResetTrail();
@@ -659,7 +666,6 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
                     float value = swingDirection.ToRotationVector2().AngleFrom(ConeVFXPos[i]) + MathHelper.PiOver2;
                     Color AdjustedColor = ConeVFXColor[i] * ConeVFXOpacity[i];
                     Main.EntitySpriteDraw(Debug, Pos, null, AdjustedColor, value, Debug.Size() * 0.5f, Scale, SpriteEffects.None);
-
                 }
                 /*
                 for (int i = 0; i < ConeVFXPos.Length - 1; i++)

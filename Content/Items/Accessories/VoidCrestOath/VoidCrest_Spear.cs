@@ -45,10 +45,10 @@ namespace HeavenlyArsenal.Content.Projectiles
             Projectile.Size = new Vector2(10);
             Projectile.friendly = true;
             Projectile.hostile = false;
-            Projectile.penetrate = 1;
+            Projectile.penetrate = -1;
             Projectile.timeLeft = Maxtime;
             Projectile.aiStyle = 0;
-
+            Projectile.damage = 0;
         }
         public override void OnSpawn(IEntitySource source)
         {
@@ -60,7 +60,7 @@ namespace HeavenlyArsenal.Content.Projectiles
             if (StabCurve == null)
             {
                 StabCurve = new PiecewiseCurve()
-                        .Add(EasingCurves.Cubic, EasingType.Out, 1, 0.5f)
+                        .Add(EasingCurves.Cubic, EasingType.Out, 0.9f, 0.5f)
                         .Add(EasingCurves.Linear, EasingType.In, 1, 0.6f)
                         .Add(EasingCurves.Sine, EasingType.In, 0, 1.0f);
 

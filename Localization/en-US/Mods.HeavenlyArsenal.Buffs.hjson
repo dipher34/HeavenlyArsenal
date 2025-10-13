@@ -83,3 +83,8 @@ BloodwhipBuff: {
 	DisplayName: Bloodwhip Buff
 	Description: Mods.HeavenlyArsenal.Buffs.BloodwhipBuff.Description
 }
+
+AntishadowRetaliation: {
+	DisplayName: Antishadow Retaliation
+	Description: Mods.HeavenlyArsenal.Buffs.AntishadowRetaliation.Description
+}

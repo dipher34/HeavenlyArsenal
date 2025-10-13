@@ -1,4 +1,5 @@
 using HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor;
+using HeavenlyArsenal.Content.Items.Armor.ShintoArmor;
 using NoxusBoss.Assets;
 using Terraria;
 using Terraria.Audio;
@@ -27,20 +28,28 @@ namespace HeavenlyArsenal.Common
                     : AwakenedBloodPlayer.Form.Offsense;
             }
 
+            var ShintoPlayer = Player.GetModPlayer<ShintoArmorPlayer>();
+            if (KeybindSystem.ShadowTeleport.JustPressed && ShintoPlayer.SetActive)
+            {
+                ShintoPlayer.isShadeTeleporting = true;
+            }
         }
     }
 
     public class KeybindSystem : ModSystem
     {
+        public static ModKeybind ShadowTeleport { get; private set; }
         public static ModKeybind HaemsongBind { get; private set; }
         public override void Load()
         {
             // We localize keybinds by adding a Mods.{ModName}.Keybind.{KeybindName} entry to our localization files. The actual text displayed to English users is in en-US.hjson
             HaemsongBind = KeybindLoader.RegisterKeybind(Mod, "Toggle Haemsong Mode", "F");
+            ShadowTeleport = KeybindLoader.RegisterKeybind(Mod, "Shadow Teleport", "F");
         }
         public override void Unload()
         {
             HaemsongBind = null;
+            ShadowTeleport = null;
         }
     }
 }

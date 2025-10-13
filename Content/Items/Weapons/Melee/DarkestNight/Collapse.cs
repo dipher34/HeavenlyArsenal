@@ -122,66 +122,80 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
                     ParticleEngine.ShaderParticles.Add(particle2);
 
                     Collapsing = true;
-                    if (Collapser != null)
-                    {
-                        ScreenShakeSystem.StartShakeAtPoint(npc.Center, 30);
-                        float RotationOffset = Main.rand.NextFloat(0, 360);
-                        //Main.NewText($"{RotationOffset}");
-                        RotationOffset = MathHelper.ToRadians(RotationOffset);
 
-                        if (LucilleWouldProbablyApprove)
-                        {
-                            npc.StrikeInstantKill();
-                            CombatText.NewText(npc.getRect(), Color.Red, int.MaxValue, true);
-
-                        }
-                        else
-                            Collapser.StrikeNPCDirect(npc, npc.CalculateHitInfo(10_000 * 3, 0));
-
-                        //spawn beams
-                        for (int i = 0; i < 12; i++)
-                        {
-                            Vector2 SpawnPos = new Vector2(i * 4, 0).RotatedBy(RotationOffset + MathHelper.ToRadians(i * 30));
-                            SpawnPos += npc.Center;
-
-
-                            int Damage;
-                            if (ShellSword != null && ShellSword.CreatorItem != null)
-                            {
-                                Damage = Collapser.GetWeaponDamage(ShellSword.CreatorItem) / 4;
-                            }
-                            else
-                                Damage = Collapser.HeldItem.damage / 4;
-                            Damage = (int)(Damage * 1.05f);
-                            Damage += (int)(npc.GetLifePercent()* 0.05f);
-                            Projectile a = Projectile.NewProjectileDirect(Collapser.GetSource_FromThis(), SpawnPos,
-                            Vector2.Zero, ModContent.ProjectileType<RaptureBeam>(), Damage, 30);
-
-                            if (ShellSword != null)
-                                a.CritChance = ShellSword.CreatorItem.crit;
-
-                            RaptureBeam beam = a.ModProjectile as RaptureBeam;
-                            beam.Target = npc;
-                            beam.BaseColor = RainbowColorGenerator.TrailColorFunction(Main.rand.NextFloat());
-
-
-                        }
-                        //dust vfx
-                        Dust c;
-                        for (int i = 0; i < 250; i++)
-                        {
-
-                            c = Dust.NewDustDirect(npc.Center, 160, 160, DustID.AncientLight, Main.rand.NextFloat(-100, 101), Main.rand.NextFloat(-100, 101));
-                            c.noGravity = true;
-                            c.fadeIn = 1.5f;
-                            c.color = RainbowColorGenerator.TrailColorFunction(Main.rand.NextFloat());
-                        }
-                    }
-
+                    Rapture(npc);
                     CollapseStage = 0;
                     CollapseTimer = 0;
                     CollapseCooldownTimer = CollapseCooldownMax;
                     Collapsing = false;
+                }
+            }
+        }
+        public override void OnKill(NPC npc)
+        {
+            if (CollapseStage > 3 && CollapseTimer > 0 &&  CollapseCooldownTimer == 0)
+            {
+                SoundEngine.PlaySound(AssetDirectory.Sounds.Items.Weapons.Rapture.CollapseImpact with { Volume = 1.2f, PitchVariance = 0.2f });
+
+                Rapture(npc);
+
+            }
+        }
+        private void Rapture(NPC npc)
+        {
+            if (Collapser != null)
+            {
+                ScreenShakeSystem.StartShakeAtPoint(npc.Center, 30);
+                float RotationOffset = Main.rand.NextFloat(0, 360);
+                //Main.NewText($"{RotationOffset}");
+                RotationOffset = MathHelper.ToRadians(RotationOffset);
+
+                if (LucilleWouldProbablyApprove)
+                {
+                    npc.StrikeInstantKill();
+                    CombatText.NewText(npc.getRect(), Color.Red, int.MaxValue, true);
+
+                }
+                else
+                    Collapser.StrikeNPCDirect(npc, npc.CalculateHitInfo(10_000 * 3, 0));
+
+                //spawn beams
+                for (int i = 0; i < 12; i++)
+                {
+                    Vector2 SpawnPos = new Vector2(i * 4, 0).RotatedBy(RotationOffset + MathHelper.ToRadians(i * 30));
+                    SpawnPos += npc.Center;
+
+
+                    int Damage;
+                    if (ShellSword != null && ShellSword.CreatorItem != null)
+                    {
+                        Damage = Collapser.GetWeaponDamage(ShellSword.CreatorItem) / 4;
+                    }
+                    else
+                        Damage = Collapser.HeldItem.damage / 4;
+                    Damage = (int)(Damage * 1.05f);
+                    Damage += (int)(npc.GetLifePercent() * 0.05f);
+                    Projectile a = Projectile.NewProjectileDirect(Collapser.GetSource_FromThis(), SpawnPos,
+                    Vector2.Zero, ModContent.ProjectileType<RaptureBeam>(), Damage, 30);
+
+                    if (ShellSword != null)
+                        a.CritChance = ShellSword.CreatorItem.crit;
+
+                    RaptureBeam beam = a.ModProjectile as RaptureBeam;
+                    beam.Target = npc;
+                    beam.BaseColor = RainbowColorGenerator.TrailColorFunction(Main.rand.NextFloat());
+
+
+                }
+                //dust vfx
+                Dust c;
+                for (int i = 0; i < 250; i++)
+                {
+
+                    c = Dust.NewDustDirect(npc.Center, 160, 160, DustID.AncientLight, Main.rand.NextFloat(-100, 101), Main.rand.NextFloat(-100, 101));
+                    c.noGravity = true;
+                    c.fadeIn = 1.5f;
+                    c.color = RainbowColorGenerator.TrailColorFunction(Main.rand.NextFloat());
                 }
             }
         }

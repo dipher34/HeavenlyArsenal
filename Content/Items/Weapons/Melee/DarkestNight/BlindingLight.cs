@@ -158,7 +158,8 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
         {
             Color.Red.ToVector4(),//Color(255, 165, 0).ToVector4(),
             Color.Green.ToVector4(),
-            Color.Blue.ToVector4()
+            Color.Blue.ToVector4(),
+            Color.White.ToVector4()
         };
         public void RenderPixelatedPrimitives(SpriteBatch spriteBatch)
         {

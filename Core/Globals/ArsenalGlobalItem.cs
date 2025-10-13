@@ -1,4 +1,5 @@
 using CalamityMod.UI.CalamitasEnchants;
+using NoxusBoss.Content.Items;
 using System.Collections.Generic;
 using Terraria;
 using Terraria.ModLoader;
@@ -12,8 +13,13 @@ public class ArsenalGlobalItem : GlobalItem
 
     public static event ModifyItemLootDelegate? ModifyItemLootEvent;
 
-    public static List<Enchantment> EnchantmentList { get; internal set; } = new List<Enchantment>();
-
+    public override void SetDefaults(Item entity)
+    {
+        if(entity.type == ModContent.ItemType<MetallicChunk>())
+        {
+            entity.value = 0_000_030;
+        }
+    }
 
     public override void ModifyItemLoot(Item item, ItemLoot loot)
     {

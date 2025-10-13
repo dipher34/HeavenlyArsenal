@@ -185,7 +185,6 @@ namespace HeavenlyArsenal.Content.Projectiles.Weapons.Ranged
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
             target.AddBuff(ModContent.BuffType<RancorBurn>(), 150);
-            target.AddBuff(ModContent.BuffType<AntimatterAnnihilationAll_Buff>(), 150);        
         }
 
         public override bool ShouldUpdatePosition() => false;

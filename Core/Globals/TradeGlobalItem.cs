@@ -11,9 +11,10 @@ using NoxusBoss.Core.Utilities;
 using System.Collections.Generic;
 using Luminance.Core.Graphics;
 using NoxusBoss.Assets;
-using HeavenlyArsenal.Core.Systems;
+//using HeavenlyArsenal.Core.Systems;
 using NoxusBoss.Content.NPCs.Bosses.CeaselessVoid;
 using Humanizer;
+using HeavenlyArsenal.Core.Systems;
 
 namespace HeavenlyArsenal.Core.Globals
 {

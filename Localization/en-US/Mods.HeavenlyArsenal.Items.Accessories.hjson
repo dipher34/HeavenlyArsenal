@@ -17,8 +17,14 @@ VoidCrestOath: {
 	DisplayName: Foreign Halo of Deep Void
 	Tooltip:
 		'''
-		todo: write somehting about the antiprojectile system
-		Causes rifts to tear out of reality to spear incoming projectiles.
+		A rudimentary necklace forged from a crude piece of iron and given a basic defensive enchantment.
+		Though it might seem fragile, the persistence this object represents makes it capable of warding against all but the most dangerous of blows.
+
+		'''
+	GFBtooltip:
+		'''
+		It is quite heavy though... 
+		Perhaps you should get a neck massage later?
 		'''
 }
 
@@ -85,4 +91,9 @@ RadiantRampartItem: {
 		You emit shining blue light if visibility is enabled
 		How radiant!
 		'''
+}
+
+EvilCard: {
+	DisplayName: Debit card of Emptiness
+	Tooltip: the economy...
 }

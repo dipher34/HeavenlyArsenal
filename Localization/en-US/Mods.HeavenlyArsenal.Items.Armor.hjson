@@ -17,11 +17,18 @@ ShintoArmor: {
 			'''
 		SetBonus:
 			'''
+			Grants an additional 10 minion slots.
+			Grants an additional 15% damage to all classes.
+			An antishadow barrier is forged around you that absorbs most of the damage you would've taken
+			Standing still calls upon the shadows to regenerate your physical form
+			While no other wings are equipped, a powerful pair of wings are braided into existence.
+			While no other dash accessories are equipped, provides a powerful dash that allows you to phase through enemies.
 
-			double tap down to enrage
-			while Enraged, deal and take 3x damage
-			an Antishadow barrier is forged around you that absorbs most of the damage you would've taken
-			the barrier cannot sustain itself while you are enraged
+			allows the user to phase through shadows for a short range teleport ( {0} )
+
+			Upon activating the setbonus, become enraged.
+			While enraged, deal and take 3x damage.
+			The barrier cannot sustain itself while you are enraged.
 			'''
 		LoreTip:
 			'''

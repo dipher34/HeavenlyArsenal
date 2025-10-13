@@ -51,9 +51,22 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
             orig(ref drawinfo);
         }
         public override Position GetDefaultPosition() => new AfterParent(PlayerDrawLayers.Backpacks);
-        public override bool GetDefaultVisibility(PlayerDrawSet drawInfo) => drawInfo.drawPlayer.GetModPlayer<VoidCrestOathPlayer>().voidCrestOathEquipped || drawInfo.drawPlayer.GetModPlayer<VoidCrestOathPlayer>().Vanity;
+        public override bool GetDefaultVisibility(PlayerDrawSet drawInfo)
+        {
+            Player Owner = drawInfo.drawPlayer;
+            VoidCrestOathPlayer Void = Owner.GetModPlayer<VoidCrestOathPlayer>();
+
+            if (Void.Hide)
+                return false;
+            if (Void.Vanity || Void.voidCrestOathEquipped)
+                return true;
+            else
+                return false;
+          
+        }
+
         public override bool IsHeadLayer => true;
-    
+
 
         private static void RenderIntoTarget()
         {
@@ -87,26 +100,39 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
         public void drawRift(ref PlayerDrawSet drawInfo)
         {
 
-
-            float val = (float)Math.Sin(Main.GlobalTimeWrappedHourly / 2) * 2;
+            float interp = drawInfo.drawPlayer.GetModPlayer<VoidCrestOathPlayer>().ResourceInterp;
+            float val = (float)Math.Sin(Main.GlobalTimeWrappedHourly / 2) * 2 + 1;
             float Rot = drawInfo.drawPlayer.fullRotation + MathHelper.ToRadians(drawInfo.drawPlayer.direction * -45);
-            Vector2 position = drawInfo.HeadPosition() + new Vector2(0, -20f + val).RotatedBy(Rot);
+            Vector2 position = drawInfo.HeadPosition() + new Vector2(0, -20f + val/2).RotatedBy(Rot) + new Vector2(0, 1 * val);
             Vector2 particleDrawCenter = position + new Vector2(0f, 0f);
             Texture2D glow = AssetDirectory.Textures.BigGlowball.Value;
+
+            Vector2 RiftScale = new Vector2(0.1f, 0.05f) * interp;
+            Vector2 GlowScale = RiftScale * 0.6f;
+
+            //maybe i'll try again later.
+            //Texture2D a = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Items/Accessories/VoidCrestOath/CleanedUpOmega").Value;
+            //Main.EntitySpriteDraw(a, position, null, Color.Crimson, MathHelper.ToRadians(drawInfo.drawPlayer.direction * 20), a.Size() * 0.5f, new Vector2(0.05f, 0.1f), 0);
+
             Main.EntitySpriteDraw(glow, particleDrawCenter, glow.Frame(),
-                Color.Red with { A = 200 }, Rot, glow.Size() * 0.5f, new Vector2(0.25f, 0.12f) * 0.275f, 0, 0);
+                Color.Red with { A = 200 }, Rot, glow.Size() * 0.5f, GlowScale, 0, 0);
             Texture2D innerRiftTexture = AssetDirectory.Textures.VoidLake.Value; Color edgeColor = new Color(1f, 0.06f, 0.06f);
-            float timeOffset = Main.myPlayer * 2.5552343f; ManagedShader riftShader = ShaderManager.GetShader("NoxusBoss.DarkPortalShader");
+            float timeOffset = Main.myPlayer * 2.5552343f; 
+            
+            ManagedShader riftShader = ShaderManager.GetShader("NoxusBoss.DarkPortalShader");
             riftShader.TrySetParameter("time", Main.GlobalTimeWrappedHourly * 0.2f + timeOffset);
-            riftShader.TrySetParameter("baseCutoffRadius", 0.24f);
+            riftShader.TrySetParameter("baseCutoffRadius", 0.24f * interp);
             riftShader.TrySetParameter("swirlOutwardnessExponent", 0.2f);
             riftShader.TrySetParameter("swirlOutwardnessFactor", 3f);
-            riftShader.TrySetParameter("vanishInterpolant", 0.01f);
+            riftShader.TrySetParameter("vanishInterpolant", 0.01f * (1-interp));
             riftShader.TrySetParameter("edgeColor", edgeColor.ToVector4());
             riftShader.TrySetParameter("edgeColorBias", 0.1f);
             riftShader.SetTexture(GennedAssets.Textures.Noise.WavyBlotchNoise, 1, SamplerState.AnisotropicWrap);
-            riftShader.SetTexture(GennedAssets.Textures.Noise.BurnNoise, 2, SamplerState.AnisotropicWrap); riftShader.Apply();
-            Main.spriteBatch.Draw(innerRiftTexture, particleDrawCenter, null, Color.White, Rot + MathHelper.Pi, innerRiftTexture.Size() * 0.5f, new Vector2(0.1f, 0.05f), 0, 0);
+            riftShader.SetTexture(GennedAssets.Textures.Noise.FireNoiseA, 2, SamplerState.AnisotropicWrap); riftShader.Apply();
+
+
+            SpriteEffects flip = drawInfo.drawPlayer.direction == 1 ? SpriteEffects.FlipHorizontally : 0 ;
+            Main.spriteBatch.Draw(innerRiftTexture, particleDrawCenter, null, Color.White, Rot + MathHelper.Pi, innerRiftTexture.Size() * 0.5f, RiftScale, flip, 0);
 
             Main.spriteBatch.ResetToDefault();
         }
@@ -115,7 +141,7 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
             if (drawInfo.shadow != 0f || drawInfo.drawPlayer.dead)
                 return;
 
-            HaloTarget.Request(208, 100 , drawInfo.drawPlayer.whoAmI, RenderIntoTarget);
+            HaloTarget.Request(208, 100, drawInfo.drawPlayer.whoAmI, RenderIntoTarget);
             if (!HaloTarget.TryGetTarget(drawInfo.drawPlayer.whoAmI, out RenderTarget2D? portalTexture) || portalTexture is null)
                 return;
 
@@ -126,13 +152,14 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
 
             DrawData rift = new DrawData(portalTexture, position, null, Color.White, Rot + MathHelper.Pi, portalTexture.Size() * 0.5f, 1f, 0, 0f)
             {
-               
+
             };
             //drawInfo.DrawDataCache.Add(rift);
             drawRift(ref drawInfo);
-           
+
         }
-      
-        
+
+
+
     }
 }

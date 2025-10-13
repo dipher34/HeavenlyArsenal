@@ -1,4 +1,5 @@
-﻿using Luminance.Common.Easings;
+﻿using CalamityMod;
+using Luminance.Common.Easings;
 using Luminance.Common.Utilities;
 using Luminance.Core.Graphics;
 using Microsoft.Xna.Framework;
@@ -50,6 +51,8 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             Projectile.scale = 1;
             Projectile.extraUpdates = 2;
             Projectile.penetrate = -1;
+            Projectile.tileCollide = false;
+
 
             Projectile.localNPCHitCooldown = -1;
             Projectile.usesLocalNPCImmunity = true;
@@ -60,7 +63,12 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
 
         }
         #endregion
-
+        public bool Thrown;
+        public enum SwordState
+        {
+            Normal,
+            Thrown
+        }
         public int stage
         {
             get => (int)Projectile.ai[2];
@@ -85,10 +93,13 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
         }
         public override void AI()
         {
-            Projectile.damage = (int)Owner.GetTotalDamage(DamageClass.Melee).ApplyTo(Owner.HeldItem.damage * 1.7f);
+            Projectile.damage = (int)Owner.GetTotalDamage(DamageClass.Melee).ApplyTo(Owner.HeldItem.damage * 1.4f);
             Projectile.ContinuouslyUpdateDamageStats = true;
+            Owner.heldProj = Projectile.whoAmI;
             CheckDespawnConditions();
-            Projectile.Center = Owner.Center;
+
+            if (stage != 3)
+                Projectile.Center = Owner.GetFrontHandPositionImproved(Owner.compositeFrontArm);
             Projectile.timeLeft++;
             Timer++;
 
@@ -122,12 +133,13 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             if (!Glass.Empowered
                 || Owner.HeldItem.type != ModContent.ItemType<Rapture>()
                 || Owner.dead
-                || !Owner.active)
+                || !Owner.active
+                || Owner.HasBuff(BuffID.Cursed))
             {
 
                 Projectile.Kill();
             }
-            
+
         }
         public void ManageSwing()
         {
@@ -259,15 +271,53 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
                 }
             }
 
+            if (stage == 3)
+            {
+
+                Projectile.localNPCHitCooldown = 25;
+                if (t == 0)
+                {
+                    Thrown = true;
+                    swingDirection = Owner.MountedCenter.AngleTo(Main.MouseWorld);
+                }
+
+                if (SwingCurve == null)
+                    SwingCurve = new PiecewiseCurve()
+                        .Add(EasingCurves.Sextic, EasingType.Out, 1f, 1f);
+
+                t = Math.Clamp(t + 0.005f, 0, 1);
+                swingInterp = SwingCurve.Evaluate(t);
+
+                Projectile.scale = float.Lerp(Projectile.scale, 1, 0.2f);
+                Projectile.velocity = new Vector2(30 * (1- swingInterp), 0).RotatedBy(swingDirection);
+                // Rotate several 360s but then end facing the player.
+                float totalSpins = 6f; // Number of full rotations before ending
+                float spinProgress = MathHelper.Clamp(swingInterp, 0f, 1f);
+                float spinRotation = swingDirection + MathHelper.TwoPi * totalSpins * spinProgress * Owner.direction;
+                float endRotation = Projectile.Center.AngleTo(Owner.Center);
+
+                Projectile.rotation = MathHelper.Lerp(spinRotation, endRotation, spinProgress);
+                if(t > 0.8f)
+                {
+                    swingDirection = Owner.MountedCenter.AngleTo(Main.MouseWorld);
+                    Projectile.Center = Vector2.Lerp(Projectile.Center, Owner.Center, 0.1f);
+                    Projectile.scale = float.Lerp(Projectile.scale, 0, 0.2f);
+                }
+                if(t == 1)
+                {
+                    ResetValues();
+                }
+            }
         }
         public void ResetValues()
         {
+            Thrown = false;
             t = 0;
             //Glass.EmpoweredAttackCount--;
             swingDirection = 0;
             swingInterp = 0;
             Projectile.scale = 0;
-
+            Projectile.localNPCHitCooldown = 70;
             AltFire = false;
             AltFireInterpolant = 0;
 
@@ -277,7 +327,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             Projectile.ResetLocalNPCHitImmunity();
             ResetSlash();
             ResetTrail();
-            if (stage > 2)
+            if (stage > 3)
             {
                 stage = 0;
             }
@@ -341,6 +391,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
         }
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
+           
             target.GetGlobalNPC<SilentLight_NPC>().Heat++;
             if (target.GetGlobalNPC<SilentLight_NPC>().Sun == null)
                 target.GetGlobalNPC<SilentLight_NPC>().Sun = Owner;
@@ -362,12 +413,12 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
         public override bool? CanCutTiles() => false;
         public override void ModifyDamageHitbox(ref Rectangle hitbox)
         {
-            hitbox.Inflate(140, 140);
+            hitbox.Inflate(300, 300);
             hitbox.Location += new Vector2(0, 124 * Projectile.scale).RotatedBy(Projectile.rotation - MathHelper.PiOver2).ToPoint();
         }
         public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
         {
-            if (canHit)
+            if (canHit && !Thrown)
             {
                 float dist = 300f;
 
@@ -377,7 +428,11 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
                 return Collision.CheckAABBvLineCollision(targetHitbox.Location.ToVector2(), targetHitbox.Size(), Projectile.Center, Projectile.Center + offset, 120f, ref _);
             }
 
-            return false;
+            if (Thrown && Projectile.velocity.Length() > 2)
+
+                return base.Colliding(projHitbox, targetHitbox);
+            else
+                return false;
         }
         #endregion
 
@@ -437,7 +492,8 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             }
 
             _slashRotations[0] = Projectile.rotation + MathHelper.PiOver2 * Projectile.direction;
-            _slashPositions[0] = new Vector2(SlashDistance * Projectile.scale * _slashScale, 0).RotatedBy(Projectile.rotation + MathHelper.ToRadians(5 * Projectile.direction * stage == 0 ? 1 : -1));
+            float offset = !Thrown ? SlashDistance : 200;
+            _slashPositions[0] = (Projectile.Center - Owner.Center)+ new Vector2(offset* Projectile.scale * _slashScale, 0).RotatedBy(Projectile.rotation + MathHelper.ToRadians(5 * Projectile.direction * stage == 0 ? 1 : -1));
         }
         #endregion
         #region DrawCode
@@ -446,7 +502,12 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             Texture2D tex = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/Items/Weapons/Melee/DarkestNight/SwordPlaceholder").Value;
             Vector2 DrawPos = Projectile.Center - Main.screenPosition;
 
-            Vector2 Origin = new Vector2(tex.Width / 2, tex.Height);
+
+            Vector2 Origin;
+            if(!Thrown)
+                Origin = new Vector2(tex.Width / 2, tex.Height);
+            else
+                Origin = new Vector2(tex.Width / 2, tex.Height/2);
 
             Vector2 AdjustedScale = new Vector2(1) * 0.2f * Projectile.scale;
             float Rot = Projectile.rotation + MathHelper.PiOver2;
@@ -455,12 +516,13 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
 
             if (t > 0.1f && t < 0.98f && stage != 2)
                 DrawSlash();
+
             Main.EntitySpriteDraw(tex, DrawPos, null, Color.White, Rot, Origin, AdjustedScale, SpriteEffects.None);
 
             DrawBladeOverlay(DrawPos, Rot, AdjustedScale);
-            Utils.DrawBorderString(Main.spriteBatch, swingInterp.ToString(), DrawPos, Color.AntiqueWhite, anchory: 10);
-            Vector2 startPos = Projectile.Center;
-            Vector2 Endpos = Projectile.Center + new Vector2(300 * Projectile.scale * 1.65f, 0).RotatedBy(Projectile.rotation);
+            //Utils.DrawBorderString(Main.spriteBatch, swingInterp.ToString(), DrawPos, Color.AntiqueWhite, anchory: 10);
+            //Vector2 startPos = Projectile.Center;
+            //Vector2 Endpos = Projectile.Center + new Vector2(300 * Projectile.scale * 1.65f, 0).RotatedBy(Projectile.rotation);
             //Utils.DrawLine(Main.spriteBatch, startPos, Endpos, Color.AntiqueWhite);
             return false;
         }
@@ -481,7 +543,9 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             trailShader.TrySetParameter("FlareStart", 1f);
             trailShader.TrySetParameter("DistortionStrength", 0.075f);
             trailShader.Apply();
-            Main.EntitySpriteDraw(tex, DrawPos - new Vector2(0, 100).RotatedBy(Rot) * Scale, null, Color.White, Rot, Origin, Scale, SpriteEffects.None);
+            float ThrowOffset = !Thrown ? 100: 15;
+            Vector2 Adjusted = DrawPos - new Vector2(0, ThrowOffset).RotatedBy(Rot) * Scale;
+            Main.EntitySpriteDraw(tex, Adjusted, null, Color.White, Rot, Origin, Scale, SpriteEffects.None);
             Main.spriteBatch.End();
             Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, null, Main.Transform);
 

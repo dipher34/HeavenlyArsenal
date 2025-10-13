@@ -1,18 +1,23 @@
 global using LumUtils = Luminance.Common.Utilities.Utilities;
 global using WotGUtils = NoxusBoss.Core.Utilities.Utilities;
-using HeavenlyArsenal.Content.Items.Misc;
+using CalamityMod.Particles;
+using CalamityMod.UI.CalamitasEnchants;
+//using HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath;
+
+//using HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath;/
+//using HeavenlyArsenal.Content.Items.Misc;
 using Microsoft.Xna.Framework.Graphics;
+using MonoMod.RuntimeDetour;
 using MonoMod.RuntimeDetour.HookGen;
+using NoxusBoss.Content.Items;
+using NoxusBoss.Content.NPCs.Bosses.CeaselessVoid;
 using ReLogic.Content;
-using System.Reflection;
 using System;
+using System.Reflection;
 using Terraria;
 using Terraria.Graphics.Shaders;
 using Terraria.ID;
 using Terraria.ModLoader;
-using MonoMod.RuntimeDetour;
-using CalamityMod.Particles;
-using NoxusBoss.Content.NPCs.Bosses.CeaselessVoid;
 
 namespace HeavenlyArsenal
 {
@@ -24,6 +29,7 @@ namespace HeavenlyArsenal
 
         public override void Load()
         {
+          //  EnchantmentManager.ItemUpgradeRelationship[ModContent.ItemType<MetallicChunk>()] = ModContent.ItemType<VoidCrestOath>();
             /*
             if (ModLoader.GetMod("NoxusBoss") != null)
             {
@@ -57,7 +63,7 @@ namespace HeavenlyArsenal
                 // and you'll have to do it for every shader file.
                 // This example assumes you have both armor and screen Shaders.
 
-                Asset<Effect> dyeShader = this.Assets.Request<Effect>("Assets/AutoloadedEffects/Shaders/UncannyDye");
+                //Asset<Effect> dyeShader = this.Assets.Request<Effect>("Assets/AutoloadedEffects/Shaders/UncannyDye");
                 //Asset<Effect> specialShader = this.Assets.Request<Effect>("Effects/MySpecials");
                 //Asset<Effect> filterShader = this.Assets.Request<Effect>("Effects/MyFilters");
 
@@ -65,12 +71,12 @@ namespace HeavenlyArsenal
                 // "PassName" should correspond to the name of your pass within the *technique*,
                 // so if you get an error here, make sure you've spelled it right across your effect file.
 
-                GameShaders.Armor.BindShader(ModContent.ItemType<UncannyDye>(), new ArmorShaderData(dyeShader, "ArmorAnimatedSine"));
+                //GameShaders.Armor.BindShader(ModContent.ItemType<UncannyDye>(), new ArmorShaderData(dyeShader, "ArmorAnimatedSine"));
 
                 // If your dye takes specific parameters such as color, you can append them after binding the shader.
                 // IntelliSense should be able to help you out here.   
 
-                GameShaders.Armor.BindShader(ModContent.ItemType<UncannyDye>(), new ArmorShaderData(dyeShader, "ColorPass")).UseColor(10f, 100f, 1.4f);
+                //GameShaders.Armor.BindShader(ModContent.ItemType<UncannyDye>(), new ArmorShaderData(dyeShader, "ColorPass")).UseColor(10f, 100f, 1.4f);
                 //GameShaders.Armor.BindShader(ModContent.ItemType<MyNoiseDyeItem>(), new ArmorShaderData(dyeShader, "NoisePass")).UseImage("Images/Misc/noise"); // Uses the default Terraria noise map.
 
                 // To bind a miscellaneous, non-filter effect, use this.

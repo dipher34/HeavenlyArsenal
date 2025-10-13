@@ -336,6 +336,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
                 Vector2 mid = Vector2.Lerp(points[i - 1], points[i], 0.5f);
                 Color color = Color.Lerp(Lighting.GetColor((int)(mid.X / 16f), (int)(mid.Y / 16f), StringColor), StringColor, Projectile.light);
                 Utils.DrawLine(Main.spriteBatch,points[i - 1], points[i], color, color, 2 * Projectile.scale);
+                Utils.DrawBorderString(Main.spriteBatch, i.ToString(), points[i] - Main.screenPosition, Color.Red, 0.4f);
             }
         }
 
@@ -360,7 +361,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
 
                 Texture2D whipTex = ModContent.Request<Texture2D>(Texture).Value;
 
-                Main.EntitySpriteDraw(whipTex, points[i] - Main.screenPosition, new Rectangle(0, frameY, whipTex.Width, frameHeight), color, rot, origin, drawScale, Projectile.spriteDirection > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally);
+             //   Main.EntitySpriteDraw(whipTex, points[i] - Main.screenPosition, new Rectangle(0, frameY, whipTex.Width, frameHeight), color, rot, origin, drawScale, Projectile.spriteDirection > 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally);
             }
         }
 

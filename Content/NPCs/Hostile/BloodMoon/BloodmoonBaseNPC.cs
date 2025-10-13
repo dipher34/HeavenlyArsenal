@@ -80,8 +80,8 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
     public abstract class BloodmoonBaseNPC : ModNPC
     {
         public override string Texture => MiscTexturesRegistry.InvisiblePixelPath;
-    
-        
+
+        public override string LocalizationCategory => "NPCs";
       
         
         ///<summary>

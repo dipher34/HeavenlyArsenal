@@ -3,6 +3,7 @@ Mods: {
 		Keybinds: {
 			"Quick Dash.DisplayName": Quick  Dash
 			"Toggle Haemsong Mode.DisplayName": Toggle  Haemsong  Mode
+			"Shadow Teleport.DisplayName": Shadow  Teleport
 		}
 
 		Items: {
@@ -317,6 +318,26 @@ Mods: {
 
 			KnifeItem: {
 				DisplayName: Knife Item
+				Tooltip: ""
+			}
+
+			LifeToMana: {
+				DisplayName: Life To Mana
+				Tooltip: ""
+			}
+
+			MariviniumBodyArmor: {
+				DisplayName: Marivinium Body Armor
+				Tooltip: ""
+			}
+
+			MariviniumHelmet: {
+				DisplayName: Marivinium Helmet
+				Tooltip: ""
+			}
+
+			MariviniumLeggings: {
+				DisplayName: Marivinium Leggings
 				Tooltip: ""
 			}
 		}

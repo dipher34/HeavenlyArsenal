@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Items.Weapons.Rogue.Temp
@@ -51,7 +52,10 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Rogue.Temp
                 return BellAdjustment;
             }
         }
-
+        public override void OnSpawn(NPC npc, IEntitySource source)
+        {
+            StartSize = npc.scale;
+        }
         public override bool PreAI(NPC npc)
         {
             if (Active && Rift != null && Banisher != null)
@@ -84,8 +88,10 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Rogue.Temp
             {
                 StartSize = npc.scale;
 
-                return base.PreAI(npc);
+               
             }
+
+            return base.PreAI(npc);
         }
 
 

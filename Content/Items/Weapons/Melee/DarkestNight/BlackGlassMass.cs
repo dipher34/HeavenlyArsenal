@@ -138,12 +138,12 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
 
 
            
-            Main.EntitySpriteDraw(Glow2, DrawPos, null, GlowColor[0] * 0.2f, Rot, Glow2.Size() * 0.5f, GlowScale, flip);
+//            Main.EntitySpriteDraw(Glow2, DrawPos, null, GlowColor[0] * 0.2f, Rot, Glow2.Size() * 0.5f, GlowScale, flip);
 
 
-            Main.EntitySpriteDraw(Base, DrawPos, null, Color.AntiqueWhite, Rot, Origin, Scale, flip);
+//            Main.EntitySpriteDraw(Base, DrawPos, null, Color.AntiqueWhite, Rot, Origin, Scale, flip);
 
-            Utils.DrawBorderString(Main.spriteBatch, TotalMass.ToString(), DrawPos, Color.AntiqueWhite);
+           // Utils.DrawBorderString(Main.spriteBatch, TotalMass.ToString(), DrawPos, Color.AntiqueWhite);
             return false;
         }
 

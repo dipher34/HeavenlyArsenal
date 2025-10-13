@@ -184,12 +184,15 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
                 if(npc.immortal || npc.dontTakeDamage)
                     continue;
 
-                // ✅ Check if this NPC is a BloodmoonBaseNPC
+                if (npc.GetGlobalNPC<RitualBuffNPC>().hasRitualBuff)
+                    continue;
                 if (npc.ModNPC is BloodmoonBaseNPC bloodmoonNpc)
                 {
                     if (!bloodmoonNpc.canBeSacrificed)
                         continue;
+
                 }
+                
 
                 if (Vector2.Distance(npc.Center, NPC.Center) < 100f && npc.active && !npc.friendly && !npc.boss)
                 {
@@ -319,12 +322,14 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
 
             if (Ressurectiontimer > 120)
             {
+                npc.life = npc.lifeMax;
                 npc.immortal = false;
                 ClearRitualBuff(npc);
                 Ressurectiontimer = 0;
                 IsRessurecting = false;
 
             }
+                
             
         }
         public override bool CheckDead(NPC npc)

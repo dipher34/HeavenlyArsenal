@@ -41,6 +41,8 @@ namespace HeavenlyArsenal.Content.Items.Accessories.RadiantRampart
 
         public override void UpdateAccessory(Player player, bool hideVisual)
         {
+
+            player.GetModPlayer<RampartPlayer>().Equipped = true;
             CalamityPlayer modPlayer = player.Calamity();
 
             // Directly inherits both Cross Necklace and Deific Amulet iframe boosts
@@ -88,6 +90,20 @@ namespace HeavenlyArsenal.Content.Items.Accessories.RadiantRampart
             // Add light if the other accessories aren't equipped and visibility is turned on
             if (!(modPlayer.rOoze || modPlayer.aAmpoule) && !hideVisual)
                 Lighting.AddLight(player.Center, new Vector3(1.32f, 1.32f, 1.82f));
+        }
+    }
+
+    public class RampartPlayer : ModPlayer
+    {
+        public bool Equipped;
+        public override void ResetEffects()
+        {
+            Equipped = false;
+        }
+        
+        public override void PostUpdateMiscEffects()
+        {
+
         }
     }
 }

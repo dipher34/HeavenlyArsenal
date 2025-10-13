@@ -1,14 +1,6 @@
-﻿using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech;
+﻿//using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech;
 using HeavenlyArsenal.Content.Rarities;
-using HeavenlyArsenal.Core.Globals;
-using NoxusBoss.Core.GlobalInstances;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Terraria;
-using Terraria.GameContent.ItemDropRules;
 using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Items.Materials.BloodMoon

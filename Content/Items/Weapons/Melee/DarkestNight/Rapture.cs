@@ -1,9 +1,13 @@
-﻿using Luminance.Assets;
+﻿using HeavenlyArsenal.Core.Globals;
+using Luminance.Assets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using NoxusBoss.Content.NPCs.Bosses.NamelessDeity;
 using NoxusBoss.Content.Rarities;
+using NoxusBoss.Core.GlobalInstances;
 using Terraria;
 using Terraria.DataStructures;
+using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -16,6 +20,27 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
         public override void SetStaticDefaults()
         {
             ItemID.Sets.gunProj[Type] = true;
+        
+            GlobalNPCEventHandlers.ModifyNPCLootEvent += (npc, npcLoot) =>
+            {
+                if (npc.type == ModContent.NPCType<NamelessDeityBoss>())
+                {
+                    LeadingConditionRule normalOnly = new LeadingConditionRule(new Conditions.NotExpert());
+                    {
+                        normalOnly.OnSuccess(ItemDropRule.Common(Type));
+                    }
+                    npcLoot.Add(normalOnly);
+                }
+            };
+            ArsenalGlobalItem.ModifyItemLootEvent += (item, loot) =>
+            {
+                if (item.type == NamelessDeityBoss.TreasureBagID)
+                    loot.Add(ItemDropRule.Common(Type));
+            };
+
+
+        
+
         }
         public override void SetDefaults()
         {
@@ -30,8 +55,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             Item.value = Item.buyPrice(5, 48, 50, 67);
             Item.DamageType = DamageClass.Melee;
             Item.shoot = ModContent.ProjectileType<BlackGlass>();
-            Item.damage = 49374;
-            Item.Size = ModContent.Request<Texture2D>(Texture).Value.Size() * 0.2f;
+            Item.damage = 49_374;
         }
 
         public override bool MeleePrefix()
@@ -56,6 +80,9 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
        
         public override void HoldItem(Player player)
         {
+            if (player.HasBuff(BuffID.Cursed))
+                return;
+
             if (player.GetModPlayer<GlassPlayer>().Empowered)
             {
                 if (player.ownedProjectileCounts[ModContent.ProjectileType<SilentLight>()] < 1)

@@ -10,7 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Terraria;
 using Terraria.Audio;
-using Terraria.ID;
+using Terraria.DataStructures;
+using Terraria.Localization;
 using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
@@ -33,10 +34,13 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
         /// </summary>
         public bool voidCrestOathEquipped;
 
+        public bool Hide;
         /// <summary>
         /// If true, the accessory is in a vanity slot and only provides cosmetic effects.
         /// </summary>
         public bool Vanity;
+
+        public float ResourceInterp;
         /// <summary>
         /// The resource used to "pay" for intercepts.
         /// It will decrease when an interception happens and regenerate slowly.
@@ -90,6 +94,9 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
         }
 
         public List<int> targetedProjectiles = new List<int>();
+
+
+        public bool TrollMode;
         #endregion
 
 
@@ -107,13 +114,38 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
         {
             voidCrestOathEquipped = false;
             Vanity = false;
+            TrollMode = false;
+            Hide = false;
 
 
         }
 
-        public override void PostUpdate()
+        public override void PostUpdateMiscEffects()
         {
-            if (!voidCrestOathEquipped || Vanity)
+            
+            
+           if (Cooldown <= 1 && !Vanity)
+              ResourceInterp = float.Lerp(ResourceInterp, InterceptCount / MaxInterceptCount, 0.2f);
+
+            if (Vanity)
+                ResourceInterp = float.Lerp(ResourceInterp, 1, 0.2f);
+            
+            if (!voidCrestOathEquipped)
+                return;
+            if (Main.specialSeedWorld)
+                TrollMode = true;
+
+
+            if (TrollMode)
+            {
+                if (!Main.rand.NextBool(19840) && !Player.dead && !Player.immune)
+                    return;
+
+
+                string deathMessage = Language.GetTextValue("Mods.HeavenlyArsenal.PlayerDeathMessages.VoidCrest" + Main.rand.Next(1, 3 + 1), Player.name);
+                Player.KillMe(PlayerDeathReason.ByCustomReason(NetworkText.FromLiteral(deathMessage)), 10000.0, 0, false);
+            }
+            if (Vanity)
                 return;
             float value = InterceptCount / MaxInterceptCount;
 
@@ -125,13 +157,17 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
                 ManageTargeting();
             else
             {
+                ResourceInterp = 0;
                 Cooldown--;
                 if (Cooldown == 1)
+                {
                     InterceptCount = MaxInterceptCount;
+                    SoundEngine.PlaySound(GennedAssets.Sounds.Common.Glitch);
+                }
                 RegenerateInterceptCount();
 
             }
-                
+
         }
 
         /// <summary>
@@ -146,12 +182,11 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
         /// intercepted).</remarks>
         private void ManageTargeting()
         {
-           
+
 
             InterceptCost = 30;
-           
+
             trackedProjectileIndices.Clear();
-            targetedProjectiles.RemoveAll(id => !Main.projectile[id].active || Main.projectile[id].friendly);
 
             InterceptRegenRate = 1;
             //Main.NewText(InterceptRegenRate);
@@ -163,16 +198,14 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
                 if (BlacklistedProjectiles.Contains(proj.type))
                     continue;
 
-                if (proj.active && proj.hostile && !proj.friendly&& proj.owner != Player.whoAmI && (bool)proj.Globals.Current.CanDamage(proj))
                     continue;
                 float distance = Vector2.Distance(proj.Center, Player.Center);
 
-                
+
                 if (proj.hostile &&
                     proj.type != interceptorType
                     && !proj.friendly &&
                     distance <= TrackingRadius
-                    && proj.damage> 0)
                 {
                     trackedProjectileIndices.Add(proj.whoAmI);
                 }
@@ -210,7 +243,7 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
                         Projectile pb = Main.projectile[b];
                         return pa.whoAmI.CompareTo(pb.whoAmI);
                     });
-                  
+
                     bool alreadyTargeted = Main.projectile.Any(p =>
                     p.active && p.type == interceptorType &&
                     p.ModProjectile is VoidCrest_Spear interceptor &&
@@ -244,11 +277,10 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
                             mom.BaseSize = proj.Size.X / proj.scale;
                         }
 
-                        if(InterceptCount <=1)
                         {
                             InterceptCount = 0;
                             Cooldown = CooldownMax;
-                           
+
                             SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.Clap, Player.Center);
                             return;
                         }
@@ -276,6 +308,6 @@ namespace HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath
             }
         }
 
-      
+
     }
 }

@@ -191,7 +191,7 @@ namespace HeavenlyArsenal.Content.Projectiles
             device.DepthStencilState = prevDepth;
         }
 
-        public override void Kill(int timeLeft)
+        public override void OnKill(int timeLeft)
         {
             // clean up effect if necessary
             basicEffect?.Dispose();

@@ -32,7 +32,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Melee.DarkestNight
             Claimed = 0;
         }
 
-        public override void Kill(int timeLeft)
+        public override void OnKill(int timeLeft)
         {
             ActiveFragments.RemoveAll(i => i == Projectile.whoAmI);
         }

@@ -225,7 +225,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             Color BaseheadColor = Color.Red;
             if (drawInfo.cHead != 0)
             {
-                BaseheadColor = Color.White.MultiplyRGB(drawInfo.colorHead);
+                BaseheadColor = drawInfo.colorArmorHead;
             }
             Vector2 GravOffset = new Vector2(0, player.gravDir == 1 ? 0 : 16.5f);
             foreach (var offset in offsets)
@@ -235,12 +235,15 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                     facePixel, drawPos, null, BaseheadColor * (1 - modPlayer.EnrageInterp), 0f, facePixel.Size() * 0.5f, 0.9f, SpriteEffects.None, 0);
                 dots.shader = drawInfo.cHead;
 
+               
                 drawInfo.DrawDataCache.Add(dots);
 
 
                 DrawData GlowingEyes = new DrawData(Glow, drawPos, null, BaseheadColor with { A = 0 } * (1 - modPlayer.EnrageInterp), 0f, Glow.Size() * 0.5f, 0.05f, SpriteEffects.None, 0);
-                GlowingEyes.shader = drawInfo.cHead;
 
+
+               
+                GlowingEyes.shader = drawInfo.cHead;
                 drawInfo.DrawDataCache.Add(GlowingEyes);
 
 
@@ -283,6 +286,8 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             }
 
             DrawData data = new DrawData(Left, LeftFauldPos, drawInfo.drawPlayer.legFrame, Color.White.MultiplyRGB(drawInfo.colorArmorHead), bobRotation, LOrigin, 1f, Dah);
+
+            data.color = drawInfo.colorArmorHead;
             data.shader = drawInfo.cHead;
             drawInfo.DrawDataCache.Add(data);
             
@@ -302,7 +307,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             DrawData data2 = new DrawData(Right, RightFauldPos, drawInfo.drawPlayer.legFrame, Color.White.MultiplyRGB(drawInfo.colorArmorHead), -bobRotation, ROrigin, 1f, Dah);
             #endregion
 
-
+            data2.color = drawInfo.colorArmorHead;
             data2.shader = drawInfo.cHead;
             drawInfo.DrawDataCache.Add(data2);
         }
@@ -329,7 +334,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             DrawData dots = new DrawData(Mask, drawPos, MaskFrame, Color.White * (modPlayer.EnrageInterp),
                 MathHelper.ToRadians(-12.5f * player.direction), MaskOrigin, MaskSize, flip, 0);
             dots.shader = drawInfo.cHead;
-
+           
             drawInfo.DrawDataCache.Add(dots);
 
 
@@ -344,9 +349,10 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 
             Texture2D DEBUG = GennedAssets.Textures.GreyscaleTextures.WhitePixel;
             //drawInfo.drawPlayer.legFrame.Y = 12 * drawInfo.drawPlayer.legFrame.Height;
-            DrawVoidEyes(ref drawInfo, sPlayer);
+           
            
             DrawFaulds(ref drawInfo, sPlayer);
+            DrawVoidEyes(ref drawInfo, sPlayer);
             DrawDeathMask(ref drawInfo, sPlayer);
         }
     }

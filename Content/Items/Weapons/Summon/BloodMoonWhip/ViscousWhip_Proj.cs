@@ -17,7 +17,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
 {
     internal class ViscousWhip_Proj : CleanBaseWhip
     {
-
+        public ref Player Owner => ref Main.player[Projectile.owner];
         public override SoundStyle? WhipSound =>  GennedAssets.Sounds.Common.Glitch with { Volume = 0.5f, PitchVariance = 0.2f};
         private ModularWhipController _controller;
         public override void OnSpawn(IEntitySource source)
@@ -30,17 +30,20 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
 
         public void SetController()
         {
-            Vector2 arm = Main.GetPlayerArmPosition(Projectile);
-            Vector2 c1 = arm + new Vector2(50 * Projectile.spriteDirection, -80f);
-            Vector2 c2 = arm + new Vector2(150 * Projectile.spriteDirection, 100f);
-            Vector2 end = arm + new Vector2(200 * Projectile.spriteDirection, 0f);
+          //  Vector2 arm = Main.GetPlayerArmPosition(Projectile);
+         //   Vector2 c1 = arm + new Vector2(50 * Projectile.spriteDirection, -80f);
+           // Vector2 c2 = arm + new Vector2(150 * Projectile.spriteDirection, 100f);
+          //  Vector2 end = arm + new Vector2(200 * Projectile.spriteDirection, 0f);
 
             //var curve = new BezierCurve(new Vector2(0, 0), new Vector2(60, 80), new Vector2(160, 90), new Vector2(220, 0));
 
            
             float thing = 1 - Math.Abs(2 * FlyProgress - 1);
             _controller = new ModularWhipController(new BraidedMotion());
-            _controller.AddModifier(new SmoothSineModifier(startIndex: 0, endIndex:Segments, amplitude: 10f, frequency: 6f, period:1f));
+            //_controller.AddModifier(new TwirlModifier(0, Segments/2, 0.15f * -Owner.direction));
+
+            _controller.AddModifier(new SmoothSineModifier(startIndex: 0, endIndex: Segments, amplitude: 10f, frequency: 10f, period: 1f));
+           
             //_controller.AddModifier(new TwirlModifier(1, 7, -0.12f * Projectile.direction * thing)); 
             //_controller.AddModifier(new TwirlModifier(8, 16, -0.12f* thing * Projectile.direction, false));
             //_controller.AddModifier(new TwirlModifier(17,  Segments, -0.15f * Projectile.direction));
@@ -48,7 +51,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
 
           protected override void ModifyWhipSettings(ref float outFlyTime, ref int outSegments, ref float outRangeMult)
         {
-            outSegments = 30;
+            outSegments = 60;
             outRangeMult = 1.15f;
         }
 

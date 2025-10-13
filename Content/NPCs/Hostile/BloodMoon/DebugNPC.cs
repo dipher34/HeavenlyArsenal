@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
@@ -20,6 +21,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
 
         public override void SetDefaults()
         {
+            NPC.aiStyle = NPCAIStyleID.Fighter;
             NPC.friendly = false;
             NPC.lifeMax = 100_000;
             NPC.dontTakeDamageFromHostiles = false;

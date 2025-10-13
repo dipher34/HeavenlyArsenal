@@ -101,7 +101,8 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         {
             CreateRecipe().
                 AddIngredient<OmegaBlueChestplate>().
-                AddIngredient<BloodflareBodyArmor>().AddCondition(conditions: Condition.BloodMoon).
+                AddIngredient<BloodflareBodyArmor>().
+                AddCondition(conditions: Condition.BloodMoon).
                 AddIngredient<UmbralLeechDrop>(7).
                 AddIngredient<YharonSoulFragment>(20).
                 AddTile<CosmicAnvil>().

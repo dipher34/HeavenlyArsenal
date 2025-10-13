@@ -26,6 +26,9 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
         void Apply(List<Vector2> controlPoints, Projectile projectile, int segments, float rangeMultiplier, float progress);
     }
 
+    /// <summary>
+    /// twists the whip around a certain point.
+    /// </summary>
     public class TwirlModifier : IWhipModifier
     {
         private int startIndex, endIndex;
@@ -90,17 +93,19 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
 
         private int startIndex, endIndex;
         private float amplitude, frequency, period;
+        private bool UsesProgress;
 
         // Default is sin(pi * t) so amplitude ramps up from 0 -> 1 at mid-swing -> 0 at the end.
         public Func<float, float> AmplitudeEnvelope { get; set; } = (t) => MathF.Sin(MathF.PI * MathHelper.Clamp(t, 0f, 1f));
 
-        public SmoothSineModifier(int startIndex, int endIndex, float amplitude, float frequency, float period)
+        public SmoothSineModifier(int startIndex, int endIndex, float amplitude, float frequency, float period, bool UsesProgress = true)
         {
             this.startIndex = startIndex;
             this.endIndex = endIndex;
             this.amplitude = amplitude;
             this.frequency = frequency;
             this.period = period;
+            this.UsesProgress = UsesProgress;
         }
 
         // helper to compute a local perpendicular vector at index i (safe)
@@ -125,14 +130,16 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
             int denom = Math.Max(1, e - s);
 
             // compute envelope once (progress assumed normalized 0..1)
-            float env = AmplitudeEnvelope != null ? AmplitudeEnvelope(progress) : 1f;
+
+            float bell = UsesProgress? 1- Math.Abs(progress*2 - 1) : 0.5f;
+            float env = AmplitudeEnvelope != null ? AmplitudeEnvelope(bell) : 1f;
             env = MathHelper.Clamp(env, 0f, 1f);
             float effectiveAmplitude = amplitude * env;
 
             for (int i = s; i <= e; i++)
             {
                 float t = (i - s) / (float)denom; // local 0..1 along modifier
-                                                  // phase uses frequency across the mod range, and time progress to animate
+                // phase uses frequency across the mod range, and time progress to animate
                 float sine = MathF.Sin((t * frequency + progress) * MathHelper.TwoPi / period);
                 Vector2 perp = PerpAt(i, controlPoints);
                 if (perp == Vector2.Zero) continue;

@@ -81,8 +81,9 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
             Player player = Main.LocalPlayer;
             StateMachine();
 
-            Vector2 difference = Main.MouseWorld -NPC.Center;
-            //NPC.velocity = Vector2.Lerp(NPC.velocity, difference, 0.6f);
+            playerTarget = Main.player[NPC.FindClosestPlayer()];
+            Vector2 difference = playerTarget.Center - NPC.Center;
+            NPC.velocity = Vector2.Lerp(NPC.velocity, difference, 0.1f);
             HoverAboveGround(5 * 16);
             NPC.SimpleFlyMovement(difference, 0.1f);
             NPC.rotation =  NPC.rotation.AngleLerp(NPC.velocity.ToRotation(), 0.01f);

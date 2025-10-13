@@ -1,11 +1,10 @@
 ﻿using CalamityMod;
-using CalamityMod.CalPlayer;
 using CalamityMod.CalPlayer.Dashes;
 using CalamityMod.Cooldowns;
 using CalamityMod.Items.Accessories;
 using HeavenlyArsenal.Common.Graphics;
 using HeavenlyArsenal.Common.Ui.Cooldowns;
-using HeavenlyArsenal.Content.Items.Armor;
+using HeavenlyArsenal.Content.Buffs;
 using HeavenlyArsenal.Content.Items.Weapons.Summon.AntishadowAssassin;
 using HeavenlyArsenal.Content.Particles;
 using HeavenlyArsenal.Content.Particles.Metaballs;
@@ -15,16 +14,18 @@ using NoxusBoss.Content.NPCs.Bosses.Avatar.Projectiles;
 using NoxusBoss.Core.Graphics.GeneralScreenEffects;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Terraria;
 using Terraria.Audio;
+using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
+using static Terraria.Utilities.NPCUtils;
 
 namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 {
     public class ShintoArmorPlayer : ModPlayer
     {
+        #region Values
         public float FauldRotation;
         public float FauldRotationVelocity;
 
@@ -37,7 +38,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         public int rechargeRate;
         public int lastHitDamage;
 
-        public float barrierDamageReduction = 0.85f;
+        public float barrierDamageReduction = 0.235f;
         public float barrierSizeInterp = 0;
         public bool ShadowShieldVisible = true;
         public bool ShadowVeil;
@@ -46,7 +47,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         //public float InvincibleDashRecharge;
         //public float InvincibleDashRechargeMax = 60 * 3;
 
-        public static readonly int EnrageCooldownMax = 60*23;
+        public static readonly int EnrageCooldownMax = 60 * 23;
 
         public float EnrageInterp = 0;
         public int EnrageTimer;
@@ -85,11 +86,12 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
          */
         #endregion
         public Dictionary<string, CooldownInstance> cooldowns;
-        
+
         public int ShadowVeilImmunity = 0;
         public bool ChestplateEquipped = false;
 
         public bool VoidBeltEquipped = false;
+        #endregion
         public override void Initialize()
         {
 
@@ -107,19 +109,30 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 
             ChestplateEquipped = false;
             VoidBeltEquipped = false;
-            
+
 
         }
         public override void Load()
         {
-           
+
             PlayerDashManager.TryAddDash(new ShintoArmorDash());
-            
+
 
         }
-       
+
+        public override void UpdateLifeRegen()
+        {
+            if (!SetActive)
+                return;
+
+            AntishadowHealing();
+        }
         public override void PostUpdateMiscEffects()
         {
+
+            if (!SetActive)
+                return;
+
             ManageImmunity();
             ManageBarrier();
             ManageEnraged();
@@ -128,64 +141,11 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             {
                 Iframe--;
             }
-            if (ShadowVeil)
-            {
-                CalamityPlayer modPlayer = Player.Calamity();
-                bool wearingRogueArmor = modPlayer.wearingRogueArmor;
-                float rogueStealth = modPlayer.rogueStealth;
-                float rogueStealthMax = modPlayer.rogueStealthMax;
-                int chaosStateDuration = 900;
+            if(isShadeTeleporting)
+                Player.SetDummyItemTime(2);
 
-                if (CalamityKeybinds.SpectralVeilHotKey.JustPressed && ShadowVeil && Main.myPlayer == Player.whoAmI && rogueStealth >= rogueStealthMax * 0.25f &&
-                    wearingRogueArmor && rogueStealthMax > 0)
-                {
-                    if (!Player.chaosState)
-                    {
-                        Vector2 teleportLocation;
-                        teleportLocation.X = Main.mouseX + Main.screenPosition.X;
-                        if (Player.gravDir == 1f)
-                            teleportLocation.Y = Main.mouseY + Main.screenPosition.Y - Player.height;
-                        else
-                            teleportLocation.Y = Main.screenPosition.Y + Main.screenHeight - Main.mouseY;
 
-                        teleportLocation.X -= Player.width * 0.5f;
-                        Vector2 teleportOffset = teleportLocation - Player.position;
-                        if (teleportOffset.Length() > SpectralVeil.TeleportRange)
-                        {
-                            teleportOffset = teleportOffset.SafeNormalize(Vector2.Zero) * SpectralVeil.TeleportRange;
-                            teleportLocation = Player.position + teleportOffset;
-                        }
-                        if (teleportLocation.X > 50f && teleportLocation.X < Main.maxTilesX * 16 - 50 && teleportLocation.Y > 50f && teleportLocation.Y < Main.maxTilesY * 16 - 50)
-                        {
-                            if (!Collision.SolidCollision(teleportLocation, Player.width, Player.height))
-                            {
-                                rogueStealth -= rogueStealthMax * 0.25f;
 
-                                Player.Teleport(teleportLocation, 1);
-                                NetMessage.SendData(MessageID.TeleportEntity, -1, -1, null, 0, Player.whoAmI, teleportLocation.X, teleportLocation.Y, 1, 0, 0);
-
-                                int duration = chaosStateDuration;
-                                Player.AddBuff(BuffID.ChaosState, duration, true);
-                                Player.AddCooldown(ChaosState.ID, duration, true, "spectralveil");
-
-                                int numDust = 40;
-                                Vector2 step = teleportOffset / numDust;
-                                for (int i = 0; i < numDust; i++)
-                                {
-                                    int dustIndex = Dust.NewDust(Player.Center - step * i, 1, 1, DustID.VilePowder, step.X, step.Y);
-                                    Main.dust[dustIndex].noGravity = true;
-                                    Main.dust[dustIndex].noLight = true;
-                                }
-
-                                ShadowVeilImmunity = ShintoArmorHelmetAll.ShadowVeilIFrames;
-                            }
-                        }
-                    }
-                }
-            }
-
-            
-            
         }
         public override void ArmorSetBonusActivated()
         {
@@ -210,7 +170,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                 else
                     if (Main.rand.NextBool(250))
                     // Rare chance for ND to laugh at you for being silly
-                    SoundEngine.PlaySound(GennedAssets.Sounds.NamelessDeity.Chuckle with { Volume =1.1f, MaxInstances = 0});
+                    SoundEngine.PlaySound(GennedAssets.Sounds.NamelessDeity.Chuckle with { Volume = 1.1f, MaxInstances = 0 });
                 else
                 {
                     SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.DeadStarTelegraph with { MaxInstances = 0, PitchVariance = 0.25f });
@@ -220,7 +180,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 
             if (Enraged)
             {
-                EnrageTimer = barrier > 0 ? Math.Max(60*10, barrier * 10) : 60*8;
+                EnrageTimer = barrier > 0 ? Math.Max(60 * 10, barrier * 10) : 60 * 8;
                 if (EnrageTimer > EnrageCooldownMax)
                     EnrageTimer = EnrageCooldownMax;
             }
@@ -234,14 +194,14 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                     Player.GetDamage<GenericDamageClass>() *= 3;
                     EnrageInterp = float.Lerp(EnrageInterp, 1, 0.4f);
                     DisableAllBarriers();
-                    
+
                     EnrageTimer--;
-                    if(EnrageTimer <= 0)
+                    if (EnrageTimer <= 0)
                     {
                         enrageCooldown = EnrageCooldownMax;
                         Enraged = false;
                         EnrageTimer = 0;
-                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.DisgustingStarSever with { PitchVariance = 0.24f, Volume = 0.5f});
+                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.DisgustingStarSever with { PitchVariance = 0.24f, Volume = 0.5f });
                         SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.FogRelease with { PitchVariance = 0.5f });
                     }
                     if (Player.Calamity().cooldowns.ContainsKey(EnrageCooldown.ID))
@@ -254,7 +214,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                         Player.AddCooldown(EnrageTimerVisual.ID, EnrageTimer);
 
                     }
-                   
+
                 }
                 else
                 {
@@ -263,9 +223,9 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                     if (Player.Calamity().cooldowns.ContainsKey(EnrageTimerVisual.ID))
                     {
                         Player.Calamity().cooldowns.Remove(EnrageTimerVisual.ID);
-                        
+
                     }
-                   
+
                     if (timeSinceLastHit == 1 && EnrageInterp > 0.9)
                     {
                         barrier = 0;
@@ -277,9 +237,9 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                     }
                     EnrageInterp = float.Lerp(EnrageInterp, 0, 0.1f);
 
-                    if(enrageCooldown > 0)
+                    if (enrageCooldown > 0)
                     {
-                        if(Player.Calamity().cooldowns.ContainsKey(EnrageCooldown.ID))
+                        if (Player.Calamity().cooldowns.ContainsKey(EnrageCooldown.ID))
                         {
                             var Enraget = Player.Calamity().cooldowns[EnrageCooldown.ID];
                             Enraget.timeLeft = enrageCooldown;
@@ -350,10 +310,20 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                     Player.buffImmune[calamity.Find<ModBuff>("SearingLava").Type] = true;
                     Player.buffImmune[calamity.Find<ModBuff>("ShellfishClaps").Type] = true;
                     Player.buffImmune[calamity.Find<ModBuff>("BrimstoneFlames").Type] = true;
+
                     calamity.Call("SetWearingRogueArmor", Player, true);
                     calamity.Call("SetWearingPostMLSummonerArmor", Player, true);
                 }
-            
+                //no
+
+                if (ModLoader.TryGetMod("CalamityEntropy", out Mod Entropy))
+                {
+                    Player.buffImmune[Entropy.Find<ModBuff>("VoidTouch").Type] = true;
+                    Player.buffImmune[Entropy.Find<ModBuff>("VoidVirus").Type] = true;
+                    Player.buffImmune[Entropy.Find<ModBuff>("Deceive").Type] = true;
+                    Player.buffImmune[Entropy.Find<ModBuff>("MaliciousCode").Type] = true;
+                }
+
             }
         }
 
@@ -367,10 +337,10 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                 Player.AddCooldown(BarrierRecharge.ID, ShintoArmorBreastplate.ShieldRechargeDelay);
             if (SetActive)
             {
-                
 
-               
-                if (barrier <= 0 )
+
+
+                if (barrier <= 0)
                     Player.Calamity().cooldowns.Remove(BarrierDurability.ID);
                 // Only update recharge progress visuals once the recharge delay has passed.
                 if (timeSinceLastHit >= rechargeDelay && barrier > 0 && !cooldowns.ContainsKey(BarrierRecharge.ID))
@@ -398,21 +368,21 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                     durabilityCooldown.timeLeft = barrier;
                 }
             }
-            if(!SetActive)
+            if (!SetActive)
             {
                 barrierSizeInterp = float.Lerp(barrierSizeInterp, 0, 0.2f);
                 barrier = 0;
                 timeSinceLastHit = 0;
                 rechargeDelay = ShintoArmorBreastplate.ShieldRechargeDelay;
-                
+
                 Player.Calamity().cooldowns.Remove(BarrierDurability.ID);
-                
+
                 Player.Calamity().cooldowns.Remove(BarrierRecharge.ID);
             }
-            
+
 
         }
-        
+
         private void DisableAllBarriers()
         {
             //there's gotta be a better way to do it than this.
@@ -430,7 +400,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             Player.Calamity().cooldowns.Remove(SpongeRecharge.ID);
             Player.Calamity().cooldowns.Remove(SpongeDurability.ID);
 
-           
+
             cooldowns.Clear();
             barrier = (int)float.Lerp(barrier, -1, 0.14f);
             if (barrier <= 0)
@@ -440,7 +410,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                 barrierSizeInterp = 0;
             timeSinceLastHit = 0;
             Player.Calamity().cooldowns.Remove(BarrierRecharge.ID);
-            
+
             /*
             if (ModLoader.TryGetMod("CalamityEntropy", out Mod entropy))
             {
@@ -465,23 +435,22 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         /// </summary>
         private void AntishadowHealing()
         {
-            
+
             if (!SetActive)
                 return;
-            if (Player.StandingStill() && Player.velocity.Y == 0 && Player.itemAnimation == 0)
+            if (Player.StandingStill() && Player.velocity.Length() == 0 && Player.itemAnimation == 0)
             {
 
                 // Actually apply "standing still" regeneration (the stats are granted even at full health)
                 float regenTimeNeededForTurboRegen = 40;
-                int turboRegenPower = 12 * (1 + (int)Player.lifeRegenTime / 1000);
-
+                int turboRegenPower = 15 * (1 + (int)Player.lifeRegenTime / 1000);
+                // Main.NewText(turboRegenPower);
                 if (turboRegenPower > 0)
                 {
-                  
+
                     if (Player.lifeRegenTime > regenTimeNeededForTurboRegen && Player.lifeRegenTime < 1800f)
                         Player.lifeRegenTime = 1800f;
-
-                    Player.lifeRegen += turboRegenPower;
+                    Player.lifeRegenCount += turboRegenPower;
                     Player.lifeRegenTime += turboRegenPower;
                 }
 
@@ -491,7 +460,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                     {
                         AntishadowBlob Blob = ModContent.GetInstance<AntishadowBlob>();
                         for (int i = 0; i < 1; i++)
-                           
+
                         {
                             float randomoffset = Main.rand.Next(-4, 4);
                             Vector2 bloodSpawnPosition = Player.Center + Main.rand.NextVector2CircularEdge(120 + randomoffset, 120 + randomoffset);
@@ -503,20 +472,20 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                             Blob.CreateParticle(bloodSpawnPosition, Vector2.Zero, 0, 0);
                         }
                     }
-                    
+
 
                 }
 
-                
+
 
             }
-            
+
         }
 
         #region Barrier stuff
         public override void ModifyHurt(ref Player.HurtModifiers modifiers)
         {
-            if(SetActive)
+            if (SetActive)
             {
                 if (barrier > 0 && Iframe <= 0)
                 {
@@ -524,7 +493,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 
                     if (lastHitDamage > maxBarrier / 3)
                     {
-                        SoundEngine.PlaySound(ShintoArmorBreastplate.ShieldHurtSound with { Pitch = 0.2f}, Player.Center);
+                        SoundEngine.PlaySound(ShintoArmorBreastplate.ShieldHurtSound with { Pitch = 0.2f }, Player.Center);
                     }
                     else
                         SoundEngine.PlaySound(ShintoArmorBreastplate.ShieldHurtSound, Player.Center);
@@ -533,26 +502,26 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                 {
                     if (timeSinceLastHit! < 0)
                     {
-                        if(lastHitDamage >= maxBarrier)
+                        if (lastHitDamage >= maxBarrier)
                         {
-                            SoundEngine.PlaySound(ShintoArmorBreastplate.BreakSound with { Volume = 1, Pitch = 1.1f}, Player.Center);
+                            SoundEngine.PlaySound(ShintoArmorBreastplate.BreakSound with { Volume = 1, Pitch = 1.1f }, Player.Center);
 
                         }
                         else
                             SoundEngine.PlaySound(ShintoArmorBreastplate.BreakSound, Player.Center);
                         barrier = 0;
-                       
+
                     }
 
 
                 }
 
-                if(barrier <=0 && Enraged)
+                if (barrier <= 0 && Enraged)
                 {
                     modifiers.FinalDamage *= 2.5f;
                 }
             }
-           
+
         }
 
         public void BarrierTakeDamageVFX()
@@ -567,74 +536,45 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             }
         }
 
-       
-
-        public override void PostUpdateEquips()
-        {
-            if (barrier > 0 && SetActive)
-            {
-                Player.statDefense += 30;
-            }
-            if (SetActive)
-            {
-               
-                
-                int wingSlot = EquipLoader.GetEquipSlot(Mod, "ShintoArmorBreastplate", EquipType.Wings);
-
-                if (Player.equippedWings == null)
-                {
-                    Player.wingsLogic = wingSlot;
-                    Player.wingTime = 1;
-                    Player.wingTimeMax = 1;
-                    Player.equippedWings = Player.armor[1];
-
-                    if (ModLoader.HasMod("CalamityMod"))
-                    {
-                        ModLoader.GetMod("CalamityMod").Call("ToggleInfiniteFlight", Player, true);
-                    }
 
 
-                }
-                    Player.noFallDmg = true;
-                
-            }
-        }
-        
-        
+
+
         #endregion
         public override bool FreeDodge(Player.HurtInfo info)
         {
-            if(VoidBeltEquipped && barrier<= 0 && Main.rand.NextBool(8))
+            if (VoidBeltEquipped && barrier <= 0 && true)//Main.rand.NextBool(8))
             {
                 VoidBelt();
                 return true;
             }
-           
+
 
             if (barrier > 0 && SetActive)
             {
-                int incoming = info.Damage;
-                
+
+                int incoming = info.SourceDamage;
+
                 if (Iframe <= 0)
                 {
-                    
+
                     int TakenDamage = (int)Math.Round(incoming * barrierDamageReduction, 0);
 
                     if (TakenDamage > 0)
                     {
                         timeSinceLastHit = 0;
                     }
-                    if(TakenDamage > ShintoArmorBreastplate.ShieldDurabilityMax && barrier == ShintoArmorBreastplate.ShieldDurabilityMax)
+                    if (TakenDamage > ShintoArmorBreastplate.ShieldDurabilityMax && barrier == ShintoArmorBreastplate.ShieldDurabilityMax)
                     {
                         GeneralScreenEffectSystem.ChromaticAberration.Start(Player.Center, 3f, 90);
                         SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.AngryDistant with { Volume = 0.05f }, Player.Center);
-                       
+
                     }
-                    Iframe = (int)(Player.ComputeHitIFrames(info)*1.25f);
+                    Iframe = (int)(Player.ComputeHitIFrames(info) * 1.25f);
                     if (info.DamageSource.SourceProjectileType.Equals(ModContent.ProjectileType<StolenPlanetoid>()))
                     {
-                        
-                        
+
+
                         SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.Clap);
                         barrier = 0;
                         TakenDamage = 999999;
@@ -644,25 +584,25 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                         barrier -= TakenDamage;
                     BarrierTakeDamageVFX();
                     CombatText.NewText(Player.Hitbox, Color.Cyan, TakenDamage);
-                    
-                   
+
+
                 }
 
-                
+
 
                 // Cancel all damage to the player.
                 return true;
             }
-            else if(barrier <= 0 && timeSinceLastHit < Iframe)
+            else if (barrier <= 0 && timeSinceLastHit < Iframe)
             {
                 return true;
             }
-           
+
             else
                 return false;
         }
 
-        
+
 
         public override void UpdateBadLifeRegen()
         {
@@ -679,12 +619,12 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                 if (rechargeRate % 60 != 0)
                 {
                     int rechargeSubDelay = 60 / (rechargeRate % 60);
-                    
+
                     //starts recharging at 400 timesince
                     if (timeSinceLastHit % rechargeSubDelay == 0 && barrier < maxBarrier)
                     {
                         //Main.NewText($"Here: {timeSinceLastHit}", Color.AntiqueWhite);
-                        
+
                         barrier++;
                     }
 
@@ -694,14 +634,19 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 
         public void VoidBelt()
         {
-           
+
             GeneralScreenEffectSystem.RadialBlur.Start(Player.Center, 3f, 90);
             Player.SetImmuneTimeForAllTypes(120);
-            Dust.NewDust(Player.Center, Player.width, Player.height, DustID.BunnySlime, 0, 0, 100, Color.Crimson, 1);
-            SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.AngryDistant with { Volume = 0.4f, PitchVariance = 0.3f}, Player.Center);
-            for (int i = 0; i <20; i++)
+            Player.AddBuff(ModContent.BuffType<AntishadowRetaliation>(), 6 * 65, false);
+            for (int i = 0; i < 40; i++)
             {
-                int fireBrightness = Main.rand.Next(40);
+                Dust.NewDust(Player.Center, Player.width, Player.height, DustID.BunnySlime, 0, 0, 100, Color.Crimson, 1);
+
+            }
+            SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.AngryDistant with { Volume = 0.4f, PitchVariance = 0.3f }, Player.Center);
+            for (int i = 0; i < 70; i++)
+            {
+                int fireBrightness = Main.rand.Next(100);
                 Color fireColor = new Color(fireBrightness, fireBrightness, fireBrightness);
                 if (Main.rand.NextBool(3) && Player.velocity.X > 20)
                     fireColor = new Color(220, 20, Main.rand.Next(16), 255);
@@ -714,25 +659,224 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 
 
 
+        public override void PostUpdateEquips()
+        {
+            if (!SetActive)
+                return;
 
+            if (barrier > 0)
+            {
+                Player.statDefense += 30;
+            }
+
+            int wingSlot = EquipLoader.GetEquipSlot(Mod, "ShintoArmorWings", EquipType.Wings);
+            bool thing =
+                Player.equippedWings == null && Player.wings != wingSlot;
+
+            if (thing)
+            {
+                Player.wings = ShintoArmorWings.WingSlotID;
+                Player.wingsLogic = wingSlot;
+
+
+                Player.wingTime = 1000;
+                Player.wingTimeMax = 1000;
+                Player.equippedWings = Player.armor[1];
+
+                if (ModLoader.HasMod("CalamityMod"))
+                {
+                    ModLoader.GetMod("CalamityMod").Call("ToggleInfiniteFlight", Player, true);
+                }
+                Player.noFallDmg = true;
+            }
+
+
+
+        }
+
+        private void ApplyBuiltInWings(int shintoWingSlot)
+        {
+            Player.wings = shintoWingSlot;
+            Player.wingsLogic = shintoWingSlot;
+            Player.wingTime = Player.wingTimeMax = 1000;
+            Player.equippedWings = Player.armor[1];
+            Player.noFallDmg = true;
+
+            if (ModLoader.HasMod("CalamityMod"))
+                ModLoader.GetMod("CalamityMod").Call("ToggleInfiniteFlight", Player, true);
+        }
+        public bool JustTeleported;
+        public bool isStillInShadow;
+        public bool isShadeTeleporting;
+        public float ShadeTeleportInterpolant;
+
+        public override void PreUpdateMovement()
+        {
+            if (!SetActive)
+                return;
+
+
+            if (JustTeleported)
+            {
+                float thing = 0.2f;
+                ShadeTeleportInterpolant = MathF.Round(float.Lerp(ShadeTeleportInterpolant, 0, thing),5);
+                if(ShadeTeleportInterpolant <= 0.01f)
+                {
+                    JustTeleported = false;
+                }
+                Player.velocity = Vector2.Zero;
+                return;
+            }
+            if (isShadeTeleporting || ShadeTeleportInterpolant !< 0)
+            {
+              
+                Player.velocity = Vector2.Zero;
+                ShadeTeleport();
+            }
+
+
+
+        }
+        public void ShadeTeleport()
+        {
+            if (!SetActive)
+            {
+                isShadeTeleporting = false;
+                return;
+            }
+           
+            int chaosStateDuration = 900;
+
+            if (!Player.chaosState)
+            {
+                Vector2 startPos = Player.Center;
+                Point startTile = startPos.ToTileCoordinates();
+
+                // Look down 4 tiles for solid ground
+                bool groundBelow = false;
+                for (int y = 0; y <= 4; y++)
+                {
+                    if (WorldGen.SolidTile(startTile.X, startTile.Y + y))
+                    {
+                        groundBelow = true;
+                        break;
+                    }
+                }
+
+                if (groundBelow)
+                {
+                    offset = Player.height*1.2f;
+                }
+                else
+                {
+                    offset = 0f;
+                }
+                Vector2 teleportLocation;
+                teleportLocation.X = Main.mouseX + Main.screenPosition.X;
+                if (Player.gravDir == 1f)
+                    teleportLocation.Y = Main.mouseY + Main.screenPosition.Y - Player.height;
+                else
+                    teleportLocation.Y = Main.screenPosition.Y + Main.screenHeight - Main.mouseY;
+
+                teleportLocation.X -= Player.width * 0.5f;
+                Vector2 teleportOffset = teleportLocation - Player.position;
+                if (teleportOffset.Length() > SpectralVeil.TeleportRange)
+                {
+                    teleportOffset = teleportOffset.SafeNormalize(Vector2.Zero) * SpectralVeil.TeleportRange;
+                    teleportLocation = Player.position + teleportOffset;
+                }
+                Point targetTile = teleportLocation.ToTileCoordinates();
+                for (int y = 0; y < 10; y++)
+                {
+                    if (WorldGen.SolidTile(targetTile.X, targetTile.Y + y))
+                    {
+                        teleportLocation.Y = (targetTile.Y + y - 3) * 16f + 6;
+                        break;
+                    }
+                }
+                if (teleportLocation.X > 50f && teleportLocation.X < Main.maxTilesX * 16 - 50 && teleportLocation.Y > 50f && teleportLocation.Y < Main.maxTilesY * 16 - 50)
+                {
+                    if (ShadeTeleportInterpolant >= 0.99f && isShadeTeleporting)
+                        if (!Collision.SolidCollision(teleportLocation, Player.width, Player.height))
+                        {
+                            
+
+                            Player.Teleport(teleportLocation, 20);
+                            if (!WorldGen.SolidTile(targetTile.X, targetTile.Y + 4))
+                                offset = 0;
+                            isShadeTeleporting = false;
+                            JustTeleported = true;
+                            NetMessage.SendData(MessageID.TeleportEntity, -1, -1, null, 0, Player.whoAmI, teleportLocation.X, teleportLocation.Y, 1, 0, 0);
+
+                            int duration = chaosStateDuration;
+                            
+                            int numDust = 40;
+                            Vector2 step = teleportOffset / numDust;
+
+
+
+
+                            ShadowVeilImmunity = ShintoArmorHelmetAll.ShadowVeilIFrames;
+                        }
+                }
+
+            }
+            if (isShadeTeleporting)
+                ShadeTeleportInterpolant = float.Lerp(ShadeTeleportInterpolant, 1, 0.2f);
+
+        }
         public override void FrameEffects()
         {
-            bool playerHasVanityWings = Player.wings > 0 && Player.wingsLogic != Player.wings;
-            if (ChestplateEquipped && !playerHasVanityWings)
+            if (Player.HasBuff<AntishadowRetaliation>())
             {
-                                
-                //Player.wings = EquipLoader.GetEquipSlot(Mod, "ShintoArmorBreastplate", EquipType.Wings);
-                
+
             }
-            
+
+        }
+        public float offset = 45;
+        public override void ModifyDrawInfo(ref PlayerDrawSet drawInfo)
+        {
+            /*
+            if (isShadeTeleporting || JustTeleported)
+            {
+                drawInfo.cWings = 0;
+                drawInfo.drawsBackHairWithoutHeadgear = false;
+                drawInfo.drawPlayer.armorEffectDrawOutlines = false;
+                drawInfo.torsoOffset = offset * ShadeTeleportInterpolant;
+                drawInfo.mountOffSet = offset * ShadeTeleportInterpolant;
+                drawInfo.seatYOffset = offset * ShadeTeleportInterpolant;
+                drawInfo.legsOffset = new Vector2(0, offset * ShadeTeleportInterpolant);
+               
+                drawInfo.itemColor = Color.Transparent;
+
+
+                drawInfo.colorBodySkin = Color.Black;
+            }
+            */
+        }
+        public override void DrawEffects(PlayerDrawSet drawInfo, ref float r, ref float g, ref float b, ref float a, ref bool fullBright)
+        {
+            /*
+
+            if (isShadeTeleporting || JustTeleported)
+            {
+                r = float.Lerp(r, 0, MathF.Round(ShadeTeleportInterpolant, 3));
+                g = r;
+                b = r;
+                fullBright = false;
+                //a = float.Lerp(a, 0, MathF.Round(ShadeTeleportInterpolant, 3));
+            }*/
         }
         public override void ResetEffects()
         {
-            
+            if (!SetActive && barrier > 0)
+            {
+                barrier = 0;
+            }
             SetActive = false;
             ChestplateEquipped = false;
             VoidBeltEquipped = false;
-            if(Player.statLife <= 0)
+            if (Player.statLife <= 0)
             {
                 Enraged = false;
                 enrageCooldown = EnrageCooldownMax;

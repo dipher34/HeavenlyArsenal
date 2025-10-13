@@ -1,21 +1,13 @@
-﻿using CalamityMod;
-using CalamityMod.CalPlayer.Dashes;
+﻿using CalamityMod.CalPlayer.Dashes;
 using CalamityMod.Enums;
 using CalamityMod.Particles;
-using CalamityMod.Projectiles.Rogue;
-using HeavenlyArsenal.ArsenalPlayer;
 using HeavenlyArsenal.Common.Graphics;
-using HeavenlyArsenal.Common.utils;
 using HeavenlyArsenal.Content.Items.Weapons.Summon.AntishadowAssassin;
 using HeavenlyArsenal.Content.Particles;
-using HeavenlyArsenal.Content.Particles.Metaballs;
-using HeavenlyArsenal.Content.Projectiles.Misc;
 using Microsoft.Xna.Framework;
 using NoxusBoss.Assets;
-using System.Security.Principal;
 using Terraria;
 using Terraria.Audio;
-using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Items.Armor;
 

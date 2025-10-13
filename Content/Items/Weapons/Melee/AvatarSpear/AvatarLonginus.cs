@@ -28,7 +28,7 @@ public class AvatarLonginus : ModItem
 
         Item.CanBeEnchantedBySomething();
         Item.IsEnchantable();
-        Item.damage = 7537;
+        Item.damage = 17_537;
         Item.shootSpeed = 40f;
         Item.crit = 43;
         Item.width = 40;
@@ -36,9 +36,9 @@ public class AvatarLonginus : ModItem
         Item.useTime = 40;
         Item.reuseDelay = 40;
 
-        Item.value = 102393;
+        Item.value = Terraria.Item.buyPrice(5, 48, 50, 67);
         // Item.buyPrice(1, 46, 30, 2);
-        
+
         Item.DamageType = ModContent.GetInstance<TrueMeleeDamageClass>();
         Item.useAnimation = 0;
         Item.useTurn = true;
@@ -71,10 +71,11 @@ public class AvatarLonginus : ModItem
 
         if (player.GetModPlayer<AvatarSpearHeatPlayer>().Empowered)
         {
-            Item.damage = 10_930;
+            Item.damage = (int)(Item.OriginalDamage * 1.4f);
+            
         }
         else
-            Item.damage = 7_537;
+            Item.damage = (int)(Item.OriginalDamage * 0.96f);
     }
 
    

@@ -29,7 +29,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
         DeathAnim
     }
 
-    class ArtilleryCrab : ModNPC
+    class ArtilleryCrab : BloodmoonBaseNPC
     {
         public HemocrabAI CurrentState = HemocrabAI.Idle;
         public float BombardRange = 1000f;
@@ -47,12 +47,12 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
 				BestiaryDatabaseNPCsPopulator.CommonTags.SpawnConditions.Events.BloodMoon,
 
 				// Sets your NPC's flavor text in the bestiary. (use localization keys)
-				new FlavorTextBestiaryInfoElement("Mods.HeavenlyArsenal.Bestiary.ArtilleryCrab1")
+				new FlavorTextBestiaryInfoElement("Mods.HeavenlyArsenal.Bestiary.ArtilleryCrab1"),
 
-				// You can add multiple elements if you really wanted to
-				//new FlavorTextBestiaryInfoElement("Mods.ExampleMod.Bestiary.ExamplePerson_2")
+				//new FlavorTextBestiaryInfoElement("Mods.HeavenlyArsenal.Bestiary.ArtilleryCrab2")
             ]);
         }
+        public override int bloodBankMax => 3_000;
         public ref float Time => ref NPC.ai[0];
         public ref float AmmoCount => ref NPC.ai[1];
         public ref float EnrageFlag => ref NPC.ai[2];
@@ -76,6 +76,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
         }
         public override void SetStaticDefaults()
         {
+            Main.npcFrameCount[Type] = 13;
             
         }
 
@@ -241,7 +242,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
 
             if (Time > 60 && Math.Abs(ChargeDistance) < 400)
             {
-               // ChargeAt(NPC.Center + Vector2.UnitX * NPC.direction, ChargeSpeed * 2f);
+               ChargeAt(NPC.Center + Vector2.UnitX * NPC.direction, ChargeSpeed * 2f);
             }
 
             if (Time >= 120)
@@ -437,17 +438,20 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
 
             }
 
-            Texture2D texture = TextureAssets.Npc[NPC.type].Value;
+            Texture2D texture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/BigCrab/ArtilleryCrab").Value;
 
             int frameHeight = texture.Height / totalFrameCount;
-            Vector2 origin = new Vector2(texture.Width / 2f,  frameHeight-30);
-            
+            Vector2 DrawPos = NPC.Center - Main.screenPosition;
+           
             SpriteEffects Direction = NPC.direction < 0 ? SpriteEffects.FlipHorizontally : 0;
 
-            Rectangle CrabFrame = new Rectangle(0, BodyFrame * frameHeight, texture.Width, frameHeight);
+            Rectangle CrabFrame = texture.Frame(1, 13, 0, BodyFrame);
+            Vector2 origin = new Vector2(texture.Width / 2f, frameHeight - 30);
 
-            Main.EntitySpriteDraw(texture, NPC.Center - Main.screenPosition, CrabFrame, drawColor, 0, origin, NPC.scale, Direction, 0);
-            return false;
+            //new Rectangle(0, BodyFrame * frameHeight, texture.Width, frameHeight);
+
+            Main.EntitySpriteDraw(texture, DrawPos, CrabFrame, drawColor, 0, origin, 1, Direction, 0);
+            return true;
         }
 
         public override float SpawnChance(NPCSpawnInfo spawnInfo)
@@ -458,11 +462,11 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
         }
     }
 
-    class BloodMortar : ModNPC
+    public class BloodMortar : ModNPC
     {
         public override string Texture => "HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/BigCrab/Bloodproj";
-        public ref float Xcoord => ref NPC.localAI[0];
-        public ref float Ycoord => ref NPC.localAI[1];
+        public ref float Xcoord => ref NPC.ai[1];
+        public ref float Ycoord => ref NPC.ai[2];
         private const float Gravity = 0.2f;
         private bool exploded = false;
 
@@ -499,7 +503,12 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
         public override void AI()
         {
             NPC.velocity.Y += Gravity;
-            NPC.rotation = NPC.velocity.ToRotation() + MathHelper.PiOver2;
+            NPC.rotation = NPC.velocity.ToRotation();
+            Dust a;
+            for(int i = 0; i< 10; i++)
+            {
+                a = Dust.NewDustDirect(NPC.Center, 30,30, DustID.Blood);
+            }
             if (!exploded && Collision.SolidCollision(NPC.position + NPC.velocity, NPC.width, NPC.height))
             {
                 exploded = true;
@@ -509,18 +518,19 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
 
         public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color lightColor)
         {
-            Texture2D texture = GennedAssets.Textures.Gores.AvatarRubble_0_0_1;
-            float GlowScale = 0.1f;
+            Texture2D texture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/BigCrab/BloodMortar").Value;
+            Texture2D Glowball = AssetDirectory.Textures.BigGlowball.Value;
             Vector2 glowScale = new Vector2(1f, 1f);
             Vector2 Gorigin = new Vector2(texture.Size().X / 2, texture.Size().Y / 2);
-            
+            Vector2 DrawPos = NPC.Center - Main.screenPosition;
 
-            
-            Main.spriteBatch.Draw(texture, NPC.Center + NPC.velocity / 2 - Main.screenPosition, null,
+
+
+            Main.spriteBatch.Draw(texture, DrawPos, null,
                      lightColor, NPC.velocity.ToRotation(), Gorigin, glowScale, SpriteEffects.None, 0f);
 
-
-            return false;// base.PreDraw(spriteBatch, screenPos, drawColor);
+            Main.EntitySpriteDraw(Glowball, DrawPos, null, Color.Crimson, NPC.velocity.ToRotation(), Glowball.Size() * 0.5f, glowScale * 0.2f, SpriteEffects.None);
+            return false;
         }
         private void Explode()
         {
@@ -529,7 +539,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
             //    ProjectileID.DD2ExplosiveTrapT3Explosion, NPC.damage, 0f, NPC.whoAmI);
             for (int i = 0; i < 20; i++)
                 Dust.NewDust(NPC.position, NPC.width, NPC.height, DustID.Blood,
-                    Main.rand.NextFloat(-3, 3), Main.rand.NextFloat(-3, 3));
+                    Main.rand.NextFloat(-3, 3), Main.rand.NextFloat(-30,0));
             NPC.active = false;
         }
     }

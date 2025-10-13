@@ -1,6 +1,4 @@
-﻿using CalamityMod.Dusts;
-using CalamityMod.Items;
-using CalamityMod.Rarities;
+﻿using CalamityMod.Items;
 using HeavenlyArsenal.Common.Utilities;
 using Luminance.Core.Hooking;
 using Microsoft.Xna.Framework;
@@ -9,14 +7,9 @@ using Mono.Cecil.Cil;
 using MonoMod.Cil;
 using NoxusBoss.Content.Rarities;
 using ReLogic.Content;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Terraria;
 using Terraria.DataStructures;
-using Terraria.Graphics.Shaders;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
@@ -165,11 +158,15 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 
         public override bool WingUpdate(Player player, bool inUse)
         {
+            if (player.wings != player.wingsLogic)
+                return base.WingUpdate(player, inUse);
+
+
             if (player.controlJump && player.wingTime > 0 && player.velocity.Y != 0)
             {
                 int frameRate = 5; // FPS
                 int maxFrames = 7; // Total frames
-                
+
 
                 if (player.wingFrame == 0)
                 {
@@ -181,7 +178,6 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                     player.wingFrameCounter = 0;
                     player.wingFrame = 0;
                 }
-                // Animation
                 if (player.wingFrameCounter % frameRate == 0)
                 {
                     player.wingFrame++;
@@ -200,6 +196,9 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
                 }
             }
             return true;
+
+
+
         }
 
         public override void VerticalWingSpeeds(Player player, ref float ascentWhenFalling, ref float ascentWhenRising, ref float maxCanAscendMultiplier, ref float maxAscentMultiplier, ref float constantAscend)
@@ -230,7 +229,8 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         {
             bool HasWings = drawInfo.drawPlayer.wings == EquipLoader.GetEquipSlot(Mod, "ShintoArmorWings", EquipType.Wings);
             bool HasArmorSet = drawInfo.drawPlayer.GetModPlayer<ShintoArmorPlayer>().SetActive;
-            if (HasWings || HasArmorSet)
+            bool NoVanityWings = drawInfo.drawPlayer.wings != EquipLoader.GetEquipSlot(Mod, "ShintoArmorWings", EquipType.Wings);
+            if ((HasWings || HasArmorSet) && !NoVanityWings)
                 return true;
             else
                 return false;
@@ -242,7 +242,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             if (drawPlayer.dead)
                 return;
             Texture2D texture = yharwingTexture.Value;
-            Vector2 Position = drawInfo.BodyPosition() + new Vector2(16*-drawInfo.drawPlayer.direction, -6);
+            Vector2 Position = drawInfo.BodyPosition() + new Vector2(16 * -drawInfo.drawPlayer.direction, -6) + new Vector2(0, drawPlayer.GetModPlayer<ShintoArmorPlayer>().offset * drawPlayer.GetModPlayer<ShintoArmorPlayer>().ShadeTeleportInterpolant);
             //Vector2 pos = new Vector2((int)(Position.X - Main.screenPosition.X + (drawPlayer.width / 2) - (2 * drawPlayer.direction)), (int)(Position.Y - Main.screenPosition.Y + (drawPlayer.height / 2) - 2f * drawPlayer.gravDir));
             Color lightColor = Lighting.GetColor((int)drawPlayer.Center.X / 16, (int)drawPlayer.Center.Y / 16, Color.White);
             Color color = lightColor * (1 - drawInfo.shadow);
@@ -250,10 +250,10 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             Rectangle Frame = texture.Frame(1, 8, 0, drawInfo.drawPlayer.wingFrame);
 
             DrawData d = new DrawData(texture, Position, Frame, color, 0f, new Vector2(texture.Width / 2, texture.Height / 18), 1f, drawInfo.playerEffect, 0);
+            d.color = drawInfo.colorArmorBody;
             d.shader = drawInfo.drawPlayer.cWings;
             drawInfo.DrawDataCache.Add(d);
         }
     }
 }
 
-   
