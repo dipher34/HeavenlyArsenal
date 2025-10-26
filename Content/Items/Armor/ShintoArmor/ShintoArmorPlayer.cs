@@ -1,4 +1,5 @@
-﻿using CalamityMod;
+﻿using CalamityEntropy;
+using CalamityMod;
 using CalamityMod.CalPlayer.Dashes;
 using CalamityMod.Cooldowns;
 using CalamityMod.Items.Accessories;
@@ -411,24 +412,8 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             timeSinceLastHit = 0;
             Player.Calamity().cooldowns.Remove(BarrierRecharge.ID);
 
-            /*
-            if (ModLoader.TryGetMod("CalamityEntropy", out Mod entropy))
-            {
-                
-
-                ModPlayer ePlayer = entropy.Find<ModPlayer>("EModPlayer");
-
-                //doesn't work becuase you can't pass an object in a type argument
-                //Player.GetModPlayer<ePlayer>();
-
-                // Player.TryGetModPlayer<"EModPlayer".GetType()>(ePlayer, ePlayer);
-                int entropyShieldDurability = (int)ePlayer.GetType().GetField("MagiShield", BindingFlags.Public).GetValue(ePlayer);
-                entropyShieldDurability = (int)float.Lerp(entropyShieldDurability, -1, 0.4f);
-                ePlayer.GetType().GetField("MagiShield", BindingFlags.Public).SetValue(ePlayer, entropyShieldDurability);
-                
-
-            }
-            */
+          
+            
         }
         /// <summary>
         /// Manages the Production of the Antishadow Metaball, as well as the healing rate.
@@ -543,7 +528,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         #endregion
         public override bool FreeDodge(Player.HurtInfo info)
         {
-            if (VoidBeltEquipped && barrier <= 0 && true)//Main.rand.NextBool(8))
+            if (VoidBeltEquipped && barrier <= 0 && Main.rand.NextBool(8))
             {
                 VoidBelt();
                 return true;
@@ -657,8 +642,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 
         }
 
-
-
+        
         public override void PostUpdateEquips()
         {
             if (!SetActive)
@@ -670,19 +654,20 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             }
 
             int wingSlot = EquipLoader.GetEquipSlot(Mod, "ShintoArmorWings", EquipType.Wings);
-            bool thing =
-                Player.equippedWings == null && Player.wings != wingSlot;
+            bool thing = Player.equippedWings == null;
 
             if (thing)
             {
                 Player.wings = ShintoArmorWings.WingSlotID;
+                //Player.wings = wingSlot;
                 Player.wingsLogic = wingSlot;
 
 
                 Player.wingTime = 1000;
                 Player.wingTimeMax = 1000;
-                Player.equippedWings = Player.armor[1];
+               // Player.equippedWings = Player.armor[1];
 
+                
                 if (ModLoader.HasMod("CalamityMod"))
                 {
                     ModLoader.GetMod("CalamityMod").Call("ToggleInfiniteFlight", Player, true);
@@ -694,17 +679,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 
         }
 
-        private void ApplyBuiltInWings(int shintoWingSlot)
-        {
-            Player.wings = shintoWingSlot;
-            Player.wingsLogic = shintoWingSlot;
-            Player.wingTime = Player.wingTimeMax = 1000;
-            Player.equippedWings = Player.armor[1];
-            Player.noFallDmg = true;
-
-            if (ModLoader.HasMod("CalamityMod"))
-                ModLoader.GetMod("CalamityMod").Call("ToggleInfiniteFlight", Player, true);
-        }
+   
         public bool JustTeleported;
         public bool isStillInShadow;
         public bool isShadeTeleporting;

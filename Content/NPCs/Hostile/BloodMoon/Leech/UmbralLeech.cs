@@ -3,7 +3,8 @@ using CalamityMod.Items.Materials;
 using CalamityMod.Items.Potions;
 using CalamityMod.NPCs.Providence;
 using HeavenlyArsenal.Content.Items.Materials.BloodMoon;
-using HeavenlyArsenal.Content.Items.Weapons.Summon.BadSun;
+using HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip;
+using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Content.Particles.Metaballs;
@@ -11,6 +12,7 @@ using NoxusBoss.Core.World.WorldSaving;
 using ReLogic.Content;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
@@ -33,7 +35,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
         DeathAnim
     }
 
-    public class UmbralLeech : ModNPC
+    public class UmbralLeech : BloodmoonBaseNPC
     {
 
         #region StolenCode
@@ -151,7 +153,13 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
         public static readonly SoundStyle DyingNoise = new SoundStyle("HeavenlyArsenal/Assets/Sounds/NPCs/Hostile/BloodMoon/UmbralLeech/Dying1");
 
         public override string Texture => "HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/Leech/UmbralLeech";
-
+        public override void SendExtraAI(BinaryWriter writer)
+        {
+            
+        }
+        public override void ReceiveExtraAI(BinaryReader reader)
+        {
+        }
         public override void SetStaticDefaults()
         {
 
@@ -168,10 +176,9 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
             NPC.lifeMax = 50000;
             NPC.damage = 200;
             NPC.defense = 230;
-            NPC.npcSlots = (NPC.whoAmI == Main.npc[(int)HeadID].whoAmI) ? 1 : 0;
             NPC.noGravity = true;
             NPC.aiStyle = -1;
-
+            NPC.npcSlots = 0.2f;
             NPC.value = Item.buyPrice(0, 1, 32, 6  );
 
             CurrentState = UmbralLeechAI.Idle;
@@ -180,7 +187,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
             NPC.Calamity().VulnerableToSickness = false;
             NPC.Calamity().VulnerableToCold = false;
             SegmentPositions = new List<Vector2>();
-            NPC.buffImmune[ModContent.BuffType<BlissFallen>()] = true;
+            //NPC.buffImmune[ModContent.BuffType<BlissFallen>()] = true;
         }
 
         public override void Load()
@@ -217,7 +224,6 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
 
                 SegmentPositions = new List<Vector2>(new Vector2[count + 1]);
                 Segments = new List<NPC>(new NPC[count + 1]);
-                // For each index i = 1..count, spawn a body segment.
                 for (int i = 1; i <= count; i++)
                 {
                     int newNPC = NPC.NewNPC(
@@ -307,7 +313,6 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
                         TailVels[i] += dir * diff * springiness * 0.5f;
                     }
 
-                    // Optional: add a small sine-based wiggle for organic movement
                     float wigglePhase = WiggleTime * 0.12f + i * 0.5f;
                     float wiggleMag = MathHelper.Lerp(0.5f, 2.5f, (float)i / TailPoints.Length);
                     Vector2 wiggle = new Vector2(0, (float)Math.Sin(wigglePhase) * wiggleMag);
@@ -345,9 +350,14 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
         {
             return true;
         }
+        public override void ModifyTypeName(ref string typeName)
+        {
+             
+        }
         public override void AI()
         {
-            //Actual AI
+
+             //Actual AI
 
             if (NPC.life > 1)
             {
@@ -362,7 +372,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
                         {
                             Vector2 toTarget = currentTarget.Center - NPC.Center;
                             NPC.velocity = Vector2.Lerp(NPC.velocity, Vector2.Normalize(toTarget) * (8f + (float)SegmentCount / 12), 0.05f);
-
+                            Collision.StepUp(ref NPC.position, ref NPC.velocity, NPC.width, NPC.height, ref NPC.stepSpeed, ref NPC.gfxOffY);
                             if (Vector2.Distance(NPC.Center, currentTarget.Center) < 170f && DashCount > 0)
                             {
                                 CurrentState = UmbralLeechAI.FeedTelegraph;
@@ -623,11 +633,13 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
 
             if (NPC.life <= 2)
             {
+                int thisType = ModContent.NPCType<UmbralLeech>();
+                float thisHeadID = HeadID;
+             
                 CurrentState = UmbralLeechAI.DeathAnim;
                 DoDeathAnimation();
 
-                int thisType = ModContent.NPCType<UmbralLeech>();
-                float thisHeadID = HeadID;
+                
                 for (int i = 0; i < Main.maxNPCs; i++)
                 {
                     NPC npc = Main.npc[i];
@@ -830,12 +842,19 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
         /// </summary>
         private void DoDeathAnimation()
         {
+            if (NPC.GetGlobalNPC<RitualBuffNPC>().hasRitualBuff && NPC.GetGlobalNPC<RitualBuffNPC>().BuffType == RitualBuffNPC.RitualBuffType.Ressurection)
+            {
+                CurrentState = UmbralLeechAI.Idle;
+                return;
+            }
+            NPC.damage = 0;
 
             WiggleTime = 0;
 
             for (int i = 0; i < SegmentCount; i++)
             {
                 NPC.velocity *= 0.1f;
+                if(SegmentPositions.Count > 0)
                 SegmentPositions[i] += new Vector2();
             }
             //for(int i = 0; i< SegmentPositions.Count; i++)
@@ -922,6 +941,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
         }
         public override void ModifyNPCLoot(NPCLoot npcLoot)
         {
+            npcLoot.Add(ItemDropRule.NormalvsExpert(ModContent.ItemType<ViscousWhip_Item>(), 1, 5));
             npcLoot.Add(ItemDropRule.NormalvsExpert(ModContent.ItemType<UmbralLeechDrop>(), 30, 25));
             npcLoot.Add(ItemDropRule.CoinsBasedOnNPCValue(ModContent.NPCType<UmbralLeech>()));
 
@@ -1080,7 +1100,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
                         }
                     }
 
-                    Dust.NewDustPerfect(center, DustID.Cloud, Vector2.Zero, 0, default, 0.25f);
+                   // Dust.NewDustPerfect(center, DustID.Cloud, Vector2.Zero, 0, default, 0.25f);
 
                     float phaseShift = (WiggleTime * 0.08f) + ((i % 2 == 0 ? 1 : 0) * MathHelper.PiOver2);
                     float amplitude = 0.5f;

@@ -1,4 +1,6 @@
 ﻿using CalamityMod;
+using CalamityMod.Items.Materials;
+using HeavenlyArsenal.Content.Items.Materials.BloodMoon;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
@@ -9,6 +11,7 @@ using Terraria.Audio;
 using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.GameContent.Bestiary;
+using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.Localization;
 using Terraria.ModLoader;
@@ -31,6 +34,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
 
     class ArtilleryCrab : BloodmoonBaseNPC
     {
+        public override string Texture => "HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/BigCrab/ArtilleryCrab";
         public HemocrabAI CurrentState = HemocrabAI.Idle;
         public float BombardRange = 1000f;
         public float BombardRPM = 6f;
@@ -52,6 +56,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
 				//new FlavorTextBestiaryInfoElement("Mods.HeavenlyArsenal.Bestiary.ArtilleryCrab2")
             ]);
         }
+        
         public override int bloodBankMax => 3_000;
         public ref float Time => ref NPC.ai[0];
         public ref float AmmoCount => ref NPC.ai[1];
@@ -356,22 +361,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
 
         private void HandleJump(int xDirection)
         {
-            Vector2 origin = NPC.Bottom + new Vector2(xDirection * (NPC.width / 2 + 2), 0);
-            Vector2 stepTarget = origin + new Vector2(xDirection * 16, -16);
-            Point pFeet = origin.ToTileCoordinates();
-
-            
-            if (WorldGen.SolidTile(pFeet.X + xDirection, pFeet.Y))
-            {
-                Point pStep = stepTarget.ToTileCoordinates();
-                // …but space to step up…
-                if (!WorldGen.SolidTile(pStep.X, pStep.Y))
-                {
-                  
-                    NPC.velocity.Y = -4f;
-
-                }
-            }
+            Collision.StepUp(ref NPC.position, ref NPC.velocity, NPC.width, NPC.height, ref NPC.stepSpeed, ref NPC.gfxOffY);
         }
 
         public override void OnHitByProjectile(Projectile projectile, NPC.HitInfo hit, int damageDone)
@@ -397,6 +387,15 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
             for (int i = 1; i <= 5; i++)
                 BigCrabGores[i - 1] = ModContent.Request<Texture2D>($"HeavenlyArsenal/Content/Gores/Enemy/BloodMoon/BigCrab/CrabGore{i}");
         }
+
+        public override void ModifyNPCLoot(NPCLoot npcLoot)
+        {
+            npcLoot.Add(ItemDropRule.NormalvsExpert(ModContent.ItemType<ShellFragment>(), 30, 25));
+            npcLoot.Add(ItemDropRule.CoinsBasedOnNPCValue(ModContent.NPCType<ArtilleryCrab>()));
+
+            npcLoot.Add(ModContent.ItemType<BloodOrb>(), 1, 40, 48);
+        }
+
         public static Asset<Texture2D>[] BigCrabGores
         {
             get;
@@ -451,7 +450,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
             //new Rectangle(0, BodyFrame * frameHeight, texture.Width, frameHeight);
 
             Main.EntitySpriteDraw(texture, DrawPos, CrabFrame, drawColor, 0, origin, 1, Direction, 0);
-            return true;
+            return false;
         }
 
         public override float SpawnChance(NPCSpawnInfo spawnInfo)

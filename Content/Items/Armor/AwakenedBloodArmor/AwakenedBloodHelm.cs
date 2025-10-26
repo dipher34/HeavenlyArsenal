@@ -27,19 +27,15 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
 
         public override void Load()
         {
-            if (Main.netMode != NetmodeID.Server)
-            {
-                EquipLoader.AddEquipTexture(Mod, "HeavenlyArsenal/Content/Items/Armor/AwakenedBloodArmor/AwakenedBloodHelmDefense_Head", EquipType.Head, name: "AwakenedBloodHelmDefense");
-                EquipLoader.AddEquipTexture(Mod, "HeavenlyArsenal/Content/Items/Armor/AwakenedBloodArmor/AwakenedBloodHelmOffense_Head", EquipType.Head, name: "AwakenedBloodHelmOffense");
-
-            }
+           
         }
         public override void SetStaticDefaults()
         {
             if (Main.netMode == NetmodeID.Server)
                 return;
-            var equipSlotHead = EquipLoader.GetEquipSlot(Mod, "AwakenedBloodHelmDefense", EquipType.Head);
-            ArmorIDs.Head.Sets.DrawHead[equipSlotHead] = false;
+           
+            ArmorIDs.Head.Sets.DrawHead[Item.headSlot] = false;
+
         }
         public override void SetDefaults()
         {
@@ -47,7 +43,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             Item.height = 18;
             Item.rare = ModContent.RarityType<BloodMoonRarity>();
             Item.value = CalamityGlobalItem.RarityPureGreenBuyPrice;
-            Item.defense = 49; //85
+            Item.defense = 49;
             
         }
         public override bool IsArmorSet(Item head, Item body, Item legs) => body.type == ModContent.ItemType<AwakenedBloodplate>() && legs.type == ModContent.ItemType<AwakenedBloodStrides>();
@@ -101,7 +97,6 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                 $"+{DamageBoost * 100:F0}% to all damage\n" +
                 $"+{CritBoost}% crit chance";
 
-            // create and add it
             TooltipLine line = new TooltipLine(Mod, "AwakenedBloodHelm", text);
 
             int insertIndex = tooltips.FindIndex(t => t.Mod == "Terraria" && t.Name.StartsWith("Tooltip"));
@@ -117,6 +112,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                      AddRecipeGroup("HeavenlyArsenal:BloodflareHelmets", 1).
                      AddIngredient<YharonSoulFragment>(15).
                      AddIngredient<UmbralLeechDrop>(3).
+                     AddIngredient<PenumbralMembrane>(2).
                      AddCondition(conditions:Condition.EclipseOrBloodMoon).
                      AddTile<CosmicAnvil>().
                      Register();

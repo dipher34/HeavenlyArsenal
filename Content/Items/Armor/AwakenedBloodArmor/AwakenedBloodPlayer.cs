@@ -30,10 +30,10 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         #region values
         public enum Form
         {
-            Offsense,
+            Offense,
             Defense
         }
-        public Form CurrentForm = Form.Offsense;
+        public Form CurrentForm = Form.Offense;
 
         public bool AwakenedBloodSetActive;
         public bool BloodBoostActive = false;
@@ -92,7 +92,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             if (!AwakenedBloodSetActive)
                 return;
 
-            if(CurrentForm == Form.Offsense)
+            if(CurrentForm == Form.Offense)
             {
                 int value = 76;
                 if (value > 75 && !BloodBoostActive)
@@ -163,7 +163,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         {
             switch (CurrentForm)
             {
-                case Form.Offsense:
+                case Form.Offense:
                     ManageOffense();
                     break;
 
@@ -174,13 +174,14 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         }
         private void ManageOffense()
         {
+            int Type = ModContent.ProjectileType<AwakenedBloodTendril>();
             int TendrilCount = 2;
-            int TendrilBaseDamage = 300;
-            if (Player.ownedProjectileCounts[ModContent.ProjectileType<BloodNeedle>()] < TendrilCount)
+            int TendrilBaseDamage = 600;
+            if (Player.ownedProjectileCounts[Type] < TendrilCount)
             {
                 for(int i = 0; i < TendrilCount; i++)
                 {
-                    Projectile a = Projectile.NewProjectileDirect(Player.GetSource_FromThis(), Player.Center, Vector2.Zero, ModContent.ProjectileType<BloodNeedle>(), TendrilBaseDamage, 1);
+                    Projectile a = Projectile.NewProjectileDirect(Player.GetSource_FromThis(), Player.Center, Vector2.Zero, Type, TendrilBaseDamage, 1);
                     a.localAI[0] = i+1;
                 }
                 

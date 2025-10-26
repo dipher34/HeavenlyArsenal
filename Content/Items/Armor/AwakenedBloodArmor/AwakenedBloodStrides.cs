@@ -4,6 +4,7 @@ using CalamityMod.Items.Armor.OmegaBlue;
 using CalamityMod.Items.Materials;
 using CalamityMod.Rarities;
 using CalamityMod.Tiles.Furniture.CraftingStations;
+using HeavenlyArsenal.Content.Items.Materials.BloodMoon;
 using HeavenlyArsenal.Content.Rarities;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
@@ -80,6 +81,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                 AddIngredient<OmegaBlueTentacles>().
                 AddIngredient<BloodflareCuisses>().AddCondition(conditions: Condition.BloodMoon).
                 AddIngredient<YharonSoulFragment>(15).
+                AddIngredient<PenumbralMembrane>(4).
                 AddTile<CosmicAnvil>().
                 Register();
         }

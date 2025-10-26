@@ -2,6 +2,7 @@
 using Luminance.Assets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using NoxusBoss.Assets;
 using System;
 using System.Collections.Generic;
 using Terraria;
@@ -25,7 +26,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
             });
         }
 
-
+        public override bool ResistantToTrueMelee => false;
         public override int bloodBankMax => 2000;
 
         public override bool canBeSacrificed => segmentNum == 0;
@@ -51,7 +52,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
 
         private int MAX_SEGMENT_COUNT = 8;
         private int DEFAULT_SEGMENT_COUNT = 12;
-        public float SEGMENT_DISTANCE = 18f; 
+        public float SEGMENT_DISTANCE = 9f; 
         private float HEAD_SPEED = 6.6f;
         private float HEAD_ACCEL = 0.18f;
         private int HISTORY_PER_SEGMENT = 16;
@@ -92,9 +93,15 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
             NPC.aiStyle = -1;
             NPC.HitSound = SoundID.NPCHit1;
             NPC.DeathSound = AssetDirectory.Sounds.NPCs.Hostile.BloodMoon.UmbralLeech.DyingNoise;
-           
+            NPC.Size = new Vector2(20, 20);
         }
-
+        public override bool? DrawHealthBar(byte hbPosition, ref float scale, ref Vector2 position)
+        {
+            if (segmentNum == 0)
+                return base.DrawHealthBar(hbPosition, ref scale, ref position);
+            else
+                return false;
+        }
         public override void OnSpawn(IEntitySource source)
         {
             //todo: if this npc was spawned by another npc that isn't an umbral larva, set that npc as the mother.
@@ -469,28 +476,54 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
                 //}
             }
         }
+        private void DrawLine(List<Vector2> list)
+        {
+            Texture2D texture = GennedAssets.Textures.GreyscaleTextures.WhitePixel;
+            Rectangle frame = texture.Frame();
+            Vector2 origin = new Vector2(0f, 0.5f);
 
+            Vector2 pos = list[0];
+            for (int i = 0; i < list.Count - 1; i++)
+            {
+                Vector2 element = list[i];
+                Vector2 diff = list[i + 1] - element;
+
+                float rotation = diff.ToRotation();
+                Color color = Color.Crimson;
+                Vector2 scale = new Vector2(diff.Length() + 2f, 2f);
+                if (i == list.Count - 2)
+                {
+                    scale.X -= 5f;
+                }
+
+                Main.EntitySpriteDraw(texture, pos - Main.screenPosition, frame, color, rotation, origin, scale, SpriteEffects.None, 0);
+                Utils.DrawBorderString(Main.spriteBatch, i.ToString(), pos - Main.screenPosition, Color.AntiqueWhite, 0.35f);
+                pos += diff;
+            }
+        }
         public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
         {
+            if (NPC.IsABestiaryIconDummy)
+                return false;
             Texture2D larva = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/Leech/Umbralarva").Value;
             Vector2 DrawPos = NPC.Center - Main.screenPosition;
-            Vector2 Orig = new Vector2(larva.Width / 3 / 2, larva.Height / 2);
-            int value = segmentNum == 0 ? 0 : segmentNum == segmentCount ? 2 : 1;
-            Rectangle larvaFrame = larva.Frame(3, 1, value, 0);
+            int value = segmentNum == 0 ? 0 : segmentNum == segmentCount ? 3 : 1;
 
+            Rectangle larvaFrame = larva.Frame(4, 1, value, 0);
+
+            Vector2 Orig = new Vector2(larvaFrame.Width/2, larvaFrame.Height/2);
+
+           
             Main.EntitySpriteDraw(larva, DrawPos, larvaFrame, drawColor, NPC.rotation, Orig, 1, SpriteEffects.FlipHorizontally);
 
-
-            if(segmentNum == 0)
-            {
-                Utils.DrawBorderString(spriteBatch, CurrentState.ToString(), DrawPos + Vector2.UnitY * 100, Color.AntiqueWhite);
-            }
+            
+            
 
             //Utils.DrawBorderString(Main.spriteBatch, segmentNum.ToString(), DrawPos, Color.AntiqueWhite);
             return false;
         }
 
-        //painj in my ass 
+        //pain in my ass 
         // Build debug info by scanning NPC list for segments that reference this head via realLife
         public (int headID, List<int> segmentNpcIds, List<Vector2> positions) GetWormDebugInfo()
         {

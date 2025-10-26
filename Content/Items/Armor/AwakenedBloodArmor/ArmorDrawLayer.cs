@@ -1,0 +1,158 @@
+﻿using HeavenlyArsenal.Common.Utilities;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Terraria;
+using Terraria.DataStructures;
+using Terraria.ModLoader;
+
+namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
+{
+    class BloodHelmetDrawLayer : PlayerDrawLayer
+    {
+        public override bool GetDefaultVisibility(PlayerDrawSet drawInfo) => drawInfo.drawPlayer.armor[10].IsAir && drawInfo.drawPlayer.armor[0].ModItem is AwakenedBloodHelm || drawInfo.drawPlayer.armor[10].ModItem is AwakenedBloodHelm;
+          
+        public override Position GetDefaultPosition() => new AfterParent(PlayerDrawLayers.Head);
+        protected override void Draw(ref PlayerDrawSet drawInfo)
+        {
+            Player Owner = drawInfo.drawPlayer;
+
+            
+            string texString = "HeavenlyArsenal/Content/Items/Armor/AwakenedBloodArmor/AwakenedBloodHelm";
+            string a = drawInfo.drawPlayer.GetModPlayer<AwakenedBloodPlayer>().CurrentForm.ToString();
+
+            texString += $"{a}_Head";
+            Texture2D helmet = ModContent.Request<Texture2D>(texString).Value;
+
+            SpriteEffects Flip = Owner.direction == 1 ? 0 : SpriteEffects.FlipHorizontally;
+            Rectangle Frame = helmet.Frame(1, 20, 0, drawInfo.drawPlayer.headFrame.Y);
+            DrawData helm = new DrawData(helmet, drawInfo.HeadPosition() + new Vector2(0, 5.6f), Owner.legFrame, drawInfo.colorArmorHead, drawInfo.drawPlayer.headRotation,
+                Owner.legFrame.Size() * 0.5f,
+                1f,
+                Flip);
+
+
+            drawInfo.DrawDataCache.Add(helm);
+        }
+
+
+    }
+
+    class BloodChestplateDrawLayer : PlayerDrawLayer
+    {
+        public override bool GetDefaultVisibility(PlayerDrawSet drawInfo) => drawInfo.drawPlayer.armor[11].IsAir && drawInfo.drawPlayer.armor[1].ModItem is AwakenedBloodplate || drawInfo.drawPlayer.armor[10].ModItem is AwakenedBloodplate;
+        public override Position GetDefaultPosition() => new AfterParent(PlayerDrawLayers.Torso);
+        protected override void Draw(ref PlayerDrawSet drawInfo)
+        {
+           
+            Player Owner = drawInfo.drawPlayer;
+            string texString = "HeavenlyArsenal/Content/Items/Armor/AwakenedBloodArmor/AwakenedBloodplate";
+            string a = drawInfo.drawPlayer.GetModPlayer<AwakenedBloodPlayer>().CurrentForm.ToString();
+            texString += $"{a}_Body";
+            Texture2D chestplate = ModContent.Request<Texture2D>(texString).Value;
+            SpriteEffects Flip = Owner.direction == 1 ? 0 : SpriteEffects.FlipHorizontally;
+
+
+            Rectangle bodyFrame = drawInfo.compTorsoFrame;
+            Vector2 walkOffset = Owner.gravDir * Main.OffsetsPlayerHeadgear[Owner.bodyFrame.Y / Owner.bodyFrame.Height];
+
+            // Utils.DrawBorderString(Main.spriteBatch, bodyFrame.ToString(), Owner.Center - Main.screenPosition, Color.AntiqueWhite, anchory: -2);
+            DrawData chest = new DrawData(
+                chestplate,
+                drawInfo.BodyPosition() + walkOffset + new Vector2(0, -2),
+                bodyFrame,
+                drawInfo.colorArmorBody,
+                Owner.bodyRotation,
+                bodyFrame.Size() * 0.5f,
+                1f,
+                Flip,
+                0
+            );
+            chest.shader = drawInfo.cBody;
+          
+
+            //Utils.DrawBorderString(Main.spriteBatch, hting.ToString(), Owner.Center - Main.screenPosition, Color.AntiqueWhite, anchory: -2);
+            var shoulder = new DrawData(chestplate, drawInfo.HeadPosition() + new Vector2(0, 3.6f) + walkOffset, drawInfo.compBackShoulderFrame,
+               drawInfo.colorArmorBody, Owner.fullRotation, drawInfo.bodyVect, 1f, drawInfo.playerEffect)
+            { shader = drawInfo.cBody };
+
+            PlayerDrawLayers.DrawCompositeArmorPiece(ref drawInfo, CompositePlayerDrawContext.BackShoulder, shoulder);
+            PlayerDrawLayers.DrawCompositeArmorPiece(ref drawInfo, CompositePlayerDrawContext.Torso, chest);
+
+        }
+    }
+
+    class BloodChestplateArmDrawLayer : PlayerDrawLayer
+    {
+        public override bool GetDefaultVisibility(PlayerDrawSet drawInfo) => drawInfo.drawPlayer.armor[11].IsAir && drawInfo.drawPlayer.armor[1].ModItem is AwakenedBloodplate || drawInfo.drawPlayer.armor[10].ModItem is AwakenedBloodplate;
+        public override Position GetDefaultPosition() => new BeforeParent(PlayerDrawLayers.Torso);
+        protected override void Draw(ref PlayerDrawSet drawInfo)
+        {
+
+            Player Owner = drawInfo.drawPlayer;
+            Vector2 walkOffset = Owner.gravDir * Main.OffsetsPlayerHeadgear[Owner.bodyFrame.Y / Owner.bodyFrame.Height];
+
+            string texString = "HeavenlyArsenal/Content/Items/Armor/AwakenedBloodArmor/AwakenedBloodplate";
+            string a = drawInfo.drawPlayer.GetModPlayer<AwakenedBloodPlayer>().CurrentForm.ToString();
+            texString += $"{a}_Body";
+            Texture2D chestplate = ModContent.Request<Texture2D>(texString).Value;
+            SpriteEffects Flip = Owner.direction == 1 ? 0 : SpriteEffects.FlipHorizontally;
+            DrawData data = new DrawData(chestplate,
+                drawInfo.HeadPosition() + new Vector2(0, 3.6f) + walkOffset,
+                drawInfo.compBackArmFrame, drawInfo.colorArmorBody,
+                drawInfo.compositeBackArmRotation,
+                drawInfo.compFrontArmFrame.Size() * 0.5f,
+                1f,
+            drawInfo.playerEffect);
+
+
+            //drawInfo.DrawDataCache.Add(data);
+            PlayerDrawLayers.DrawCompositeArmorPiece(ref drawInfo, CompositePlayerDrawContext.BackArm, data);
+
+        }
+    }
+    public class MyArmOverlay_Front : PlayerDrawLayer
+    {
+        public override Position GetDefaultPosition()
+            => new AfterParent(PlayerDrawLayers.ArmOverItem);
+
+        public override bool GetDefaultVisibility(PlayerDrawSet drawInfo)
+            => drawInfo.drawPlayer.armor[11].IsAir 
+            && drawInfo.drawPlayer.armor[1].ModItem is AwakenedBloodplate 
+            || drawInfo.drawPlayer.armor[10].ModItem is AwakenedBloodplate;
+
+        protected override void Draw(ref PlayerDrawSet drawInfo)
+        {
+            if (drawInfo.shadow != 0f) return;
+            if (!drawInfo.usesCompositeTorso) return;
+            if (drawInfo.armorHidesArms) return;
+
+            Player Owner = drawInfo.drawPlayer;
+            Vector2 walkOffset = Owner.gravDir * Main.OffsetsPlayerHeadgear[Owner.bodyFrame.Y / Owner.bodyFrame.Height];
+
+            string texString = "HeavenlyArsenal/Content/Items/Armor/AwakenedBloodArmor/AwakenedBloodplate";
+            string a = drawInfo.drawPlayer.GetModPlayer<AwakenedBloodPlayer>().CurrentForm.ToString();
+            texString += $"{a}_Body";
+            Texture2D chestplate = ModContent.Request<Texture2D>(texString).Value;
+
+            var data = new DrawData(
+                chestplate,
+                drawInfo.BodyPosition() + walkOffset,
+                drawInfo.compFrontArmFrame,
+                drawInfo.colorArmorBody,
+                drawInfo.compositeFrontArmRotation,
+                drawInfo.compFrontArmFrame.Size() * 0.5f,
+                1f,
+                drawInfo.playerEffect);
+
+            data.shader = drawInfo.cBody;
+            PlayerDrawLayers.DrawCompositeArmorPiece(ref drawInfo, CompositePlayerDrawContext.FrontArm, data);
+
+            var shoulder = new DrawData(chestplate, drawInfo.HeadPosition() + new Vector2(0, 3.6f) + walkOffset, drawInfo.compFrontShoulderFrame,
+                drawInfo.colorArmorBody, Owner.fullRotation, drawInfo.bodyVect, 1f, drawInfo.playerEffect)
+            { shader = drawInfo.cBody };
+            
+            //drawInfo.DrawDataCache.Add(shoulder);
+            PlayerDrawLayers.DrawCompositeArmorPiece(ref drawInfo, CompositePlayerDrawContext.FrontShoulder, shoulder);
+        }
+    }
+}

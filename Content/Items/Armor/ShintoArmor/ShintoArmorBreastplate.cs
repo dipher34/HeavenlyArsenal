@@ -58,14 +58,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         // public override LocalizedText Tooltip => base.Tooltip.WithFormatArgs(MaxManaIncrease, MaxMinionIncrease, MaxLifeIncrease);
 
         // gonna keep it real chief, this chestplate code is a mess lmao.
-        public override void Load()
-        {
-            
-
-            EquipLoader.AddEquipTexture(Mod, Texture + "_Waist", EquipType.Waist, this);
-            EquipLoader.AddEquipTexture(Mod, Texture.Replace("Breastplate", "Wings"), EquipType.Wings, this);
-            On_Main.DrawInfernoRings += On_Main_DrawInfernoRings;
-        }
+     
 
         public override string LocalizationCategory => "Items.Armor.ShintoArmor";
         public override void SetStaticDefaults()
@@ -103,6 +96,11 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         public override void UpdateVanity(Player player)
         {
             player.GetModPlayer<ShintoArmorPlayer>().ChestplateEquipped = true;
+        }
+        public override void Load()
+        {
+            EquipLoader.AddEquipTexture(Mod, Texture + "_Waist", EquipType.Waist, this);
+           
         }
         public override void EquipFrameEffects(Player player, EquipType type)
         {
@@ -254,7 +252,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             orig(self);
             Player player = Main.LocalPlayer;
             //if (!player.GetModPlayer<ShintoArmorPlayer>().isShadeTeleporting && !player.GetModPlayer<ShintoArmorPlayer>().JustTeleported)
-            //DrawDyeableShader(Main.spriteBatch);
+            DrawDyeableShader(Main.spriteBatch);
             
                 
             

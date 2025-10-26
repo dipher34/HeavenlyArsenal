@@ -24,20 +24,14 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
 
         public override void Load()
         {
-            if (Main.netMode != NetmodeID.Server)
-            {
-                EquipLoader.AddEquipTexture(Mod, "HeavenlyArsenal/Content/Items/Armor/AwakenedBloodArmor/AwakenedBloodplateDefense_Body", EquipType.Body, name: "AwakenedBloodplateDefense");
-                EquipLoader.AddEquipTexture(Mod, "HeavenlyArsenal/Content/Items/Armor/AwakenedBloodArmor/AwakenedBloodplateOffense_Body", EquipType.Body, name: "AwakenedBloodplateOffense");
 
-            }
         }
         public override void SetStaticDefaults()
         {
             if (Main.netMode == NetmodeID.Server)
                 return;
 
-            //todo: if the player who has this item doesnt have the full armor set equipped, this should use the defense sprite.
-            var equipSlotBody = EquipLoader.GetEquipSlot(Mod, "AwakenedBloodplateDefense", EquipType.Body);
+          
             int equipSlot = EquipLoader.GetEquipSlot(Mod, Name, EquipType.Body);
 
             ArmorIDs.Body.Sets.HidesTopSkin[equipSlot] = true;
@@ -103,10 +97,14 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                 AddIngredient<OmegaBlueChestplate>().
                 AddIngredient<BloodflareBodyArmor>().
                 AddCondition(conditions: Condition.BloodMoon).
-                AddIngredient<UmbralLeechDrop>(7).
+                AddIngredient<UmbralLeechDrop>(5).
+                AddIngredient<ShellFragment>(7).
                 AddIngredient<YharonSoulFragment>(20).
                 AddTile<CosmicAnvil>().
                 Register();
         }
     }
+
+
+   
 }

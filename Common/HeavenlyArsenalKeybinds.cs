@@ -1,3 +1,4 @@
+using HeavenlyArsenal.Content.Items.Accessories.SwirlCloak;
 using HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor;
 using HeavenlyArsenal.Content.Items.Armor.ShintoArmor;
 using NoxusBoss.Assets;
@@ -23,9 +24,9 @@ namespace HeavenlyArsenal.Common
                     ? BloodArmorForm.Defense
                     : BloodArmorForm.Offense;
                
-                modPlayer.CurrentForm = modPlayer.CurrentForm == AwakenedBloodPlayer.Form.Offsense
+                modPlayer.CurrentForm = modPlayer.CurrentForm == AwakenedBloodPlayer.Form.Offense
                     ? AwakenedBloodPlayer.Form.Defense
-                    : AwakenedBloodPlayer.Form.Offsense;
+                    : AwakenedBloodPlayer.Form.Offense;
             }
 
             var ShintoPlayer = Player.GetModPlayer<ShintoArmorPlayer>();
@@ -33,17 +34,26 @@ namespace HeavenlyArsenal.Common
             {
                 ShintoPlayer.isShadeTeleporting = true;
             }
+
+            var SwirlCloak = Player.GetModPlayer<CloakPlayer>();
+            if (KeybindSystem.SwirlCloak.JustPressed && SwirlCloak.Active)
+            {
+                SwirlCloak.CreateSwirlVortex();
+            }
+
         }
     }
 
     public class KeybindSystem : ModSystem
     {
+        public static ModKeybind SwirlCloak { get; private set; }
         public static ModKeybind ShadowTeleport { get; private set; }
         public static ModKeybind HaemsongBind { get; private set; }
         public override void Load()
         {
             // We localize keybinds by adding a Mods.{ModName}.Keybind.{KeybindName} entry to our localization files. The actual text displayed to English users is in en-US.hjson
-            HaemsongBind = KeybindLoader.RegisterKeybind(Mod, "Toggle Haemsong Mode", "F");
+            SwirlCloak = KeybindLoader.RegisterKeybind(Mod, "SwirlCloak_Veil Cloak", "F");
+            HaemsongBind = KeybindLoader.RegisterKeybind(Mod, "Swap BloodArmor Form", "F");
             ShadowTeleport = KeybindLoader.RegisterKeybind(Mod, "Shadow Teleport", "F");
         }
         public override void Unload()

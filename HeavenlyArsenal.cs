@@ -4,7 +4,7 @@ using CalamityMod.Particles;
 using CalamityMod.UI.CalamitasEnchants;
 //using HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath;
 
-//using HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath;/
+using HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath;
 //using HeavenlyArsenal.Content.Items.Misc;
 using Microsoft.Xna.Framework.Graphics;
 using MonoMod.RuntimeDetour;
@@ -29,7 +29,7 @@ namespace HeavenlyArsenal
 
         public override void Load()
         {
-          //  EnchantmentManager.ItemUpgradeRelationship[ModContent.ItemType<MetallicChunk>()] = ModContent.ItemType<VoidCrestOath>();
+          EnchantmentManager.ItemUpgradeRelationship[ModContent.ItemType<MetallicChunk>()] = ModContent.ItemType<VoidCrestOath>();
             /*
             if (ModLoader.GetMod("NoxusBoss") != null)
             {

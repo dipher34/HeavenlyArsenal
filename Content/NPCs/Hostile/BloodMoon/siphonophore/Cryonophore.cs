@@ -211,7 +211,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.siphonophore
 
         public bool hasArcane { get; private set; }
 
-        public static int[] ValidTargets = { ModContent.NPCType<AnAffrontToGod>(), ModContent.NPCType<Yharon>(), ModContent.NPCType<SuperDummyNPC>(), ModContent.NPCType<ArtilleryCrab>() };
+        public static int[] ValidTargets = { ModContent.NPCType<Yharon>(), ModContent.NPCType<SuperDummyNPC>(), ModContent.NPCType<ArtilleryCrab>() };
         public List<int> ZooidList = new List<int>(); // the list of zooids that are attached to this core.
         private float tentacleCount;
         public SiphonophoreGrid Grid { get; private set; }

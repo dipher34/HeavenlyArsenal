@@ -46,3 +46,13 @@ UmbralLeechDrop: {
 
 		'''
 }
+
+ShellFragment: {
+	DisplayName: Shell Fragment
+	Tooltip: ""
+}
+
+PenumbralMembrane: {
+	DisplayName: Penumbral Membrane
+	Tooltip: ""
+}

@@ -1,4 +1,5 @@
-﻿using HeavenlyArsenal.Common.utils;
+﻿using CalamityMod;
+using HeavenlyArsenal.Common.utils;
 using HeavenlyArsenal.Core;
 using Luminance.Common.Easings;
 using Microsoft.Xna.Framework;
@@ -6,10 +7,8 @@ using Microsoft.Xna.Framework.Graphics;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Terraria;
+using Terraria.DataStructures;
 using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -19,6 +18,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
     internal class AwakenedBloodTendril : ModProjectile
     {
         #region setup
+        public Vector2 StartPos = Vector2.Zero;
         public Vector2 HomePos = Vector2.Zero;
         public ref Player Owner => ref Main.player[Projectile.owner];
         public ref float Timer => ref Projectile.ai[0];
@@ -38,8 +38,13 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             get => (int)Projectile.localAI[0];
             set => Projectile.localAI[0] = value;
         }
+        public int AttackCooldown
+        {
+            get => (int)Projectile.localAI[1];
+            set => Projectile.localAI[1] = value;
+        }
         public override void SendExtraAI(BinaryWriter writer)
-        {   
+        {
             writer.Write7BitEncodedInt(Tindex);
             writer.WritePackedVector2(HomePos);
 
@@ -50,15 +55,17 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             reader.ReadPackedVector2();
         }
         public override string Texture => "HeavenlyArsenal/Content/Items/Armor/AwakenedBloodArmor/BloodNeedle_Head";
-        public override void SetStaticDefaults() 
+        public override void SetStaticDefaults()
         {
             ProjectileID.Sets.TrailCacheLength[Type] = 4;
             ProjectileID.Sets.TrailingMode[Type] = 2;
-            
+
         }
 
         public override void SetDefaults()
         {
+            Projectile.usesLocalNPCImmunity = true;
+            Projectile.localNPCHitCooldown = -1;
             Projectile.penetrate = -1;
             Projectile.friendly = true;
             Projectile.hostile = false;
@@ -68,27 +75,38 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
 
             Projectile.CountsAsClass(DamageClass.Generic);
         }
+
+        public override void OnSpawn(IEntitySource source)
+        {
+            HomePos = Owner.Center;
+        }
         #endregion
+        
         public override void AI()
         {
-            
+
             npcIndex = -1;
+            UpdateDamage();
             CheckDespawnConditions();
-           
+
             InitializeCurve();
             ManageTendril();
 
             UpdateHomePos();
-           
+
             AttackTarget();
-            
+
 
 
             Projectile.Center = Vector2.Lerp(Projectile.Center, HomePos, 0.4f);
             Timer++;
         }
-        #region Helpers
 
+
+        #region Helpers
+        private void UpdateDamage()
+        {//           Projectile.damage = Owner.GetTotalDamage(
+        }
         public void InitializeCurve()
         {
             if (Curve == null)
@@ -97,7 +115,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                 float SmallerOffset = RandomOffset - 5;
 
                 RandomOffset *= Main.rand.Next(-1, 2);
-               
+
                 if (Main.MouseWorld.X - Owner.Center.X! < 0)
                 {
                     RandomOffset = RandomOffset * -1;
@@ -109,18 +127,18 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                 new Vector2(20, SmallerOffset),
                 new Vector2(30, 0)
                 );
-                
+
 
                 //Main.NewText($"{Math.Sign(RandomOffset)}");
             }
 
-            
+
         }
         public void CheckDespawnConditions()
         {
             Projectile.timeLeft = 4;
             AwakenedBloodPlayer a = Owner.GetModPlayer<AwakenedBloodPlayer>();
-            if (!Owner.active || !a.AwakenedBloodSetActive || a.CurrentForm != AwakenedBloodPlayer.Form.Offsense)
+            if (Owner.dead || !a.AwakenedBloodSetActive || a.CurrentForm != AwakenedBloodPlayer.Form.Offense)
             {
                 Projectile.active = false;
                 return;
@@ -129,12 +147,12 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         public void UpdateHomePos()
         {
             float val = Tindex % 2 == 0 ? -80 : 100;
-            
-            val *=  Owner.direction;
+
+            val *= Owner.direction;
             if (Tindex == 1)
                 val -= 20 * Owner.direction;
-            float wave = (float)Math.Sin((Timer/5 + Tindex*10)/10)*4 - 50;
-           
+            float wave = (float)Math.Sin((Timer / 5 + Tindex * 10) / 10) * 4 - 50;
+
             Vector2 s = tentacle.segments[0].position;
             Vector2 d = tentacle.segments[2].position;
             if (Vector2.Distance(s, d) > 10)
@@ -143,11 +161,13 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             tentacle.segments[^1].position = Owner.MountedCenter;
 
             HomePos = Vector2.Lerp(HomePos, Owner.Center + new Vector2(val, wave), 0.1f);
+            if (t > 0)
+                StartPos = Owner.Center + new Vector2(val, wave);
         }
         public int TargetNPC()
         {
             int closestIndex = -1;
-            float closestDistance = 900f; 
+            float closestDistance = 400f;
             Vector2 playerCenter = Owner.Center;
 
 
@@ -155,21 +175,21 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             foreach (NPC npc in Main.ActiveNPCs)
             {
 
-               
+
 
                 if (!npc.active || npc.friendly || npc.dontTakeDamage) // skip invalid targets
                     continue;
-             
+
                 float distance = Vector2.Distance(playerCenter, npc.Center);
-               
+
                 if (distance < closestDistance)
                 {
                     closestDistance = distance;
                     closestIndex = npc.whoAmI;
                 }
-               
+
             }
-            return closestIndex; 
+            return closestIndex;
         }
 
         /// <summary>
@@ -177,57 +197,87 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         /// </summary>
         public void AttackTarget()
         {
+            if (--AttackCooldown > 0)
+                return;
+            npcIndex = TargetNPC();
+            
+            if (npcIndex != -1)
+                t = Utils.Clamp(t + 0.009f, 0, 1);
+            if (t >= 1 || npcIndex == -1)
+            {
 
-            Projectile.extraUpdates = 3;
+                t = 0;
+                AttackInterp = 0;
+                Curve = null;
+                AttackCurve = null;
+                Projectile.ResetLocalNPCHitImmunity();
+                return;
+
+            }
+
+            Projectile.extraUpdates = Owner.GetModPlayer<AwakenedBloodPlayer>().BloodBoostActive? 6: 4 ;
 
             if (AttackCurve == null)
                 AttackCurve = new PiecewiseCurve()
                     .Add(EasingCurves.Exp, EasingType.InOut, 0f, 0.3f, 1f)
                     .Add(EasingCurves.Linear, EasingType.InOut, 0, 0.35f)
                     .Add(EasingCurves.Cubic, EasingType.Out, 1f, 1f);
-            
-            npcIndex = TargetNPC();
-            if (npcIndex != -1)
-                t = Utils.Clamp(t + 0.005f, 0, 1);
-            else
-            {
-                t = 0;
-                AttackInterp = 0;
-                return;
 
-            }
+          
 
 
             NPC victim = Main.npc[npcIndex];
+            Vector2 TargetPos = victim.Center;
             //t is the value that actually controls the attack.
             //attack interp is used to move the tendril, sure, but t is what does the heavy lifting.
             AttackInterp = 1 - AttackCurve.Evaluate(t);
-           
-            Vector2 AverageCenter = (HomePos + Owner.Center)/2;
 
-            float Angle = victim.Center.AngleFrom(AverageCenter);
+            float RangeMulti = 40;
+
+            float bell = 1 - MathF.Abs(AttackInterp*2 - 1);
+            //Main.NewText(bell);
+            Vector2 min = StartPos - TargetPos.AngleFrom(HomePos).ToRotationVector2() * 10;
+            Vector2 max = HomePos + HomePos.AngleTo(TargetPos).ToRotationVector2() * RangeMulti;
+            Vector2 lerped = Vector2.Lerp(StartPos + Curve.Evaluate(bell), TargetPos+Curve.Evaluate(bell), AttackInterp);
+           
+            HomePos = new Vector2(
+                Math.Clamp(lerped.X, Math.Min(min.X, max.X), Math.Max(min.X, max.X)),
+                Math.Clamp(lerped.Y, Math.Min(min.Y, max.Y), Math.Max(min.Y, max.Y))
+            );
+
+            float Angle = TargetPos.AngleFrom(Owner.MountedCenter);
+            Projectile.rotation = Projectile.rotation.AngleLerp(Angle, 0.2f);
+            /*
+            for (int i = 1; i < 100; i++)
+            {
+                Vector2 dustPos = Owner.Center + Curve.Evaluate(i / 100f).RotatedBy(Angle)*10;
+                Dust c = Dust.NewDustPerfect(dustPos, DustID.Cloud, Vector2.Zero);
+                c.noGravity = true;
+                c.color = Color.Red;
+                c.fadeIn = 0.2f;
+
+            }*/
+            //Vector2 AverageCenter = (HomePos + Owner.MountedCenter) / 2;
+            /*
+            float Angle = TargetPos.AngleFrom(Owner.MountedCenter);
             float RangeMulti = 0;
-            RangeMulti = (float)Math.Clamp(Vector2.Distance(Owner.MountedCenter, victim.Center)/26.4f, 0,10);
-            Vector2 CurvePath = Curve.Evaluate(AttackInterp).RotatedBy(Angle) * RangeMulti;
-            tentacle.segments[^1].position = Owner.MountedCenter;
-            
-            
-            HomePos += CurvePath/10 * AttackInterp;
-            if (t == 1)
+            RangeMulti = (float)Math.Clamp(Vector2.Distance(Owner.MountedCenter, TargetPos) / 26.4f, 0, 10);
+            Vector2 CurvePath = Vector2.Lerp(Curve.Evaluate(AttackInterp).RotatedBy(Angle) * RangeMulti, (TargetPos - Owner.MountedCenter)/ RangeMulti, AttackInterp);
+            //tentacle.segments[^1].position = Owner.MountedCenter;
+
+
+            HomePos += CurvePath / 10;
+
+            Projectile.rotation = HomePos.AngleTo(TargetPos);
+            if (t == 1) 
             {
                 t = 0;
                 Curve = null;
             }
 
-            /*for(int i = 1; i< 100; i++)
-          {
-              Vector2 dustPos = Owner.Center + Curve.Evaluate(i / 100f).RotatedBy(Angle - MathHelper.ToRadians(15))*RangeMulti;
-              Dust c = Dust.NewDustPerfect(dustPos, DustID.Cloud, Vector2.Zero);
-              c.noGravity = true;
-              c.color = Color.Red;
-              c.fadeIn = 0.2f;
+           
+            */
 
-          }*/
         }
         public void ManageTendril()
         {
@@ -245,27 +295,27 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                     blood.rotation = Main.rand.NextFloat(-89, 89);
                 }
 
-                if (t >= 0.5f || t <= 0.35f && i <= 10)
+                if (AttackInterp >= 0.2f || AttackInterp <= 0.35f && i <= 10)
                 {
-                    tentacle.segments[i].position = Vector2.Lerp(tentacle.segments[i].position, tentacle.segments[i].position + new Vector2(10 * -Owner.direction, -10 + Tindex % 2),0.5f);
+                    tentacle.segments[i].position = Vector2.Lerp(tentacle.segments[i].position, tentacle.segments[i].position + new Vector2(10 * -Owner.direction, -10 + Tindex % 2), 0.5f);
                 }
-                else if(AttackInterp == 0)
+                else if (AttackInterp == 0)
                 {
 
-                    
+
                 }
                 float difference = Main.MouseWorld.X - Owner.Center.X;
-               
-                    tentacle.segments[i].position += Curve.Evaluate((i + 1) / tentacle.segments.Length) * Math.Sign(difference) * AttackInterp;
 
-               
+                //tentacle.segments[i].position += Curve.Evaluate((i + 1) / tentacle.segments.Length) * Math.Sign(difference) * AttackInterp;
+
+
             }
 
             Vector2 jitter = new Vector2(MathF.Sin(Timer * 0.05f + Tindex * 1.5f),
                 MathF.Cos(Timer * 0.05f + Tindex * 1.5f)
             ) * Main.rand.NextFloat(2);
 
-            
+
             tentacle.gravity = new Vector2(-Projectile.velocity.X / tentacle.segments.Length, -Projectile.velocity.Y);
 
             tentacle.damping = Utils.GetLerpValue(40, 20, Owner.velocity.Length(), true) * 0.65f;
@@ -284,7 +334,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             tentacle.segments[0].position = Projectile.Center;
             tentacle.segments[1].position = tentacle.segments[0].position - tipOffset + Projectile.velocity;
             tentacle.segments[^1].position = Owner.MountedCenter;
-            
+
 
             Projectile.Center += jitter / 10;
             tentacle.Update();
@@ -305,7 +355,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         #region drawshit
         public override void DrawBehind(int index, List<int> behindNPCsAndTiles, List<int> behindNPCs, List<int> behindProjectiles, List<int> overPlayers, List<int> overWiresUI)
         {
-           
+
         }
         public override bool PreDraw(ref Color lightColor)
         {
@@ -322,14 +372,14 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             Vector2 DrawPos = Projectile.Center - Main.screenPosition;
 
             Rectangle frm = needle.Frame(1, 8, 0, 0);
-            Vector2 Origin = new Vector2(needle.Width/2 ,frm.Height/2);
+            Vector2 Origin = new Vector2(needle.Width / 2, frm.Height / 2);
 
             float Rot = Projectile.rotation - MathHelper.PiOver2;
             Main.EntitySpriteDraw(needle, DrawPos, frm, lightColor, Rot, Origin, 1, SpriteEffects.None);
 
-            Utils.DrawBorderString(Main.spriteBatch, "T: "+t.ToString(), DrawPos, Color.Red);
-            //Utils.DrawBorderString(Main.spriteBatch, "AttackInterp: " + AttackInterp.ToString(), DrawPos - Vector2.UnitY*-20, Color.Red);
-            Utils.DrawBorderString(Main.spriteBatch, $"{Projectile.ai[2]}" + t.ToString(), DrawPos - Vector2.UnitY*-40, Color.Red);
+            //Utils.DrawBorderString(Main.spriteBatch, "T: " + t.ToString(), DrawPos, Color.Red);
+            //Utils.DrawBorderString(Main.spriteBatch, "AttackInterp: " + AttackInterp.ToString(), DrawPos - Vector2.UnitY * -20, Color.Red);
+            //Utils.DrawBorderString(Main.spriteBatch, $"{Projectile.ai[2]}" + t.ToString(), DrawPos - Vector2.UnitY * -40, Color.Red);
 
             return false;
         }
@@ -361,7 +411,6 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                     float rot = points[i].AngleTo(points[i - 1]);
                     float currentPulsate = 0f;
 
-                    // Apply pulsate amount to the current point, and half to adjacent points
                     if (i == pulsateIndex)
                     {
                         currentPulsate = pulsateAmount;
@@ -393,7 +442,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             points.AddRange(tentacle.GetPoints());
             points.Add(Owner.MountedCenter);
 
-            Vector2 pos = points[0] + new Vector2(-2,0);
+            Vector2 pos = points[0] + new Vector2(-2, 0);
             for (int i = 0; i < points.Count - 1; i++)
             {
                 Vector2 element = points[i];
@@ -412,7 +461,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
         #endregion
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {
-           
+            AttackCooldown = !Owner.GetModPlayer<AwakenedBloodPlayer>().BloodBoostActive? Main.rand.Next(30, 60) : Main.rand.Next(20,40);
         }
     }
 }

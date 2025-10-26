@@ -138,7 +138,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
                 Projectile.Kill();
             }
             if (!Player.active 
-                || Player.GetModPlayer<AwakenedBloodPlayer>().CurrentForm != AwakenedBloodPlayer.Form.Offsense
+                || Player.GetModPlayer<AwakenedBloodPlayer>().CurrentForm != AwakenedBloodPlayer.Form.Offense
                 || Player.GetModPlayer<AwakenedBloodPlayer>().AwakenedBloodSetActive != true)
             {
                 // If the player is no longer wearing the armor, retract the needles towards the player and then delete them.
@@ -234,7 +234,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor
             {
                 bool npcDeadOrInactive = !Target.active || Target.life <= 0 || Target.friendly;
                 bool armorLost = !Player.active
-                    || Player.GetModPlayer<AwakenedBloodPlayer>().CurrentForm != AwakenedBloodPlayer.Form.Offsense
+                    || Player.GetModPlayer<AwakenedBloodPlayer>().CurrentForm != AwakenedBloodPlayer.Form.Offense
                     || !Player.GetModPlayer<AwakenedBloodPlayer>().AwakenedBloodSetActive;
                     
                 bool tooFarFromPlayer = Vector2.Distance(Target.Center, Player.MountedCenter) > (TargetRange + 100f);

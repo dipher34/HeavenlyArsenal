@@ -29,6 +29,10 @@ namespace HeavenlyArsenal.Content.Buffs.Stims
             player.moveSpeed *= 0.45f;
             player.lifeRegen -= 4;
             player.pickSpeed *= 0.2f;
+            if (player.HasBuff(ModContent.BuffType<CombatStimBuff>()))
+            {
+                player.ClearBuff(ModContent.BuffType<CombatStimBuff>());
+            }
             //player.ClearBuff(ModContent.BuffType<CombatStimBuff>());
             //player.GetModPlayer<StimPlayer>().Withdrawl = true;
            

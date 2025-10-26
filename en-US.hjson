@@ -4,6 +4,8 @@ Mods: {
 			"Quick Dash.DisplayName": Quick  Dash
 			"Toggle Haemsong Mode.DisplayName": Toggle  Haemsong  Mode
 			"Shadow Teleport.DisplayName": Shadow  Teleport
+			"SwirlCloak_Veil Cloak.DisplayName": Swirl Cloak_ Veil  Cloak
+			"Swap BloodArmor Form.DisplayName": Swap  Blood Armor  Form
 		}
 
 		Items: {
@@ -338,6 +340,26 @@ Mods: {
 
 			MariviniumLeggings: {
 				DisplayName: Marivinium Leggings
+				Tooltip: ""
+			}
+
+			ShintoArmorHelmet_New: {
+				DisplayName: Shinto Armor Helmet_ New
+				Tooltip: ""
+			}
+
+			Cloak: {
+				DisplayName: Cloak
+				Tooltip: ""
+			}
+
+			ZealotsReward: {
+				DisplayName: Zealots Reward
+				Tooltip: ""
+			}
+
+			LightHalo: {
+				DisplayName: Light Halo
 				Tooltip: ""
 			}
 		}

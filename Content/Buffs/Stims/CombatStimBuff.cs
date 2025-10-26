@@ -1,4 +1,5 @@
-﻿using HeavenlyArsenal.Common;
+﻿using CalamityMod.Items.Weapons.Rogue;
+using HeavenlyArsenal.Common;
 using HeavenlyArsenal.Content.Items.Consumables.CombatStim;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -33,13 +34,13 @@ namespace HeavenlyArsenal.Content.Buffs.Stims
 
         public override bool ReApply(Player player, int time, int buffIndex)
         {
-           
-                player.GetModPlayer<StimPlayer>().UseStim();
-                notApplied = false;
-                float addiction = player.GetModPlayer<StimPlayer>().addictionChance;
-                float stimsUsed = player.GetModPlayer<StimPlayer>().stimsUsed;
-               // Main.NewText($"Reapply: Addiction chance: {addiction}, stims used: {stimsUsed}", Color.AntiqueWhite);
-                time = (int)(Math.Abs(stimsUsed - 160) * 10);
+
+            player.GetModPlayer<StimPlayer>().UseStim();
+            notApplied = false;
+            float addiction = player.GetModPlayer<StimPlayer>().addictionChance;
+            float stimsUsed = player.GetModPlayer<StimPlayer>().stimsUsed;
+            // Main.NewText($"Reapply: Addiction chance: {addiction}, stims used: {stimsUsed}", Color.AntiqueWhite);
+            time = (int)(Math.Abs(stimsUsed - 160) * 10);
 
 
             return base.ReApply(player, time, buffIndex);
@@ -60,9 +61,10 @@ namespace HeavenlyArsenal.Content.Buffs.Stims
             }
         }
 
-       
+
         public override void Update(Player player, ref int buffIndex)
         {
+            bool isNotHoldingCursedItems = player.HeldItem.type != ModContent.ItemType<ExecutionersBlade>() && player.HeldItem.type != ModContent.ItemType<Hypothermia>();
             if (HeavenlyArsenalClientConfig.Instance != null && HeavenlyArsenalClientConfig.Instance.StimVFX)
             {
                 if (!GeneralScreenEffectSystem.ChromaticAberration.Active)
@@ -71,10 +73,11 @@ namespace HeavenlyArsenal.Content.Buffs.Stims
             if (player.GetModPlayer<StimPlayer>().Addicted)
             {
                 player.statDefense += 3;
-                player.GetAttackSpeed<GenericDamageClass>() += 1f/1.5f;
-                player.GetDamage<GenericDamageClass>() += 0.425f/1.5f;
-                player.GetCritChance<GenericDamageClass>() += 5f/1.5f;
-                player.GetKnockback<SummonDamageClass>() += 1f/1.5f;
+                if (isNotHoldingCursedItems)
+                    player.GetAttackSpeed<GenericDamageClass>() += 1f / 1.5f;
+                player.GetDamage<GenericDamageClass>() += 0.425f / 1.5f;
+                player.GetCritChance<GenericDamageClass>() += 5f / 1.5f;
+                player.GetKnockback<SummonDamageClass>() += 1f / 1.5f;
 
 
 
@@ -85,7 +88,9 @@ namespace HeavenlyArsenal.Content.Buffs.Stims
             else
             {
                 player.statDefense += 5;
-                player.GetAttackSpeed<GenericDamageClass>() += 1f;
+
+                if (isNotHoldingCursedItems)
+                    player.GetAttackSpeed<GenericDamageClass>() += 1f;
                 player.GetDamage<GenericDamageClass>() += 0.425f;
                 player.GetCritChance<GenericDamageClass>() += 5f;
                 player.GetKnockback<SummonDamageClass>() += 1f;
@@ -95,7 +100,7 @@ namespace HeavenlyArsenal.Content.Buffs.Stims
                 player.pickSpeed -= 0.2f;
                 player.jumpSpeedBoost += 1f;
             }
-            if(player.GetModPlayer<StimPlayer>().Withdrawl)
+            if (player.GetModPlayer<StimPlayer>().Withdrawl)
                 player.ClearBuff(ModContent.BuffType<StimWithdrawl_Debuff>());
         }
 

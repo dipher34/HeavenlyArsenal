@@ -1,6 +1,5 @@
 ﻿using CalamityMod;
 using CalamityMod.Enums;
-using HeavenlyArsenal.Content.Items.Weapons.Magic.RocheLimit;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;

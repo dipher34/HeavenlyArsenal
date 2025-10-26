@@ -522,7 +522,8 @@ public class AntishadowAssassin : ModProjectile
         UpdateLoopedSounds();
         KeepSoundsAttached();
         DisturbLiquids();
-        UpdateCloth();
+        if (!Main.dedServ)
+            UpdateCloth();
 
         Time++;
         ExistenceTimer++;
@@ -1364,6 +1365,7 @@ public class AntishadowAssassin : ModProjectile
     /// </summary>
     private void DrawIntoBodyTarget()
     {
+        if(!Main.dedServ)
         DrawRobe();
 
         Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp, DepthStencilState.None, LumUtils.CullOnlyScreen);
@@ -1513,6 +1515,8 @@ public class AntishadowAssassin : ModProjectile
     /// </summary>
     private void RenderIntoResultsTarget()
     {
+
+
         ArmOutlineTarget.Request(400, 400, Projectile.identity, DrawIntoArmOutlineTarget);
         BodyTarget.Request(400, 400, Projectile.identity, DrawIntoBodyTarget);
         if (BodyTarget.TryGetTarget(Projectile.identity, out RenderTarget2D bodyTarget) && bodyTarget is not null &&

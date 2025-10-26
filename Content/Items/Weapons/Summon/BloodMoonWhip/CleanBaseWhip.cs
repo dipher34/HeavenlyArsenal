@@ -336,7 +336,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
                 Vector2 mid = Vector2.Lerp(points[i - 1], points[i], 0.5f);
                 Color color = Color.Lerp(Lighting.GetColor((int)(mid.X / 16f), (int)(mid.Y / 16f), StringColor), StringColor, Projectile.light);
                 Utils.DrawLine(Main.spriteBatch,points[i - 1], points[i], color, color, 2 * Projectile.scale);
-                Utils.DrawBorderString(Main.spriteBatch, i.ToString(), points[i] - Main.screenPosition, Color.Red, 0.4f);
+                //Utils.DrawBorderString(Main.spriteBatch, i.ToString(), points[i] - Main.screenPosition, Color.Red, 0.4f);
             }
         }
 

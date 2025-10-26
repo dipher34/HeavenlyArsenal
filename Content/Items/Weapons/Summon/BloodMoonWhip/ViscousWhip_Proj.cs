@@ -17,6 +17,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
 {
     internal class ViscousWhip_Proj : CleanBaseWhip
     {
+        public override Color StringColor => Color.Crimson;
         public ref Player Owner => ref Main.player[Projectile.owner];
         public override SoundStyle? WhipSound =>  GennedAssets.Sounds.Common.Glitch with { Volume = 0.5f, PitchVariance = 0.2f};
         private ModularWhipController _controller;
@@ -42,7 +43,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip
             _controller = new ModularWhipController(new BraidedMotion());
             //_controller.AddModifier(new TwirlModifier(0, Segments/2, 0.15f * -Owner.direction));
 
-            _controller.AddModifier(new SmoothSineModifier(startIndex: 0, endIndex: Segments, amplitude: 10f, frequency: 10f, period: 1f));
+           // _controller.AddModifier(new SmoothSineModifier(startIndex: 0, endIndex: Segments, amplitude: 10f, frequency: 10f, period: 1f));
            
             //_controller.AddModifier(new TwirlModifier(1, 7, -0.12f * Projectile.direction * thing)); 
             //_controller.AddModifier(new TwirlModifier(8, 16, -0.12f* thing * Projectile.direction, false));

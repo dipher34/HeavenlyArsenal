@@ -28,7 +28,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Summon.SolynButterfly
 
         public override void SetDefaults()
         {
-
+            Item.DamageType = DamageClass.Summon;
             Item.damage = 4000;
 
             Item.shootSpeed = 4;

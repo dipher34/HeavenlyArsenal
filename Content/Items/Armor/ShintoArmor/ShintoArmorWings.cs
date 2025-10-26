@@ -17,7 +17,7 @@ using Terraria.ModLoader;
 namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 {
     [AutoloadEquip(EquipType.Wings)]
-    internal class ShintoArmorWings : ModItem
+    internal class ShintoArmorWings : ModItem, ILocalizedModType
     {
         public static int WingSlotID
         {
@@ -26,7 +26,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         }
 
         public override string Texture => "HeavenlyArsenal/Content/Items/Armor/ShintoArmor/ShintoArmorWings_Item";
-        public new string LocalizationCategory => "Items.Accessories";
+        public override string LocalizationCategory => "Items.Accessories";
 
         public override void SetStaticDefaults()
         {
@@ -136,30 +136,11 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         public override void UpdateAccessory(Player player, bool hideVisual)
         {
 
-            /*
-            if (player.controlJump && player.wingTime > 0f && player.jump == 0 && player.velocity.Y != 0f && !hideVisual)
-            {
-                int dustXOffset = 4;
-                if (player.direction == 1)
-                {
-                    dustXOffset = -40;
-                }
-                int flightDust = Dust.NewDust(new Vector2(player.position.X + (float)(player.width / 2) + (float)dustXOffset, player.position.Y + (float)(player.height / 2) - 15f), 30, 30, (int)CalamityDusts.ProfanedFire, 0f, 0f, 100, default, 2.4f);
-                Main.dust[flightDust].noGravity = true;
-                Main.dust[flightDust].velocity *= 0.3f;
-                if (Main.rand.NextBool(10))
-                {
-                    Main.dust[flightDust].fadeIn = 2f;
-                }
-                Main.dust[flightDust].shader = GameShaders.Armor.GetSecondaryShader(player.cWings, player);
-            }*/
             player.noFallDmg = true;
         }
 
         public override bool WingUpdate(Player player, bool inUse)
         {
-            if (player.wings != player.wingsLogic)
-                return base.WingUpdate(player, inUse);
 
 
             if (player.controlJump && player.wingTime > 0 && player.velocity.Y != 0)

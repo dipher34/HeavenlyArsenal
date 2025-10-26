@@ -34,7 +34,7 @@ public class AvatarLonginusHeld : ModProjectile
         ProjectileID.Sets.TrailCacheLength[Type] = 10;
         ProjectileID.Sets.HeldProjDoesNotUsePlayerGfxOffY[Type] = true;
     }
-
+    
     public override void SetDefaults()
     {
         Projectile.width = 64;
@@ -954,7 +954,7 @@ public class AvatarLonginusHeld : ModProjectile
         writer.Write(IsEmpowered);
         writer.Write(HitTimer);
         writer.WriteVector2(JavelinOffset);
-        writer.Write(CurrentFrame);
+        //writer.Write(CurrentFrame);
     }
 
     public override void ReceiveExtraAI(BinaryReader reader)
@@ -962,7 +962,7 @@ public class AvatarLonginusHeld : ModProjectile
         IsEmpowered = reader.ReadBoolean();
         HitTimer = reader.Read();
         JavelinOffset = reader.ReadVector2();
-        CurrentFrame = reader.Read();
+        //CurrentFrame = reader.Read();
     }
 
     private bool useSlash;

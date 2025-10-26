@@ -1,6 +1,9 @@
-﻿using CalamityMod.NPCs.NormalNPCs;
+﻿using CalamityMod;
+using CalamityMod.NPCs.NormalNPCs;
 using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab;
+using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.FleshlingCultist;
 using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech;
+using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC;
 using Luminance.Assets;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -60,9 +63,11 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
                 // The float value is the spawn weight relative to others in the pool
                 pool[ModContent.NPCType<ArtilleryCrab>()] = SpawnCondition.OverworldNightMonster.Chance * 0.12f;
                 pool[ModContent.NPCType<UmbralLeech>()] = SpawnCondition.OverworldNightMonster.Chance * 0.074f;
-                
-                pool[ModContent.NPCType<RitualAltar>()] = SpawnCondition.OverworldNightMonster.Chance * 0.06f;
-                // add as many as you like
+                pool[ModContent.NPCType<Umbralarva>()] = SpawnCondition.OverworldNightMonster.Chance * 0.14f;
+
+                pool[ModContent.NPCType<RitualAltar>()] = SpawnCondition.OverworldNightMonster.Chance * 0.03f;
+                pool[ModContent.NPCType<FleshlingCultist.FleshlingCultist>()] = SpawnCondition.OverworldNightMonster.Chance * 0.22f;
+               
             }
         }
             
@@ -72,18 +77,40 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
             {
                 // spawnRate is how often spawns happen (lower = more frequent)
                 // maxSpawns is how many can exist near the player at once
-                spawnRate = 60; // vanilla ~600; lowering makes spawns faster
-                maxSpawns = 20; // tweak for your event
+                spawnRate = 20; // vanilla ~600; lowering makes spawns faster
+                maxSpawns = 30; 
             }
         }
     }
     public abstract class BloodmoonBaseNPC : ModNPC
     {
+        public override void ModifyTypeName(ref string typeName)
+        {
+            if (NPC.GetGlobalNPC<RitualBuffNPC>().hasRitualBuff)
+            {
+                int val = (int)NPC.GetGlobalNPC<RitualBuffNPC>().BuffType;
+                string Modifier = $"{RitualBuffNPC.NameModifiers[val]}";
+                typeName = $"{Modifier} {typeName}";
+            }
+        }
         public override string Texture => MiscTexturesRegistry.InvisiblePixelPath;
 
         public override string LocalizationCategory => "NPCs";
-      
+
+        public virtual bool ResistantToTrueMelee => true;
+
+        public override void ModifyIncomingHit(ref NPC.HitModifiers modifiers)
+        {
+
+            if(modifiers.DamageType == ModContent.GetInstance<TrueMeleeDamageClass>() && ResistantToTrueMelee)
+            {
+                modifiers.CritDamage *= 0.75f;
+                modifiers.FinalDamage *= 0.55f;
+            }
+
+        }
         
+
         ///<summary>
         /// the current blood in this npc.
         ///</summary>
@@ -117,6 +144,14 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
             set; 
         } = true;
 
+        /// <summary>
+        /// Basically the priority of an npc to be sacrificed. if this is zero, they basically will almost never be sacrificed.
+        /// </summary>
+        public virtual int SacrificePrio
+        {
+            get => !canBeSacrificed ? 0 : default;
+            set => canBeSacrificed = value > 0;
+        }
         ///<summary>
         /// calculate the value of the sacrificed npc. we'll later multiply this depending on their value, but im coding blind at the time of writing this, so that should best be left for later.
         ///</summary>
@@ -135,7 +170,16 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
         {
             //Utils.DrawBorderString(spriteBatch, $"{blood}/{bloodBankMax}%, {blood}/{bloodBankMax}", NPC.Center - screenPos + new Vector2(0, -40), Color.Red);
 
-
+            /*
+            string Msg = "";
+            var a = NPC.GetGlobalNPC<RitualBuffNPC>();
+            Msg += $"{a.BuffType.ToString()}\n";
+            Msg += $"{a.ritualBuffTimer}\n";
+            if (NPC.GetGlobalNPC<RitualBuffNPC>().hasRitualBuff)
+            {
+                Utils.DrawBorderString(spriteBatch, Msg, NPC.Center - screenPos, Color.AntiqueWhite, anchory: -2);
+            }
+            */
             return base.PreDraw(spriteBatch, screenPos, drawColor);
         }
     

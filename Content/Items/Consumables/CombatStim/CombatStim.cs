@@ -1,5 +1,6 @@
 ﻿using CalamityMod.Items.Materials;
 using CalamityMod.Items.Potions;
+using HeavenlyArsenal.Common;
 using HeavenlyArsenal.Content.Buffs.Stims;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -62,15 +63,17 @@ namespace HeavenlyArsenal.Content.Items.Consumables.CombatStim
         public override void OnConsumeItem(Player player)
         {
             int Stimsused = player.GetModPlayer<StimPlayer>().stimsUsed;
-            if (Main.myPlayer == player.whoAmI)
-            {
+           
 
                 if (player.GetModPlayer<StimPlayer>().Addicted)
                 {
                     player.HealEffect(-150, true);
                     player.statLife -= 150;
+                    //TODO: call net update
+                    
                     SoundEngine.PlaySound(TakeStim with { Pitch = 1f, PitchVariance = 0.2f, Volume = 0.4f }, player.Center);
                     SoundEngine.PlaySound(GennedAssets.Sounds.Common.EarRinging with { Pitch = 0.1f + Stimsused/10, Volume = 0.01f }, player.Center);
+                    NetMessage.SendData(MessageID.SyncPlayer, -1, -1, null, player.whoAmI);
                 }
                 else
                 {
@@ -78,10 +81,16 @@ namespace HeavenlyArsenal.Content.Items.Consumables.CombatStim
                     player.statLife -= 50;
                     SoundEngine.PlaySound(TakeStim with { PitchVariance = 0.2f, Volume = 0.4f }, player.Center);
                 }
+
+            if (HeavenlyArsenalClientConfig.Instance.StimVFX)
+            {
                 GeneralScreenEffectSystem.ChromaticAberration.Start(player.Center, 3f, 10);
                 GeneralScreenEffectSystem.RadialBlur.Start(player.Center, 1, 60);
-                //player.GetModPlayer<StimPlayer>().UseStim();
+
             }
+                
+                //player.GetModPlayer<StimPlayer>().UseStim();
+            
             if (player.statLife <= 0)
             {
                 if (player.GetModPlayer<StimPlayer>().Addicted)

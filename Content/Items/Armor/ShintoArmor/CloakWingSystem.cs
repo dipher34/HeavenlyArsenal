@@ -234,9 +234,12 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         {
             Main.QueueMainThreadAction(() =>
             {
-                drawToTarget += DrawRobeToTarget;
-                RobeMapTarget = new RenderTarget2D(Main.graphics.GraphicsDevice, backSize, backSize);
-                RobeTarget = new RenderTarget2D(Main.graphics.GraphicsDevice, backSize, backSize);
+                if(Main.graphics.GraphicsDevice != null) {
+                    drawToTarget += DrawRobeToTarget;
+                    RobeMapTarget = new RenderTarget2D(Main.graphics.GraphicsDevice, backSize, backSize);
+                    RobeTarget = new RenderTarget2D(Main.graphics.GraphicsDevice, backSize, backSize);
+                }
+                
             });
         }
 
@@ -244,6 +247,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
         {
             if (Player != null)
             {
+                
                 if (!IsReady() || !ShaderManager.HasFinishedLoading) // God damn Luminance you slowpoke
                     return;
 
@@ -291,7 +295,11 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             }
         }
 
-        public bool IsReady() => RobeTarget != null;
+        public bool IsReady()
+        {
+            return (RobeTarget != null && !Player.GetModPlayer<ShintoArmorPlayer>().isShadeTeleporting && !Player.GetModPlayer<ShintoArmorPlayer>().JustTeleported);
+           
+        }
         public DrawData GetRobeTarget() => new DrawData(RobeTarget, Vector2.Zero + new Vector2(0, Player.gfxOffY), null, Color.White, -Player.fullRotation, RobeTarget.Size() * 0.5f, 1f, 0);
 
 

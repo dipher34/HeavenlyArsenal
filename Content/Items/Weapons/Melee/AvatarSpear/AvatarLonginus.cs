@@ -109,14 +109,13 @@ public class AvatarLonginus : ModItem
 
     public override void HoldItem(Player player)
     {
-        if (player.whoAmI == Main.myPlayer)
-        {
+        
             if (!SpearOut(player))
             {
                 Projectile spear = Projectile.NewProjectileDirect(player.GetSource_ItemUse(Item), player.Center, Vector2.Zero, Item.shoot, Item.damage, Item.knockBack, player.whoAmI);
                 spear.rotation = -MathHelper.PiOver2 + 1f * player.direction;
             }
-        }
+        
     }
     public override bool AltFunctionUse(Player player) => true;
     public override bool Shoot(Player player, EntitySource_ItemUse_WithAmmo source, Vector2 position, Vector2 velocity, int type, int damage, float knockback) => false;

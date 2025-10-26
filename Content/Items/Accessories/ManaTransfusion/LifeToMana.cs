@@ -21,6 +21,7 @@ namespace HeavenlyArsenal.Content.Items.Accessories.ManaTransfusion
         
         public override void UpdateAccessory(Player player, bool hideVisual)
         {
+            
             player.GetModPlayer<ManaTransfusionPlayer>().Active = true;
             player.statManaMax2 += 60;
         }
@@ -97,11 +98,15 @@ namespace HeavenlyArsenal.Content.Items.Accessories.ManaTransfusion
         }
         public override void OnHurt(Player.HurtInfo info)
         {
+            if (!Active)
+                return;
             Player.statMana -= info.Damage;
             Player.manaRegenDelay = Math.Clamp(Player.manaRegenDelay + 160, 0, 300);
         }
         public override void UpdateLifeRegen()
         {
+            if (!Active)
+                return;
             Player.lifeRegen *= 0;
         }
         public override void NaturalLifeRegen(ref float regen)
