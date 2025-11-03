@@ -20,26 +20,18 @@ using static Luminance.Common.Utilities.Utilities;
 
 namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Jellyfish
 {
-    partial class BloodJelly : BloodmoonBaseNPC
+    partial class BloodJelly : BloodMoonBaseNPC
     {
         #region Setup
-        public override string Texture => "HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/Jellyfish/Jellyfish";
-        public enum JellyState
+        public override string Texture => "HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/Jellyfish/BloodJelly";
+
+        private Dictionary<int, (Vector2[], Vector2[])> Tendrils = new Dictionary<int, (Vector2[], Vector2[])>(2);
+        public int CosmeticTime
         {
-            Idle,
-            TrackTarget
+            get => (int)NPC.localAI[0];
+            set => NPC.localAI[0] = value;
         }
-        public int Time
-        {
-            get => (int)NPC.ai[0];
-            set => NPC.ai[0] = value;
-        }
-        public JellyState CurrentState
-        {
-            get => (JellyState)NPC.ai[1];
-            set => NPC.ai[1] = (int)value;
-        }
-        public ref float SquishInterp => ref NPC.localAI[0];
+        private readonly int tendrilCount = 4;
 
         #endregion
         public override void SetDefaults()
@@ -52,10 +44,30 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Jellyfish
             NPC.Size = new Vector2(40, 80);
             NPC.aiStyle = -1;
         }
+        public override void OnSpawn(IEntitySource source)
+        {
+          
+            for (int i = 0; i < tendrilCount; i++)
+            {
+                Tendrils.Add(i, (new Vector2[tendrilCount], new Vector2[tendrilCount]));
+            }
+        }
 
         public override void AI()
         {
+            if (NPC.ai[1] != 0)
+            {
+                NPC.Center = Main.MouseWorld;
+            }
             
+            Time++;
+        }
+
+        public override void PostAI()
+        {
+
+
+            CosmeticTime++;
         }
     }
 }

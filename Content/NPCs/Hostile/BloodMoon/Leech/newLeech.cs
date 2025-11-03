@@ -15,7 +15,7 @@ using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
 {
-    partial class newLeech : BloodmoonBaseNPC, IMultiSegmentNPC
+    partial class newLeech : BloodMoonBaseNPC, IMultiSegmentNPC
     {
 
         public override string Texture => "HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/Leech/UmbralLeech_Bestiary";
@@ -51,7 +51,6 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
 
         public override int bloodBankMax => 50;
 
-        public ref float Time => ref NPC.ai[0];
         //temporary debug ai slot
         public ref float Debug => ref NPC.ai[1];
         public Behavior CurrentState
@@ -83,8 +82,9 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
 
 
             bestiaryEntry.Info.AddRange([
-                BestiaryDatabaseNPCsPopulator.CommonTags.SpawnConditions.Events.BloodMoon,
 
+                BestiaryDatabaseNPCsPopulator.CommonTags.SpawnConditions.Events.BloodMoon,
+                
             new FlavorTextBestiaryInfoElement("Mods.HeavenlyArsenal.Bestiary.UmbralLeech")
             ]);
         }

@@ -6,14 +6,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Jellyfish
+namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
 {
-    partial class BloodJelly
+    partial class BloodCrab
     {
-        
-        public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
+
+        public override void FindFrame(int frameHeight)
         {
             
+        }
+        public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
+        {
             return base.PreDraw(spriteBatch, screenPos, drawColor);
         }
     }

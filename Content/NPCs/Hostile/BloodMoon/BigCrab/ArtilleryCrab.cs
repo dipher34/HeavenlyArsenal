@@ -32,7 +32,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
         DeathAnim
     }
 
-    class ArtilleryCrab : BloodmoonBaseNPC
+    class ArtilleryCrab : BloodMoonBaseNPC
     {
         public override string Texture => "HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/BigCrab/ArtilleryCrab";
         public HemocrabAI CurrentState = HemocrabAI.Idle;
@@ -474,7 +474,6 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
         {
             NPCID.Sets.ProjectileNPC[NPC.type] = true;
             NPCID.Sets.CannotDropSouls[NPC.type] = true;
-            
            // NPCID.Sets
         }
 

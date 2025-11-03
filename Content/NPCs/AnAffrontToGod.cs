@@ -1,20 +1,15 @@
-﻿using CalamityMod.Enums;
-using HeavenlyArsenal.Content.Items.Weapons.Magic.RocheLimit;
-using Luminance.Common.Utilities;
-using Luminance.Core.Graphics;
+﻿//using HeavenlyArsenal.Content.Items.Weapons.Magic.RocheLimit;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
 using NoxusBoss.Content.Items.MiscOPTools;
 using NoxusBoss.Core.CrossCompatibility.Inbound;
 using NoxusBoss.Core.Graphics.GeneralScreenEffects;
-using NoxusBoss.Core.World.GameScenes.AvatarAppearances;
 using System;
 using Terraria;
 using Terraria.Audio;
 using Terraria.GameContent;
 using Terraria.GameContent.Bestiary;
-using Terraria.ID;
 using Terraria.ModLoader;
 using static Luminance.Common.Utilities.Utilities;
 
@@ -40,16 +35,16 @@ namespace HeavenlyArsenal.Content.NPCs
         }
 
         public ref float Timer => ref NPC.ai[0];
-        public override void SetStaticDefaults() 
+        public override void SetStaticDefaults()
         {
             EmptinessSprayer.NPCsToNotDelete[Type] = true;
-            RocheLimitGlobalNPC.ImmuneToLobotomy[Type] = true;
+            //RocheLimitGlobalNPC.ImmuneToLobotomy[Type] = true;
             if (ModReferences.CalamityRemixMod is not null)
             {
                 //LaRugaID = ModReferences.CalamityRemixMod.Find<ModNPC>("LaRuga").Type;
                 //NPCsThatReflectSpray[LaRugaID] = true;
             }
-        } 
+        }
 
         public override void SetDefaults()
         {
@@ -100,18 +95,19 @@ namespace HeavenlyArsenal.Content.NPCs
 
         public void StateMachine()
         {
-            switch (CurrentState){
+            switch (CurrentState)
+            {
 
                 case AATGState.Idle:
                     DoIdle();
                     break;
                 case AATGState.Walking:
-                    DoWalking(); 
+                    DoWalking();
                     break;
                 case AATGState.Scream:
                     Scream();
                     break;
-                
+
             }
         }
         public void DoIdle()
@@ -130,7 +126,7 @@ namespace HeavenlyArsenal.Content.NPCs
         }
         public void DoWalking()
         {
-            if(PlayerIndex == -1)
+            if (PlayerIndex == -1)
             {
                 CurrentState = AATGState.Idle;
                 return;
@@ -139,7 +135,7 @@ namespace HeavenlyArsenal.Content.NPCs
             {
                 Player Target = Main.player[PlayerIndex];
 
-                
+
 
                 if (Timer < 1000)
                 {
@@ -149,17 +145,17 @@ namespace HeavenlyArsenal.Content.NPCs
                 }
                 else
                 {
-                    
+
 
                     //todo: system to dash towards the player
 
                     if (DashCount > 1)
                     {
-                        if (!Dashing) 
+                        if (!Dashing)
                         {
                             DashDirection = NPC.Center.AngleTo(Target.Center);
-                            if (DashDirection != 0) 
-                            Dashing = true;
+                            if (DashDirection != 0)
+                                Dashing = true;
                         }
                         if (Dashing)
                         {
@@ -173,7 +169,7 @@ namespace HeavenlyArsenal.Content.NPCs
                             }
                         }
                     }
-                    if(DashCount == 1)
+                    if (DashCount == 1)
                     {
                         NPC.Center = Target.Center + Vector2.UnitX * 300;
                         CurrentState = AATGState.Scream;
@@ -188,7 +184,7 @@ namespace HeavenlyArsenal.Content.NPCs
         public void Scream()
         {
             float MaxScreamtime = 360;
-            if(Timer== 0)
+            if (Timer == 0)
             {
                 SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.Scream with { MaxInstances = 1 }, NPC.Center);
                 GeneralScreenEffectSystem.RadialBlur.Start(NPC.Center, 40, (int)MaxScreamtime);//.RadialBlur.Start(Player.Center, 3f, 90);
@@ -208,7 +204,7 @@ namespace HeavenlyArsenal.Content.NPCs
         public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
         {
             // Main.NewText("PreDraw is running!", Color.LimeGreen);
-          
+
             Texture2D bodyTexture = TextureAssets.Npc[NPC.type].Value;
             Texture2D Glow = GennedAssets.Textures.FirstPhaseForm.AvatarRift;
             Vector2 bodyOrigin = new Vector2(bodyTexture.Width / 2f, bodyTexture.Height / 2f);
@@ -232,7 +228,7 @@ namespace HeavenlyArsenal.Content.NPCs
             Vector2 Lorigin = new Vector2(Lillyframe.Width / 2, Lillyframe.Height + 54 * Math.Sign(NPC.gravity));
             float LillySquish = MathF.Cos(Main.GlobalTimeWrappedHourly * 10.5f + NPC.Center.X + NPC.Center.Y) * 1f;
             float LillyScale = 0.1f;
-            Vector2 LillyPos = NPC.Center + new Vector2(0f,-20f);
+            Vector2 LillyPos = NPC.Center + new Vector2(0f, -20f);
             Color glowmaskColor = new Color(2, 0, 156);
             //Main.NewText($"{LillyPos - Main.screenPosition}");
             Main.EntitySpriteDraw(LillyTexture, LillyPos - Main.screenPosition, Lillyframe, drawColor, wind, Lorigin, LillyScale, spriteEffects, 0f);

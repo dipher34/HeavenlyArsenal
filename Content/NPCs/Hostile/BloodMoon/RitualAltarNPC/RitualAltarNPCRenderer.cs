@@ -11,7 +11,7 @@ using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC;
 
-internal partial class RitualAltar : BloodmoonBaseNPC
+internal partial class RitualAltar : BloodMoonBaseNPC
 {
     static void DrawArm(ref RitualAltarLimb RitualAltarLimb, Color drawColor, SpriteEffects effects)
     {
@@ -97,7 +97,6 @@ internal partial class RitualAltar : BloodmoonBaseNPC
             LightingEnabled = false
         };
 
-        // Generate vertex data (size = 100f, color = white)
         var vertices = Generate(100f, DrawColor);
 
         isohedronBuffer ??= new VertexBuffer(gd, typeof(VertexPositionColor), vertices.Length, BufferUsage.WriteOnly);
@@ -110,7 +109,6 @@ internal partial class RitualAltar : BloodmoonBaseNPC
             Matrix.CreateRotationX(Main.GlobalTimeWrappedHourly * 0.8f) *
             Matrix.CreateTranslation(AnchorPos.X, AnchorPos.Y, 0);
 
-        // Let Terraria handle zoom/panning automatically
         isohedron.View = Main.GameViewMatrix.ZoomMatrix;
 
         isohedron.Projection = Matrix.CreateOrthographicOffCenter(
@@ -253,7 +251,7 @@ internal partial class RitualAltar : BloodmoonBaseNPC
         basicEffect.Projection = Matrix.CreateOrthographicOffCenter(
                                     0, Main.screenWidth,
                                     Main.screenHeight, 0,
-                                    -1000f, 1000f); // allow Z wiggle safely
+                                    -1000f, 1000f); 
 
         // Order: Scale -> Yaw -> Pitch -> Translate
 
@@ -356,39 +354,7 @@ internal partial class RitualAltar : BloodmoonBaseNPC
         currentPitch = MathHelper.Clamp(currentPitch, -pitchMax, pitchMax);
         
     }
-
-    static void DrawLeg(ref RitualAltarLimb nightgauntLimb, Color drawColor, SpriteEffects effects)
-    {
-        var legTexture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/RitualAltarNPC/RitualAltarArm").Value;
-        var defaultLowerLegFrame = new Rectangle(0, 0, 80, 26);
-        var anchoredLowerLegFrame = new Rectangle(0, 26, 80, 26);
-
-        var currentFrame = nightgauntLimb.IsAnchored ? anchoredLowerLegFrame : defaultLowerLegFrame;
-
-        Main.spriteBatch.Draw(
-            legTexture,
-            nightgauntLimb.Skeleton.Position(0) - Main.screenPosition,
-            new Rectangle(84, 0, 66, 26),
-            drawColor,
-            (nightgauntLimb.Skeleton.Position(0) - nightgauntLimb.Skeleton.Position(1)).ToRotation(),
-            new Vector2(134 - 74, 12),
-            1f,
-            effects,
-            0f
-        );
-
-        Main.spriteBatch.Draw(
-            legTexture,
-            nightgauntLimb.Skeleton.Position(1) - Main.screenPosition,
-            currentFrame,
-            drawColor,
-            (nightgauntLimb.Skeleton.Position(1) - nightgauntLimb.Skeleton.Position(2)).ToRotation(),
-            new Vector2(72, 14),
-            1f,
-            effects,
-            0f
-        );
-    }
+   
     void mask(SpriteBatch spriteBatch, Color drawColor)
     {
         spriteBatch.End();
@@ -402,7 +368,7 @@ internal partial class RitualAltar : BloodmoonBaseNPC
         if(currentTarget != null)
         {
             Vector2 toPlayer = currentTarget.Center - NPC.Center;
-            UpdateFaceAim(toPlayer, NPC.spriteDirection, yawMaxDeg: 28f, pitchMaxDeg: 28f, degPerSec: 160f);
+            UpdateFaceAim(toPlayer, NPC.spriteDirection, yawMaxDeg: 28f, pitchMaxDeg: 18f, degPerSec: 160f);
 
         }
         //Main.NewText("pitch: " + currentPitch + " yaw: " + currentYaw);

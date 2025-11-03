@@ -14,7 +14,7 @@ using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
 {
-    public class Umbralarva : BloodmoonBaseNPC
+    public class Umbralarva : BloodMoonBaseNPC
     {
 
         public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)

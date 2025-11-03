@@ -26,7 +26,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
             {
                 if (RitualSystem.IsNPCBuffed(npc))
                     isSacrificed = false;
-                BloodmoonBaseNPC a = npc.ModNPC as BloodmoonBaseNPC;
+                BloodMoonBaseNPC a = npc.ModNPC as BloodMoonBaseNPC;
 
                 if(!npc.noGravity)
                     npc.noGravity = false;
@@ -40,6 +40,12 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
                         npc.active = false;
                     Priest.blood += a.blood;
                     Priest.SacrificeCooldown = 60 * 5;
+                    if (Priest.NPC.life < Priest.NPC.lifeMax)
+                    {
+                        Priest.NPC.life = Math.Clamp(Priest.NPC.life + npc.lifeMax / 4, 0, Priest.NPC.lifeMax);
+                        CombatText.NewText(Priest.NPC.Hitbox, Color.Crimson, "+" + npc.lifeMax / 4);
+
+                    }
                     Priest.NPCTarget = null;
                     if(a.blood <= 0)
                     {

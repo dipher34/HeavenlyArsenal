@@ -98,7 +98,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
                 if (npc.type == ModContent.NPCType<ExhumedHeart>())
                     continue;
                 if (npc.type == ModContent.NPCType<Umbralarva>())
-
+                    continue;
                 if (npc.Distance(NPC.Center) < 1000 && !temp.Contains(npc) && !BlackListProjectileNPCs.BlackListedNPCs.Contains(npc.whoAmI))
                 {
                     temp.Add(npc);
@@ -109,7 +109,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
 
                 temp.Sort((a, b) => a.Distance(NPC.Center).CompareTo(b.Distance(NPC.Center)));
             }
-            else if (temp.Count != 1)
+            else if (temp.Count < 1)
             {
                 currentTarget = temp2;
                 playerTarget = null;

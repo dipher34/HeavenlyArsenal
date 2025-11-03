@@ -45,7 +45,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
             }
 
             //Main.NewText("Passed Modnpc Check");
-            if (npc.ModNPC is not BloodmoonBaseNPC)
+            if (npc.ModNPC is not BloodMoonBaseNPC)
                 return false;
             if (npc.Distance(NPC.Center) > 700)
                 return false;
@@ -81,12 +81,12 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
         void UpdateList()
         {
             //first: trim the list. if there's an inactive npc in the list, remove it from the list.
-            //TODO: sort by BloodmoonBaseNPC BuffPrio (so that lower buff priority targets get selected to be sacrifices)
+            //TODO: sort by BloodMoonBaseNPC BuffPrio (so that lower buff priority targets get selected to be sacrifices)
             // and by distance (so that the first index is always the closest npc)
             Sacrifices.RemoveAll(id => id == null || (!id.active) || RitualSystem.IsNPCBuffed(id) || id.type == ModContent.NPCType<RitualAltar>());
             Sacrifices.RemoveAll(id =>
             {
-                return id.ModNPC is BloodmoonBaseNPC b ? b.canBeSacrificed : true;
+                return id.ModNPC is BloodMoonBaseNPC b ? b.canBeSacrificed : true;
             });
 
             
@@ -97,8 +97,8 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
 
             Sacrifices.Sort((a, b) =>
             {
-                float aPrio = a.ModNPC is BloodmoonBaseNPC aBloodmoon ? aBloodmoon.SacrificePrio : 0f;
-                float bPrio = b.ModNPC is BloodmoonBaseNPC bBloodmoon ? bBloodmoon.SacrificePrio : 0f;
+                float aPrio = a.ModNPC is BloodMoonBaseNPC aBloodmoon ? aBloodmoon.SacrificePrio : 0f;
+                float bPrio = b.ModNPC is BloodMoonBaseNPC bBloodmoon ? bBloodmoon.SacrificePrio : 0f;
                 return bPrio.CompareTo(aPrio);
             });
             /*
@@ -107,7 +107,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
             foreach (NPC npc in Sacrifices)
             {
                 
-                BloodmoonBaseNPC d = npc.ModNPC as BloodmoonBaseNPC;
+                BloodMoonBaseNPC d = npc.ModNPC as BloodMoonBaseNPC;
                 a += $"{npc.FullName}, whoami? {npc.whoAmI}, Sacrifice Prio: {d.SacrificePrio}, {i}\n";
                 i++;
             }
@@ -197,7 +197,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
                 if (npc.life <= 1) continue;
                 if (npc.type == NPC.type) continue;
                 if (BlackListProjectileNPCs.BlackListedNPCs.Contains(npc.type)) continue;
-                if (npc.Distance(NPC.Center) > 300f) continue;
+                if (npc.Distance(NPC.Center) > 700f) continue;
                 if (RitualSystem.BuffedNPCs.Contains(npc)) continue;
                
                 // Skip if recently resurrected & already in the ritual set
@@ -224,8 +224,8 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
             // Sort by prio desc, then distance asc
             nearbyNpcs.Sort((a, b) =>
             {
-                float aPrio = a.ModNPC is BloodmoonBaseNPC ab ? ab.buffPrio : 0f;
-                float bPrio = b.ModNPC is BloodmoonBaseNPC bb ? bb.buffPrio : 0f;
+                float aPrio = a.ModNPC is BloodMoonBaseNPC ab ? ab.buffPrio : 0f;
+                float bPrio = b.ModNPC is BloodMoonBaseNPC bb ? bb.buffPrio : 0f;
 
                 int prioCompare = bPrio.CompareTo(aPrio);
                 if (prioCompare != 0)
@@ -250,7 +250,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
                 tgtGN.isBeingBuffed = true;
                 tgtGN.BuffGranter = NPC;
 
-                //Main.NewText($"[Buff] Target: {NPCTarget.FullName} (prio {(NPCTarget.ModNPC as BloodmoonBaseNPC)?.buffPrio ?? 0f:F2}, " +
+                //Main.NewText($"[Buff] Target: {NPCTarget.FullName} (prio {(NPCTarget.ModNPC as BloodMoonBaseNPC)?.buffPrio ?? 0f:F2}, " +
                  //            $"dist {NPCTarget.Center.Distance(NPC.Center):F0})");
             }
             else
@@ -270,7 +270,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
                     gn3.isBeingBuffed = true;
                     gn3.BuffGranter = NPC;
 
-                    //Main.NewText($"[Buff] Switched target: {NPCTarget.FullName} (prio {(NPCTarget.ModNPC as BloodmoonBaseNPC)?.buffPrio ?? 0f:F2}, " +
+                    //Main.NewText($"[Buff] Switched target: {NPCTarget.FullName} (prio {(NPCTarget.ModNPC as BloodMoonBaseNPC)?.buffPrio ?? 0f:F2}, " +
                    //              $"dist {NPCTarget.Center.Distance(NPC.Center):F0})");
                 }
                 else
@@ -282,7 +282,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
 
             // Face/slide a bit toward the target (optional)
             float distToTarget = Vector2.Distance(NPC.Center, NPCTarget.Center);
-            float slide = MathF.Tanh(distToTarget) * SpeedMulti;
+            float slide = MathF.Tanh(distToTarget) * SpeedMulti*3;
             NPC.velocity.X = NPC.AngleTo(NPCTarget.Center).ToRotationVector2().X * slide;
 
             return true;

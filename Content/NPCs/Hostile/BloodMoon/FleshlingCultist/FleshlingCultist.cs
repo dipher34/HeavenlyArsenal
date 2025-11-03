@@ -12,7 +12,7 @@ using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.FleshlingCultist
 {
-    partial class FleshlingCultist : BloodmoonBaseNPC
+    partial class FleshlingCultist : BloodMoonBaseNPC
     {
         public override string Texture => "HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/FleshlingCultist/FleshlingCultist";
         public override float SacrificePrio => 1;
@@ -49,7 +49,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.FleshlingCultist
             NPC.damage = 100;
             NPC.defense = 27;
             NPC.knockBackResist = 0.4f;
-            NPC.Size = new Vector2(30, 50);
+            NPC.Size = new Vector2(32, 50);
         }
 
         public override void OnSpawn(IEntitySource source)

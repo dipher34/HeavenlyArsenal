@@ -86,7 +86,8 @@ public class AntishadowCrack : BaseParticle
 
         int rotation = 0;
         Main.spriteBatch.Draw(texture, position - Main.screenPosition, frame, drawColor, rotation + MathHelper.Pi / 3f * direction, frame.Size() * 0.5f, Scale * new Vector2(1f, 1f + TimeLeft * 0.05f) * 0.5f, flip, 0);
-        Main.NewText($"AntishadowCrack Drawn!{position}", Color.AntiqueWhite);
+       
+
         Main.pixelShader.CurrentTechnique.Passes[0].Apply();
 
 

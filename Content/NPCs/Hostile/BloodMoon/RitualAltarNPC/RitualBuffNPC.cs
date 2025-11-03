@@ -1,4 +1,5 @@
-﻿using HeavenlyArsenal.Common.utils;
+﻿using HeavenlyArsenal.Common.Graphics;
+using HeavenlyArsenal.Common.utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
@@ -35,7 +36,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
         }
         public override bool AppliesToEntity(NPC entity, bool lateInstantiation)
         {
-            if (entity.ModNPC != null && entity.ModNPC is BloodmoonBaseNPC)
+            if (entity.ModNPC != null && entity.ModNPC is BloodMoonBaseNPC)
                 return lateInstantiation && true;
             else
                 return false;
@@ -67,7 +68,10 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
                 RitualAltar altar = BuffGranter.ModNPC as RitualAltar;
 
                 npc.velocity = Vector2.Zero;
-                npc.Center = Vector2.Lerp(npc.Center, BuffGranter.Top + new Vector2(0, -npc.height - 120).RotatedBy(BuffGranter.rotation + MathHelper.PiOver2), 0.2f);
+                Vector2 endPos = BuffGranter.Top + new Vector2(0, -120).RotatedBy(BuffGranter.rotation + MathHelper.PiOver2);
+
+                Lighting.AddLight(endPos, TorchID.Crimson);
+                npc.Center = Vector2.Lerp(npc.Center, endPos, 0.5f);
                 int cultistAmount = 1;
                 if (CultistCoordinator.GetCultOfNPC(BuffGranter) != null)
                     foreach (NPC a in CultistCoordinator.GetCultOfNPC(BuffGranter).Cultists)
@@ -250,9 +254,17 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
             hasRitualBuff = true;
             RitualSystem.AddNPC(npc);
             BuffType = (RitualBuffType)buffType;
+            if(buffType == (int)RitualBuffType.CooldownReduction)
+            {
+                npc.life = npc.lifeMax;
+                npc.netUpdate = true;
+            }
             ritualBuffTier = Tier;
             ritualBuffTimer = ritualBuffDuration + 80 * Tier;
+            BuffRune particle = BuffRune.pool.RequestParticle();
+            particle.Prepare(npc.Center, 0, 120);
 
+            ParticleEngine.ShaderParticles.Add(particle);
         }
 
         public void ClearRitualBuff(NPC npc)

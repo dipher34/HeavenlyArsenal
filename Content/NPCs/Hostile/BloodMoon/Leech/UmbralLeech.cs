@@ -35,7 +35,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
         DeathAnim
     }
 
-    public class UmbralLeech : BloodmoonBaseNPC
+    public class UmbralLeech : BloodMoonBaseNPC
     {
 
         #region StolenCode
@@ -1200,7 +1200,6 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
             }
 
         }
-
         private void DrawTelegraph(Color lightColor)
         {
             Texture2D Telegraph = AssetDirectory.Textures.UmbralLeechTelegraph.Value;
@@ -1220,7 +1219,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
 
             Texture2D texture =
                 ModContent.Request<Texture2D>(
-                "HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/Leech/UmbralLeech").Value;
+                "HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/Leech/UmbralLeech_0").Value;
 
             //Texture2D outline = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/Leech/UmbralLeech2").Value;
             SpriteEffects Leech = NPC.direction == 1 ? SpriteEffects.FlipVertically : SpriteEffects.None;

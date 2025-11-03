@@ -18,6 +18,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.BlackKnife
         public override void SetStaticDefaults()
         {
             Main.RegisterItemAnimation(Item.type, new DrawAnimationVertical(3, 5));
+
         }
         public override void SetDefaults()
         {

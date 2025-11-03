@@ -16,7 +16,10 @@ public static class AssetDirectory
 
     public static class Textures
     {
-
+        public static class Particles
+        {
+            public static readonly Asset<Texture2D> RuneParticle = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/Particles/Rune1");
+        }
         public static class Items
         {
             public static class Accessories

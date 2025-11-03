@@ -22,11 +22,16 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.ShieldGuy
             SpriteEffects effects = NPC.direction == 1 ? SpriteEffects.None : SpriteEffects.FlipHorizontally;
             Main.EntitySpriteDraw(tex, DrawPos, null, drawColor, 0, origin, 1, effects);
 
-            return base.PreDraw(spriteBatch, screenPos, drawColor);
+            return false;//base.PreDraw(spriteBatch, screenPos, drawColor);
         }
         public override void PostDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
         {
-            base.PostDraw(spriteBatch, screenPos, drawColor);
+            Texture2D tex = ModContent.Request<Texture2D>(Texture+"_Shield").Value;
+
+            Vector2 DrawPos = NPC.Center - Main.screenPosition;
+
+            float Rot = MathHelper.ToRadians(Time);
+            Main.EntitySpriteDraw(tex, DrawPos, null, drawColor, Rot, tex.Size() * 0.5f, 1, SpriteEffects.None);
         }
     }
 }

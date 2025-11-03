@@ -10,7 +10,7 @@ using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
 {
-    internal class DebugNPC : BloodmoonBaseNPC
+    internal class DebugNPC : BloodMoonBaseNPC
     {
         public override string Texture => MiscTexturesRegistry.InvisiblePixelPath;
         public override float buffPrio => 5;

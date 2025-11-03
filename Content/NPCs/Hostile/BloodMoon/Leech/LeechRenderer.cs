@@ -11,7 +11,7 @@ using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
 {
-    partial class newLeech : BloodmoonBaseNPC
+    partial class newLeech : BloodMoonBaseNPC
     {
         VertexBuffer vertexBuffer;
  

@@ -52,8 +52,8 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.FleshlingCultist
         public override void Update(ref ParticleRendererSettings settings)
         {
             if(endNPC != null)
-                EndPosition = endNPC.Top + new Vector2(0, -40);
-            Position = Vector2.Lerp(Position + new Vector2(MathF.Sin(TimeLeft/4) * 4, 0).RotatedBy(Position.AngleTo(EndPosition) + MathHelper.PiOver2), EndPosition, 0.01f);
+                EndPosition = endNPC.Top + new Vector2(0, -120).RotatedBy(endNPC.rotation + MathHelper.PiOver2);
+            Position = Vector2.Lerp(Position + new Vector2(MathF.Sin(TimeLeft/10.4f) * 4, 0).RotatedBy(Position.AngleTo(EndPosition) + MathHelper.PiOver2), EndPosition, 0.1f);
             
             for (int i = 1; i < trailPos.Length; i++)
             {

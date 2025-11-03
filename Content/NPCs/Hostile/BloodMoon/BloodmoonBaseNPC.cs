@@ -87,7 +87,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
             }
         }
     }
-    public abstract class BloodmoonBaseNPC : ModNPC
+    public abstract class BloodMoonBaseNPC : ModNPC
     {
         public override void ModifyTypeName(ref string typeName)
         {
@@ -126,7 +126,11 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
             }
 
         }
-        //public ref float Time => ref NPC.ai[0];
+        public virtual int Time
+        {
+            get => (int)NPC.ai[0];
+            set => NPC.ai[0] = value;
+        }
 
         ///<summary>
         /// the current blood in this npc.

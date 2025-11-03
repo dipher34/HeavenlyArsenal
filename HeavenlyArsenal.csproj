@@ -59,6 +59,7 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <AdditionalFiles Remove="Content\Items\Misc\ForgottenShrineTeleporter.png" />
+	  <AdditionalFiles Remove="Content\NPCs\AnAffrontToGod.png" />
 	  <AdditionalFiles Remove="Content\Particles\CartoonWave.png" />
 	  <AdditionalFiles Remove="Content\Particles\SpiritCandle.png" />
 	</ItemGroup>
@@ -68,8 +69,11 @@
 	  <Compile Remove="Content\Items\Misc\IdolSummoner.cs" />
 	  <Compile Remove="Content\Items\Weapons\Melee\StupidFuckYouSword.cs" />
 	  <Compile Remove="Content\NPCs\AnAffrontToGod.cs" />
+	  <Compile Remove="Content\NPCs\FileName.cs" />
+	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\BigCrab\BloodCrab.cs" />
+	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\BigCrab\BloodCrabAttacks.cs" />
+	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\BigCrab\BloodCrabRenderer.Cs" />
 	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\BigCrab\NewCrab.cs" />
-	  <Compile Remove="Content\NPCs\Hostile\BloodMoon\Leech\UmbralLeech.cs" />
 	  <Compile Remove="Content\Particles\CartoonWaveParticle.cs" />
 	  <Compile Remove="Content\Particles\SpiritCandleParticle.cs" />
 	  <Compile Remove="Core\Globals\TradeGlobalItem.cs" />
@@ -77,6 +81,7 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <None Remove="Content\Items\Misc\ForgottenShrineTeleporter.png" />
+	  <None Remove="Content\NPCs\AnAffrontToGod.png" />
 	  <None Remove="Content\Particles\CartoonWave.png" />
 	  <None Remove="Content\Particles\Metaballs\NoxusGasLayer1.png" />
 	  <None Remove="Content\Particles\SpiritCandle.png" />
