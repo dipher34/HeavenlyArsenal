@@ -72,6 +72,8 @@ public class RocheLimit : ModItem
 
     public override bool PreDrawInInventory(SpriteBatch spriteBatch, Vector2 position, Rectangle frame, Color drawColor, Color itemColor, Vector2 origin, float scale)
     {
+        if (Main.netMode == NetmodeID.Server)
+            return false;
         Main.spriteBatch.PrepareForShaders(null, true);
 
         Vector3 mainColor = RocheLimitBlackHole.TemperatureGradient.SampleColor(0.37f).ToVector3();
@@ -100,6 +102,8 @@ public class RocheLimit : ModItem
 
     public override bool PreDrawInWorld(SpriteBatch spriteBatch, Color lightColor, Color alphaColor, ref float rotation, ref float scale, int whoAmI)
     {
+        if (Main.netMode == NetmodeID.Server)
+            return false;
         Main.spriteBatch.PrepareForShaders();
 
         Vector3 mainColor = RocheLimitBlackHole.TemperatureGradient.SampleColor(0.37f).ToVector3();

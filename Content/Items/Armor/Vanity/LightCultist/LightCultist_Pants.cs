@@ -2,7 +2,7 @@
 using Terraria;
 using Terraria.ModLoader;
 
-namespace HeavenlyArsenal.Content.Items.Armor.Vanity;
+namespace HeavenlyArsenal.Content.Items.Armor.Vanity.LightCultist;
 
 [AutoloadEquip(EquipType.Legs)]
 public class LightCultist_Pants : ModItem

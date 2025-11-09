@@ -67,7 +67,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
             var equipSlot = EquipLoader.GetEquipSlot(Mod, Name, EquipType.Body);
             ArmorIDs.Body.Sets.HidesArms[equipSlot] = true;
             ArmorIDs.Body.Sets.HidesTopSkin[equipSlot] = true;
-
+            
             
         }
 

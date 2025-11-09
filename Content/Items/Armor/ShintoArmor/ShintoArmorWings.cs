@@ -30,6 +30,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.ShintoArmor
 
         public override void SetStaticDefaults()
         {
+            
             Item.wingSlot = EquipLoader.GetEquipSlot(Mod, Name, EquipType.Wings);
             WingSlotID = Item.wingSlot;
             ArmorIDs.Wing.Sets.Stats[Item.wingSlot] = new WingStats(100000000, 16.67f, 3.7f, true, 23.5f, 4f);

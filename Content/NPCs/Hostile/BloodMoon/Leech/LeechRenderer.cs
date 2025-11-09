@@ -351,7 +351,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
         public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
         {
 
-            bool debug =false;// NPC.ai[1] == 1 ? true : false;
+            bool debug = false;// NPC.ai[1] == 1 ? true : false;
             if (!NPC.IsABestiaryIconDummy)
             {
                 /*

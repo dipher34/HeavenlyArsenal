@@ -8,7 +8,7 @@ using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace HeavenlyArsenal.Content.Items.Armor.Vanity
+namespace HeavenlyArsenal.Content.Items.Armor.Vanity.LightCultist
 {
     [AutoloadEquip(EquipType.Body)]
     class LightCultist_Robe : ModItem
@@ -28,7 +28,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.Vanity
         {
             if (Main.netMode != NetmodeID.Server)
             {
-                EquipLoader.AddEquipTexture(Mod, "HeavenlyArsenal/Content/Items/Armor/Vanity/LightCultist_Waist", EquipType.Waist, this);
+                EquipLoader.AddEquipTexture(Mod, "HeavenlyArsenal/Content/Items/Armor/Vanity/LightCultist/LightCultist_Waist", EquipType.Waist, this);
             }
         }
         public override void SetStaticDefaults()

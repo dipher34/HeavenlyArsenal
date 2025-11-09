@@ -30,7 +30,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.FleshlingCultist
         public void Prepare(Vector2 position, int Maxtime, NPC endNPC)
         {
             Position = position;
-            this.MaxTime = Maxtime*3;
+            MaxTime = Maxtime*3;
 
             this.endNPC = endNPC;
             trailPos = new Vector2[6];

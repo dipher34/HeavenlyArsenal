@@ -1,9 +1,4 @@
 Ranged: {
-	ClaretCannon: {
-		DisplayName: Claret Cannon
-		Tooltip: ""
-	}
-
 	FusionRifle: {
 		ShiftTooltip:
 			'''
@@ -42,6 +37,11 @@ Ranged: {
 
 	NoxusWeapon: {
 		DisplayName: Noxious Fumes
+		Tooltip: ""
+	}
+
+	AvatarRifle2: {
+		DisplayName: Avatar Rifle2
 		Tooltip: ""
 	}
 }

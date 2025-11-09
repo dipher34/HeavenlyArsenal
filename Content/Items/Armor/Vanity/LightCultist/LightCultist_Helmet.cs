@@ -12,7 +12,7 @@ using Terraria.DataStructures;
 using Terraria.ID;
 using Terraria.ModLoader;
 
-namespace HeavenlyArsenal.Content.Items.Armor.Vanity
+namespace HeavenlyArsenal.Content.Items.Armor.Vanity.LightCultist
 {
     [AutoloadEquip(EquipType.Head)]
     class LightCultist_Helmet : ModItem
@@ -42,7 +42,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.Vanity
         protected override void Draw(ref PlayerDrawSet drawInfo)
         {
 
-            Asset<Texture2D> texture = ModContent.Request<Texture2D>($"HeavenlyArsenal/Content/Items/Armor/Vanity/Halo");
+            Asset<Texture2D> texture = ModContent.Request<Texture2D>($"HeavenlyArsenal/Content/Items/Armor/Vanity/LightCultist/Halo");
 
             DrawData drawData = new DrawData(texture.Value, drawInfo.HeadPosition(), drawInfo.drawPlayer.headFrame, drawInfo.colorHair, drawInfo.drawPlayer.headRotation, drawInfo.headVect, 1f, drawInfo.playerEffect, 0);
             //drawData.shader = drawInfo.hairDyePacked;

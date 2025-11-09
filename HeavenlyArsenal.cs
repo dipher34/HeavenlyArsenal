@@ -58,7 +58,7 @@ namespace HeavenlyArsenal
             
             */
 
-
+            //On_NPC.AI 
             On_Projectile.Damage += MultisegmentCollideEnabler;
             On_Projectile.CanHitWithMeleeWeapon += MultisegmentCheckSetter;
             On_Projectile.Colliding += ExtraHitboxCollide;
@@ -108,6 +108,71 @@ namespace HeavenlyArsenal
                     CurrentMultiSegmnetNPC = multi;
             return orig(Self, entity);
         }
+/*
+        public static bool ExtraHitboxCollide(On_Projectile.orig_Colliding orig, Projectile self, Rectangle myRect, Rectangle targetRect)
+        {
+            bool result = orig(self, myRect, targetRect);
+
+            // Skip if projectile can't damage anything right now
+            if (!self.active || !self.friendly || self.damage <= 0 || self.owner < 0)
+                return result;
+
+            NPC targetNPC = null;
+            foreach (NPC npc in Main.ActiveNPCs)
+            {
+                if (npc.active && npc.Hitbox == targetRect)
+                {
+                    targetNPC = npc;
+                    break;
+                }
+            }
+
+            if (targetNPC?.ModNPC is not IMultiSegmentNPC multi)
+                return result;
+
+            // Respect global immunity + mod projectile hit conditions
+            if (targetNPC.dontTakeDamage || targetNPC.immortal || !targetNPC.active)
+                return result;
+
+            if (self.ModProjectile is { } modProj)
+            {
+                bool? modCheck = modProj.CanHitNPC(targetNPC);
+                if (modCheck.HasValue && !modCheck.Value)
+                    return result;
+            }
+
+            // Optional: skip if immune to this projectile owner
+            if (targetNPC.immune[self.owner] > 0)
+                return result;
+
+            ref var extraHitboxes = ref multi.ExtraHitBoxes();
+
+            for (int i = 0; i < extraHitboxes.Count; i++)
+            {
+                var box = extraHitboxes[i];
+                if (!box.Active || !box.ProjectileCollide)
+                    continue;
+
+                if (myRect.Intersects(box.Hitbox))
+                {
+                    bool canDamage = true;
+                    if (self.ModProjectile is { } modProj2)
+                    {
+                        bool? modCanDamage = modProj2.Colliding(myRect,targetRect);
+                        if (modCanDamage.HasValue && !modCanDamage.Value)
+                            canDamage = false;
+                    }
+                    if (canDamage && self.CanHitWithMeleeWeapon(targetNPC))
+                    {
+                        result = true;
+                        multi.OnHitBoxCollide(i, self);
+                    }
+                }
+            }
+
+            return result;
+        }
+*/
         public static bool ExtraHitboxCollide(On_Projectile.orig_Colliding orig, Projectile self, Rectangle myRect, Rectangle targetRect)
         {
             bool result = orig(self, myRect, targetRect);
@@ -123,18 +188,27 @@ namespace HeavenlyArsenal
                 }
             }
 
-            // Only run if it’s one of *your* NPCs.
             if (targetNPC?.ModNPC is IMultiSegmentNPC multi)
             {
                 ref var extraHitboxes = ref multi.ExtraHitBoxes();
 
                 for (int i = 0; i < extraHitboxes.Count; i++)
                 {
+                   
                     var box = extraHitboxes[i];
                     if (!box.Active || !box.ProjectileCollide)
                         continue;
 
-                    if (myRect.Intersects(box.Hitbox))
+
+                    bool canDamage = true;
+                    if (self.ModProjectile is { } modProj2)
+                    {
+                        bool? modCanDamage = modProj2.Colliding(myRect, box.Hitbox);
+                        if (modCanDamage.HasValue && !modCanDamage.Value)
+                            canDamage = false;
+                    }
+
+                    if (myRect.Intersects(box.Hitbox) && canDamage)
                     {
                         result = true;
                         multi.OnHitBoxCollide(i, self);

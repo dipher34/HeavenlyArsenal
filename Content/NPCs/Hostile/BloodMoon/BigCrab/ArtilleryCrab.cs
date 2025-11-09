@@ -1,6 +1,7 @@
 ﻿using CalamityMod;
 using CalamityMod.Items.Materials;
 using HeavenlyArsenal.Content.Items.Materials.BloodMoon;
+using Luminance.Common.Utilities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
@@ -77,7 +78,10 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
             NPC.aiStyle = -1;
             NPC.npcSlots = 3f;
             NPC.knockBackResist = 0f;
-
+            SpawnModBiomes =
+            [
+                ModContent.GetInstance<RiftEclipseBloodMoon>().Type
+            ];
         }
         public override void SetStaticDefaults()
         {
@@ -474,7 +478,9 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
         {
             NPCID.Sets.ProjectileNPC[NPC.type] = true;
             NPCID.Sets.CannotDropSouls[NPC.type] = true;
-           // NPCID.Sets
+            // NPCID.Sets
+
+            this.ExcludeFromBestiary();
         }
 
        
@@ -492,6 +498,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab
             NPC.defDefense = 4000;
             NPC.noGravity = true;
             NPC.noTileCollide = false;
+           
         }
         
         public override void OnHitPlayer(Player target, Player.HurtInfo hurtInfo)

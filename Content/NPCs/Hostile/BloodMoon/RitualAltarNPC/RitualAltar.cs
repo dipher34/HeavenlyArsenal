@@ -27,6 +27,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
         public override int bloodBankMax => 100;
 
         public bool isSacrificing = false;
+        private int Variant;
         public override void SetStaticDefaults()
         {
             Main.npcFrameCount[NPC.type] = 1;
@@ -89,6 +90,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
 
         public override void SetDefaults()
         {
+            Variant = Main.rand.Next(1, 5);
             NPC.width = 80;
             NPC.height = 80;
             NPC.lifeMax = 350_000;
@@ -97,12 +99,15 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
             NPC.knockBackResist = 0f;
             NPC.noGravity = false;
             NPC.noTileCollide = false;
-            
+            SpawnModBiomes =
+            [
+               ModContent.GetInstance<RiftEclipseBloodMoon>().Type
+            ];
         }
 
         public override void AI()
         {
-
+            
            // NPC.Center = Main.MouseWorld;
             
             NPC.velocity.X = 0;
@@ -112,8 +117,6 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
 
             SpeedMulti = Math.Abs(MathF.Sin(Time + NPC.whoAmI) * 2);
             NPC.direction = Math.Sign(NPC.velocity.X.NonZeroSign()) != 0 ? Math.Sign(NPC.velocity.X) : 1;
-            //NPC.velocity.X = NPC.AngleTo(Main.LocalPlayer.Center).ToRotationVector2().X * 10 * MathF.Tanh(Vector2.Distance(NPC.Center, Main.MouseWorld));
-            //Main.NewText(SacrificeCooldown);
             if (isSacrificing && (NPCTarget == null || !NPCTarget.active))
                 isSacrificing = false;
             if (NPCTarget == null || !NPCTarget.active)
@@ -147,7 +150,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
             UpdateList();
             UpdateLimbMotion();
 
-            updateGravity();
+            UpdateGravity();
 
 
             if (NPCTarget != null)

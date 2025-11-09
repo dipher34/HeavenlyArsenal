@@ -332,10 +332,11 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
 
             if(Main.netMode == NetmodeID.SinglePlayer || Main.netMode == NetmodeID.Server)
                 HeavenlyArsenal.ClearAllBuffs(NPC);
+            if(NPC.Opacity<0.5f)
             ForceResetHitboxes();
             if (Time < 200)
-            {   
-                
+            {
+                NPC.damage = 0;
                 NPC.takenDamageMultiplier = float.Lerp(NPC.takenDamageMultiplier, 0, 0.2f);
                 NPC.velocity *= 0.9f;
                 if (NPC.velocity.Length() < 0.1f)
@@ -389,6 +390,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
 
                 if (NPC.Opacity >= 0.99f)
                 {
+                    NPC.damage = NPC.defDamage;
                     NPC.takenDamageMultiplier = 1;
                     NPC.Opacity = 1;
                     CurrentState = Behavior.seekTarget;
@@ -457,9 +459,9 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
                     {
                         for (int i = 0; i < 4; i++)
                         {
-                            Vector2 bloodSpawnPosition = AdjHitboxes[u].Center()    ;//Main.npc[Segments[u].whoAmI].Center;
-                            Vector2 bloodVelocity = (Main.rand.NextVector2Circular(30f, 30f) - NPC.velocity) * Main.rand.NextFloat(0.2f, 1.2f);
-                            metaball.CreateParticle(bloodSpawnPosition, bloodVelocity, Main.rand.NextFloat(10f, 40f), Main.rand.NextFloat(2f));
+                            Vector2 bloodSpawnPosition = AdjHitboxes[u].Center();
+                            Vector2 bloodVelocity = (Main.rand.NextVector2Circular(30f, 30f) - NPC.velocity) * Main.rand.NextFloat(0.2f, 1.0f);
+                            metaball.CreateParticle(bloodSpawnPosition, bloodVelocity, Main.rand.NextFloat(10f, 40f));
                         }
                     }
 

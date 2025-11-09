@@ -94,6 +94,11 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
             NPC.HitSound = SoundID.NPCHit1;
             NPC.DeathSound = AssetDirectory.Sounds.NPCs.Hostile.BloodMoon.UmbralLeech.DyingNoise;
             NPC.Size = new Vector2(20, 20);
+
+            SpawnModBiomes =
+            [
+                ModContent.GetInstance<RiftEclipseBloodMoon>().Type
+            ];
         }
         public override bool? DrawHealthBar(byte hbPosition, ref float scale, ref Vector2 position)
         {
@@ -460,20 +465,14 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
 
         public override void OnKill()
         {
-            // If head died, optionally purge its history and optionally kill segments.
+            
             if ((int)segmentNum == 0)
             {
                 int headId = NPC.whoAmI;
                 if (_headPositionHistory.ContainsKey(headId))
                     _headPositionHistory.Remove(headId);
 
-                // Optionally kill child segments (uncomment if desired)
-                //for (int i = 0; i < Main.maxNPCs; i++)
-                //{
-                //    NPC n = Main.npc[i];
-                //    if (n.active && n.realLife == headId)
-                //        n.active = false;
-                //}
+               
             }
         }
         private void DrawLine(List<Vector2> list)

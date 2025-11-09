@@ -89,7 +89,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
                 return id.ModNPC is BloodMoonBaseNPC b ? b.canBeSacrificed : true;
             });
 
-            
+           
             //Main.NewText($"BuffedNPCs count: {RitualSystem.BuffedNPCs.Count}");
 
             //todo: Sort by SacrificePrio; 1 = top priority, 0 = pretty much ignored.
@@ -193,13 +193,23 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
 
             foreach (NPC npc in Main.npc)
             {
+                if (npc.dontTakeDamage) continue;
                 if (!npc.active) continue;
                 if (npc.life <= 1) continue;
                 if (npc.type == NPC.type) continue;
                 if (BlackListProjectileNPCs.BlackListedNPCs.Contains(npc.type)) continue;
                 if (npc.Distance(NPC.Center) > 700f) continue;
                 if (RitualSystem.BuffedNPCs.Contains(npc)) continue;
-               
+                if(npc.ModNPC != null)
+                {
+                    if(npc.ModNPC.Type == ModContent.NPCType<BloodMoonBaseNPC>())
+                    {
+                        BloodMoonBaseNPC d = npc.ModNPC as BloodMoonBaseNPC;
+
+                        if (!d.canBebuffed)
+                            continue;
+                    }
+                }
                 // Skip if recently resurrected & already in the ritual set
                 var gn = npc.GetGlobalNPC<RitualBuffNPC>();
                 if (RitualSystem.BuffedNPCs.Contains(npc) && gn.WasRessurectedRecently)

@@ -6,6 +6,7 @@ using NoxusBoss.Assets;
 using System;
 using System.Collections.Generic;
 using Terraria;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -110,6 +111,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
                 npc.lifeRegenCount += 13000;
             }
         }
+        bool runningExtraAI = false;
 
         public override bool PreAI(NPC npc)
         {
@@ -134,7 +136,13 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
             }
 
             ApplyEffects(npc);
-
+            if (hasRitualBuff && BuffType == RitualBuffType.CooldownReduction)
+            {
+                //AGAIN
+                for (int i = 0; i < ritualBuffTier; i++)
+                    npc.ModNPC.AI();
+                return false;
+            }
             return base.PreAI(npc);
         }
         private void ManageRessurection(NPC npc)
@@ -173,10 +181,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
             {
                 npc.damage = npc.defDamage * (1 + ritualBuffTier);
             }
-            if (BuffType == RitualBuffType.CooldownReduction)
-            {
-                npc.velocity *= (1 + ritualBuffTier);
-            }
+            
         }
 
         public override void OnHitPlayer(NPC npc, Player target, Player.HurtInfo hurtInfo)
@@ -190,9 +195,9 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
                 ritualBuffTimer--;
 
             ManageBuffstring(npc);
-            if (Math.Abs(npc.velocity.Y) > 30 && hasRitualBuff)
+            if (Math.Abs(npc.velocity.Y) > 30 && isBeingBuffed)
             {
-                Main.NewText("WTF, " + npc.velocity.Y.ToString());
+                Main.NewText("WTF, "+ npc.ToString() + ", " + npc.velocity.Y.ToString());
                 npc.velocity.Y = 0;
             }
 
@@ -205,7 +210,10 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
 
         }
 
-
+        public override void AI(NPC npc)
+        {
+            
+        }
         private void ManageBuffstring(NPC npc)
         {
             if (!hasRitualBuff)
@@ -249,7 +257,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
         public void ApplyRitualBuff(NPC npc, int Tier)
         {
 
-            CombatText.NewText(npc.Hitbox, Color.Red, "Buffed!", true);
+            //CombatText.NewText(npc.Hitbox, Color.Red, "Buffed!", true);
             int buffType = Main.rand.Next(1, 6);
             hasRitualBuff = true;
             RitualSystem.AddNPC(npc);
@@ -261,8 +269,9 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
             }
             ritualBuffTier = Tier;
             ritualBuffTimer = ritualBuffDuration + 80 * Tier;
+            SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.ArmJutOut with { Pitch = buffType / 6 }, npc.Center);
             BuffRune particle = BuffRune.pool.RequestParticle();
-            particle.Prepare(npc.Center, 0, 120);
+            particle.Prepare(BuffGranter.Top + new Vector2(120,0).RotatedBy(BuffGranter.rotation), buffType, 190);
 
             ParticleEngine.ShaderParticles.Add(particle);
         }
@@ -285,7 +294,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
 
         public override bool PreDraw(NPC npc, SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
         {
-            //Utils.DrawBorderString(spriteBatch, isBeingBuffed.ToString() + $"\n" + ritualBuffTimer.ToString(), npc.Center - screenPos, Color.AntiqueWhite, anchory:-2);
+            //Utils.DrawBorderString(spriteBatch, BuffType.ToString() + $"\n" + ritualBuffTimer.ToString(), npc.Center - screenPos, Color.AntiqueWhite, anchory:-2);
             if (BuffString != null && hasRitualBuff)
             {
                 Texture2D a = GennedAssets.Textures.GreyscaleTextures.WhitePixel;

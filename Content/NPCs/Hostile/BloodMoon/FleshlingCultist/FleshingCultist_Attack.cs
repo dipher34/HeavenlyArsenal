@@ -7,7 +7,7 @@ using Terraria.ID;
 
 namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.FleshlingCultist
 {
-    partial class FleshlingCultist
+    partial class FleshlingCultist : BloodMoonBaseNPC
     {
         //todo: put this into NPC.ai[2]l
         public enum Behaviors
@@ -29,7 +29,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.FleshlingCultist
             if (CurrentState != Behaviors.Worship)
             {
                 isWorshipping = false;
-                if (this.canBeSacrificed == false)
+                if (canBeSacrificed == false)
                     canBeSacrificed = true;
             }
             else
@@ -63,7 +63,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.FleshlingCultist
             {
                 if (NPC.Center.Distance(d.Leader.Center) > 200)
                 {
-                    this.SacrificePrio++;
+                    SacrificePrio++;
                     NPC.velocity.X = NPC.AngleTo(d.Leader.Center).ToRotationVector2().X * 2;
                 }
             }
@@ -86,7 +86,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.FleshlingCultist
 
                 }
                 int iD = a.Cultists.IndexOf(NPC);
-                float offset = (iD % 2 == 0) ? 1 : -1;
+                float offset = iD % 2 == 0 ? 1 : -1;
                 offset *= (iD + 1) * 65;
                 //Main.NewText(iD + $", {NPC.whoAmI}, offset: {offset}");
                 Vector2 DesiredPosition = a.Leader.Center + new Vector2(offset, NPC.Bottom.Y - a.Leader.Bottom.Y);

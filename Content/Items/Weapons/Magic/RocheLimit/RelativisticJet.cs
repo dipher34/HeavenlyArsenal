@@ -62,6 +62,8 @@ public class RelativisticJet : ModProjectile, IDrawsOverRocheLimitDistortion
 
     public void RenderOverDistortion()
     {
+        if (Main.netMode == NetmodeID.Server)
+            return;
         ManagedShader jetShader = ShaderManager.GetShader("HeavenlyArsenal.RelativisticJetShader");
         jetShader.SetTexture(TextureAssets.Extra[ExtrasID.FlameLashTrailShape], 1, SamplerState.LinearWrap);
 

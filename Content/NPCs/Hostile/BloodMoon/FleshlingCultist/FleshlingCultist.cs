@@ -1,4 +1,5 @@
-﻿using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC;
+﻿using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon;
+using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Content.Particles.Metaballs;
@@ -9,6 +10,7 @@ using Terraria.DataStructures;
 using Terraria.GameContent.Bestiary;
 using Terraria.ID;
 using Terraria.ModLoader;
+using static HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.FleshlingCultist.FleshlingCultist;
 
 namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.FleshlingCultist
 {
@@ -17,7 +19,8 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.FleshlingCultist
         public override string Texture => "HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/FleshlingCultist/FleshlingCultist";
         public override float SacrificePrio => 1;
         public override int bloodBankMax => 30;
-        public ref float Time => ref NPC.ai[0];
+        
+
         public bool isWorshipping;
         public static float BaseKnockback = 0.4f;
         public override void SetBestiary(BestiaryDatabase database, BestiaryEntry bestiaryEntry)
@@ -50,6 +53,11 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.FleshlingCultist
             NPC.defense = 27;
             NPC.knockBackResist = 0.4f;
             NPC.Size = new Vector2(32, 50);
+
+            SpawnModBiomes =
+            [
+                ModContent.GetInstance<RiftEclipseBloodMoon>().Type
+            ];
         }
 
         public override void OnSpawn(IEntitySource source)
@@ -68,7 +76,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.FleshlingCultist
             StateMachine();
             //face towards the altar
             if (CurrentState != Behaviors.Worship)
-                NPC.direction = (NPC.velocity.X != 0 ? Math.Sign(NPC.velocity.X) : 1);
+                NPC.direction = NPC.velocity.X != 0 ? Math.Sign(NPC.velocity.X) : 1;
             else
             {
                 Cult a = CultistCoordinator.GetCultOfNPC(NPC);
@@ -112,9 +120,9 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.FleshlingCultist
 
         public override void OnKill()
         {
-            Vector2 RandomAbove = new Vector2(NPC.Center.X + Main.rand.NextFloat(-20, 20), NPC.Center.Y -30);
-            
-            NPC.NewProjectileBetter(NPC.GetSource_Death(), NPC.Center, RandomAbove.AngleFrom(NPC.Center).ToRotationVector2()*15, ModContent.ProjectileType<MaskProj>(), 0, 0);
+            Vector2 RandomAbove = new Vector2(NPC.Center.X + Main.rand.NextFloat(-20, 20), NPC.Center.Y - 30);
+
+            NPC.NewProjectileBetter(NPC.GetSource_Death(), NPC.Center, RandomAbove.AngleFrom(NPC.Center).ToRotationVector2() * 15, ModContent.ProjectileType<MaskProj>(), 0, 0);
             for (int i = 0; i < 20; i++)
             {
                 Dust d = Dust.NewDustPerfect(NPC.Center + new Vector2(Main.rand.NextFloat(-20, 20), Main.rand.NextFloat(-20, 20)), DustID.Blood, Vector2.Zero, newColor: Color.Red);
@@ -214,8 +222,8 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.FleshlingCultist
             a += $"CanBeSacrificed: {this.canBeSacrificed}\n";
              if (!NPC.IsABestiaryIconDummy)
                 Utils.DrawBorderString(spriteBatch, a, NPC.Center - screenPos, Color.AntiqueWhite, anchory:-2);
-         */
-            
+            */
+
             return base.PreDraw(spriteBatch, screenPos, drawColor);
 
 

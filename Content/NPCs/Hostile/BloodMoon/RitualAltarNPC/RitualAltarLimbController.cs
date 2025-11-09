@@ -1,7 +1,11 @@
-﻿using Microsoft.Xna.Framework;
+﻿using CalamityMod;
+using HeavenlyArsenal.Core.Systems;
+using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using Terraria;
+using Terraria.Audio;
+using Terraria.ID;
 
 namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
 {
@@ -26,14 +30,14 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
         {
             Point tile = target.ToTileCoordinates();
             // Check the tile directly below the anchor point
-            Point below = new Point(tile.X, tile.Y + 1);
+            Point below = new Point(tile.X, tile.Y);
             if (!WorldGen.InWorld(below.X, below.Y, 10))
                 return false;
 
             Tile t = Framing.GetTileSafely(below);
             return t.HasTile && Main.tileSolid[t.TileType];
         }
-        void updateGravity()
+        void UpdateGravity()
         {
             float Strength = 0f;
             for (int i = 0; i < _limbs.Length; i++)
@@ -46,36 +50,32 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
             if (Strength > 0.2f)
                 Strength /= LimbCount;
             NPC.velocity.Y = -Strength;// float.Lerp(NPC.velocity.Y, NPC.velocity.Y - Strength, 0.6f);
+
         }
+
         void UpdateLimbMotion()
         {
-            UpdateLimbRhythm();
+            //UpdateLimbRhythm();
             UpdateLimbTargets();
         }
         void UpdateLimbTargets()
         {
             float speed = NPC.velocity.Length();
-            const float baseReach = 90f;
+            const float baseReach = 80f;
             float reachRelax = baseReach * 1.1f;
-            float forwardBias = MathHelper.Clamp(speed * 30f, 40f, 100f);
-            float maxSearchDown = 120f;
+            float forwardBias = MathHelper.Clamp(speed * 30f, 40f, 200f);
+            float maxSearchDown = 300f;
             int holdTime = (int)MathHelper.Clamp(50f - speed * 10f, 20f, 50f);
 
             bool idle = speed < 0.1f;
-
-            Vector2 moveDir = (speed > 0.1f) ? NPC.velocity.SafeNormalize(Vector2.UnitY) : Vector2.UnitY;
-
-            bool grounded = false;
-            int thing = 0;
+            int groundedCount = 0;
             for (int i = 0; i < LimbCount; i++)
-            {
                 if (_limbs[i].IsTouchingGround)
-                    thing++;
+                    groundedCount++;
 
-            }
-            if (thing >= 1)
-                grounded = true;
-
+            if (idle && groundedCount<2)
+                idle = false; 
+            Vector2 moveDir = (speed > 0.1f) ? NPC.velocity.SafeNormalize(Vector2.UnitY) : Vector2.UnitY;
             for (int i = 0; i < LimbCount; i++)
             {
                 ref var limb = ref _limbs[i];
@@ -87,8 +87,26 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
                 float dist = Vector2.Distance(basePos, limb.TargetPosition);
                 bool aboutToOverstretch = dist > baseReach * 0.9f;
                 bool tooFar = dist > reachRelax;
+
+              
+
+                // If idle, but *none* of the limbs are grounded, treat it as not idle
+                
+
                 if (idle)
                 {
+                    // Re-evaluate if the current end position is on ground
+                    bool grounded = false;
+
+                    Point tilePos = (limb.EndPosition / 16f).ToPoint();
+                    Tile t = Framing.GetTileSafely(tilePos.X, tilePos.Y + 1);
+                    if (t.HasTile && Main.tileSolid[t.TileType] && !Main.tileSolidTop[t.TileType])
+                        grounded = true;
+
+                    limb.IsTouchingGround = grounded;
+                    limb.HasTarget = grounded;
+                    limb.IsAnchored = grounded;
+
                     UpdateLimbState(ref limb, basePos, 0.15f + speed * 0.02f, 6f);
                     continue;
                 }
@@ -103,61 +121,67 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
 
                 if (!limb.IsAnchored && limb.Cooldown <= 0)
                 {
-                    Vector2 probe = basePos + moveDir * forwardBias;
-                    probe += Main.rand.NextVector2Circular(50f, 10f);
+                    Vector2 difference = basePos - NPC.Center + moveDir;
+                    
+                    Vector2 probe = difference + NPC.Center + moveDir * forwardBias;
+                    probe += Main.rand.NextVector2Circular(30f, 1f);
 
-                    Point tile = probe.ToTileCoordinates();
+                    // Raycast straight down from probe
+                    Vector2 end = probe + Vector2.UnitY * maxSearchDown;
+                    Point? hit = LineAlgorithm.RaycastTo(
+                        (int)(probe.X / 16f),
+                        (int)(probe.Y / 16f),
+                        (int)(end.X / 16f),
+                        (int)(end.Y / 16f)
+                    );
+
                     bool found = false;
 
-                    for (int y = 0; y < maxSearchDown / 16f; y++)
+                    if (hit.HasValue)
                     {
-                        int ty = tile.Y + y;
-                        if (!WorldGen.InWorld(tile.X, ty, 10))
-                            break;
+                        Point tilePos = hit.Value;
+                        Tile tile = Framing.GetTileSafely(tilePos.X, tilePos.Y);
 
-
-                        if (WorldGen.SolidTile(tile.X, ty, true))
+                        if (tile.HasTile && tile.IsTileSolid())
                         {
-
-                            Vector2 DesiredPosition = new Vector2(tile.X * 16, ty * 16 + 8);
-
-                            int a = 0;
+                            // Convert tile coordinate to world position
+                            Vector2 desiredPosition = new Vector2(tilePos.X * 16f, tilePos.Y * 16f + 8f);
+                            
+                            // stay away from other limbs
+                            int spacedCount = 0;
                             for (int x = 0; x < LimbCount; x++)
                             {
-                                if (limb.TargetPosition.Distance(_limbs[x].TargetPosition) > 10 && _limbs[x].IsAnchored)
-                                
-                                    a++;
-
+                                if (_limbs[x].IsAnchored && Vector2.Distance(desiredPosition, _limbs[x].TargetPosition) > 10f)
+                                    spacedCount++;
                             }
-                            if (a >= 3)
+
+                            if (spacedCount >= 3)
                             {
-                                limb.TargetPosition = DesiredPosition;
+                                limb.TargetPosition = desiredPosition;
                                 limb.HasTarget = true;
-                                found = true;
                                 limb.IsTouchingGround = true;
-                                break;
 
+                                limb.Cooldown = holdTime;
+                                found = true;
                             }
-
-                        }
-                        else
-                        {
-
                         }
                     }
 
-                    if (!found)
-                        SetFlailTarget(ref limb, basePos, baseReach, i);
+                    // Fallback if no hit
+                   
+                    
 
-                    limb.Cooldown = holdTime;
+
+
+
                 }
 
-                float followSpeed = MathHelper.Clamp(0.08f + speed * 0.02f, 0.08f, 0.25f);
+                float followSpeed = MathHelper.Clamp(0.08f + speed * 0.02f, 0.08f, 0.19f);
                 limb.EndPosition = Vector2.Lerp(limb.EndPosition, limb.TargetPosition, followSpeed);
 
                
 
-                UpdateLimbState(ref limb, basePos, 0.15f + speed * 0.02f, 6f);
+                UpdateLimbState(ref limb, basePos, 0.15f + speed * 0.02f, 1f);
             }
         }
         void UpdateLimbRhythm()
@@ -177,12 +201,14 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
         }
         void SetFlailTarget(ref RitualAltarLimb limb, Vector2 basePos, float reach, int limbIndex)
         {
-            float sway = (float)Math.Sin(Main.GlobalTimeWrappedHourly * 5f + limbIndex * 1.37f) * 12f;
+            //float sway = (float)Math.Sin(Time * 5f + limbIndex * 1.37f) * 12f;
             // Keep it under the base, within reach
-            limb.TargetPosition = basePos + new Vector2(sway, Math.Min(reach * 0.9f, 54f + limbIndex * 5f));
+            limb.TargetPosition = limb.EndPosition;
             limb.IsAnchored = false;
             limb.HasTarget = false;
-            limb.TargetTile = Point.Zero;
+            if(!TouchingGround(limb.EndPosition))
+            limb.IsTouchingGround = false;
+            //limb.TargetTile = Point.Zero;
         }
         #endregion
     }

@@ -5,7 +5,6 @@ using NoxusBoss.Assets;
 using System;
 using System.Collections.Generic;
 using Terraria;
-using Terraria.GameContent;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -13,7 +12,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC;
 
 internal partial class RitualAltar : BloodMoonBaseNPC
 {
-    static void DrawArm(ref RitualAltarLimb RitualAltarLimb, Color drawColor, SpriteEffects effects)
+    void DrawArm(ref RitualAltarLimb RitualAltarLimb, Color drawColor, SpriteEffects effects)
     {
         var armTexture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/RitualAltarNPC/RitualAltarArm").Value;
         var defaultForearmFrame = new Rectangle(0, 0, 84, 32);
@@ -21,9 +20,16 @@ internal partial class RitualAltar : BloodMoonBaseNPC
 
         var currentFrame = RitualAltarLimb.IsAnchored ? anchoredForearmFrame : defaultForearmFrame;
 
+        Vector2 StartPos;
+        if (NPC.IsABestiaryIconDummy)
+        {
+            StartPos = RitualAltarLimb.skeleton.Position(0);
+        }
+        else
+            StartPos = RitualAltarLimb.Skeleton.Position(0) - Main.screenPosition;
         Main.spriteBatch.Draw(
             armTexture,
-            RitualAltarLimb.Skeleton.Position(0) - Main.screenPosition,
+            StartPos,
             new Rectangle(94, 0, 48, 24),
             drawColor,
             (RitualAltarLimb.Skeleton.Position(0) - RitualAltarLimb.Skeleton.Position(1)).ToRotation(),
@@ -32,10 +38,15 @@ internal partial class RitualAltar : BloodMoonBaseNPC
             effects,
             0f
         );
-
+        if (NPC.IsABestiaryIconDummy)
+        {
+            StartPos = RitualAltarLimb.skeleton.Position(1);
+        }
+        else
+            StartPos = RitualAltarLimb.Skeleton.Position(1) - Main.screenPosition;
         Main.spriteBatch.Draw(
             armTexture,
-            RitualAltarLimb.Skeleton.Position(1) - Main.screenPosition,
+            StartPos,
             currentFrame,
             drawColor,
             (RitualAltarLimb.Skeleton.Position(1) - RitualAltarLimb.Skeleton.Position(2)).ToRotation(),
@@ -251,15 +262,15 @@ internal partial class RitualAltar : BloodMoonBaseNPC
         basicEffect.Projection = Matrix.CreateOrthographicOffCenter(
                                     0, Main.screenWidth,
                                     Main.screenHeight, 0,
-                                    -1000f, 1000f); 
+                                    -1000f, 1000f);
 
-        // Order: Scale -> Yaw -> Pitch -> Translate
+        // Scale -> Yaw -> Pitch -> Translate
 
         basicEffect.World =
             Matrix.CreateScale(pixelSize) *
             Matrix.CreateRotationY(currentYaw) *
             Matrix.CreateRotationX(currentPitch) *
-          
+
             Matrix.CreateTranslation(anchorScreenPos.X, anchorScreenPos.Y, 0f);
 
         gd.BlendState = BlendState.AlphaBlend;
@@ -276,7 +287,7 @@ internal partial class RitualAltar : BloodMoonBaseNPC
                 maskIndices, 0, maskIndices.Length / 3);
         }
     }
-    void RebuildMaskMesh(Color drawColor, int radialSegments = 24, int ringSegments = 12, float curvature = 0.4f )
+    void RebuildMaskMesh(Color drawColor, int radialSegments = 24, int ringSegments = 12, float curvature = 0.4f)
     {
         List<VertexPositionColorTexture> verts = new();
         List<short> indices = new();
@@ -321,7 +332,7 @@ internal partial class RitualAltar : BloodMoonBaseNPC
         maskVerts = verts.ToArray();
         maskIndices = indices.ToArray();
     }
-  
+
 
     static float AngleTowards(float current, float target, float maxStep)
     {
@@ -343,7 +354,7 @@ internal partial class RitualAltar : BloodMoonBaseNPC
         // Flip yaw with facing so “left/right” tracks the sprite
         float targetYaw = (nx * yawMax) * spriteDir;
         float targetPitch = ny * pitchMax;
-        
+
         // Step with a speed cap (≈60 FPS)
         float maxStep = MathHelper.ToRadians(degPerSec) * (1f / 60f);
         currentYaw = AngleTowards(currentYaw, targetYaw, maxStep);
@@ -352,39 +363,78 @@ internal partial class RitualAltar : BloodMoonBaseNPC
         // Clamp final angles just in case
         currentYaw = MathHelper.Clamp(currentYaw, -yawMax, yawMax);
         currentPitch = MathHelper.Clamp(currentPitch, -pitchMax, pitchMax);
-        
+
     }
-   
+
     void mask(SpriteBatch spriteBatch, Color drawColor)
     {
         spriteBatch.End();
         Main.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp,
                DepthStencilState.None, RasterizerState.CullNone, null, Main.GameViewMatrix.TransformationMatrix);
 
-        
+
         RebuildMaskMesh(drawColor, 20, 12, -0.2f);
-        //RebuildMaskMesh_ColorDebug(20, 12, -4.2f);
-        
-        if(currentTarget != null)
+        //RebuildMaskMesh_ColorDebug(20, 12, -0.2f);
+
+        if (currentTarget != null)
         {
             Vector2 toPlayer = currentTarget.Center - NPC.Center;
             UpdateFaceAim(toPlayer, NPC.spriteDirection, yawMaxDeg: 28f, pitchMaxDeg: 18f, degPerSec: 160f);
 
         }
         //Main.NewText("pitch: " + currentPitch + " yaw: " + currentYaw);
-        Vector2 anchor = NPC.Center - Main.screenPosition + new Vector2(NPC.height / 2, -2).RotatedBy(NPC.rotation) + new Vector2(-currentPitch, -currentYaw).RotatedBy(NPC.rotation)*27.5f;
+        Vector2 anchor;
+
+        if (!NPC.IsABestiaryIconDummy)
+            anchor = NPC.Center - Main.screenPosition + new Vector2(NPC.height / 2, -2).RotatedBy(NPC.rotation) + new Vector2(-currentPitch, -currentYaw).RotatedBy(NPC.rotation) * 27.5f;
+        else
+        {
+            anchor = NPC.Center + new Vector2(-30, -90) + new Vector2(-currentPitch, -currentYaw).RotatedBy(-MathHelper.PiOver2) * 27.5f;
+            UpdateFaceAim(Main.MouseWorld - Main.screenPosition - NPC.Center, NPC.spriteDirection, yawMaxDeg: 28f, pitchMaxDeg: 18f, degPerSec: 160f);
+
+        }
 
 
         Texture2D face = ModContent.Request<Texture2D>(
-            "HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/RitualAltarNPC/RitualAltarFace").Value;
+                "HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/RitualAltarNPC/RitualAltarFace_"+Variant).Value;
 
         DrawMask(anchor, face, pixelSize: 50f);
         //DrawMask_ColorDebug(anchor, 50);
 
     }
+    void drawLegs(Color drawColor)
+    {
+        if (!NPC.IsABestiaryIconDummy)
+            for (int i = 0; i < _limbs.Length; i++)
+            {
+
+                SpriteEffects a = NPC.direction == 1 ? 0 : SpriteEffects.FlipHorizontally;
+                a = Math.Sign((_limbBaseOffsets[i] - NPC.Center).Length()) == 1 ? 0 : SpriteEffects.FlipVertically;
+                DrawArm(ref _limbs[i], drawColor, a);
+            }
+        else
+        {
+            if (_limbs == null)
+            {
+                CreateLimbs();
+                
+            }
+            for (int i = 0; i < _limbs.Length; i++)
+            {
+
+                SpriteEffects a = NPC.direction == 1 ? 0 : SpriteEffects.FlipHorizontally;
+                a = Math.Sign((_limbs[i].EndPosition - _limbs[i].TargetPosition).Length()) == 1 ? 0 : SpriteEffects.FlipVertically;
+                _limbs[i].TargetPosition = new Vector2(-20 + i * 10, 40) + NPC.Center;
+                _limbs[i].EndPosition = _limbs[i].TargetPosition;
+                DrawArm(ref _limbs[i], drawColor, a);
+               
+                UpdateLimbState(ref _limbs[i], _limbBaseOffsets[i], 0.2f, 5);
+            }
+        }
+    }
     public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
     {
-        if (NPC.IsABestiaryIconDummy) return false;
+        // if (NPC.IsABestiaryIconDummy) return false;
 
         Texture2D BodyTexture = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/RitualAltarNPC/RitualAltarConcept").Value;
 
@@ -392,30 +442,39 @@ internal partial class RitualAltar : BloodMoonBaseNPC
         SpriteEffects sp = 0;
         float rot = NPC.rotation + MathHelper.PiOver2;
         Vector2 Origin = BodyTexture.Size() * 0.5f + new Vector2(0, 30);
-        Main.EntitySpriteDraw(BodyTexture, NPC.Center - Main.screenPosition, null, drawColor, rot, Origin, 1, sp);
-        
-        mask(spriteBatch, drawColor);
-        for (int i = 0; i < _limbs.Length; i++)
+        Vector2 DrawPos = NPC.Center - Main.screenPosition;
+        if (NPC.IsABestiaryIconDummy)
         {
-
-            SpriteEffects a = NPC.direction == 1 ? 0 : SpriteEffects.FlipHorizontally;
-            a = Math.Sign((_limbs[i].EndPosition - _limbs[i].TargetPosition).Length()) == 1 ? 0 : SpriteEffects.FlipVertically;
-            DrawArm(ref _limbs[i], drawColor, a);
+            DrawPos = NPC.Center;
+            rot -= MathHelper.PiOver2;
         }
-        // Utils.DrawBorderString(spriteBatch, currentAIState.ToString(), NPC.Center - screenPos, Color.AntiqueWhite);
+        Main.EntitySpriteDraw(BodyTexture, DrawPos, null, drawColor, rot, Origin, 1, sp);
+
+        mask(spriteBatch, drawColor);
+
+
+        drawLegs(drawColor);
+        //Utils.DrawBorderString(spriteBatch, currentAIState.ToString(), NPC.Center - screenPos, Color.AntiqueWhite);
         /*
          for (int i = 0; i < _limbs.Length; i++)
          {
-             Vector2 DrawPos = _limbs[i].TargetPosition - screenPos;
-             //spriteBatch.Draw(GennedAssets.Textures.GreyscaleTextures.WhitePixel, DrawPos, new Rectangle(0, 0, 5, 5), Color.Lime);
-             //string msgd = $"{i + 1}\n {_limbs[i].IsTouchingGround}";
-             // Utils.DrawBorderString(Main.spriteBatch, msgd, DrawPos, Color.AntiqueWhite);
+             Vector2 DrawPos2 = _limbs[i].TargetPosition - screenPos;
+            Vector2 DrawPos3 = _limbs[i].EndPosition - screenPos;
+             spriteBatch.Draw(GennedAssets.Textures.GreyscaleTextures.WhitePixel, DrawPos2, new Rectangle(0, 0, 5, 5), Color.Lime);
+            spriteBatch.Draw(GennedAssets.Textures.GreyscaleTextures.WhitePixel, DrawPos3, new Rectangle(0, 0, 5, 5), Color.Azure);
+
+            string msgd = $"{i + 1}\n touching ground:{_limbs[i].IsTouchingGround}";
+            if (_limbs[i].IsTouchingGround)
+             Utils.DrawBorderString(Main.spriteBatch, msgd, DrawPos2, Color.AntiqueWhite, 0.4f,0, (float)i/4);
 
          }*/
-        Vector2 anchor = NPC.Center - Main.screenPosition + new Vector2(NPC.height * 2.0f, 0).RotatedBy(NPC.rotation);
-
+        Vector2 anchor;
+        if (!NPC.IsABestiaryIconDummy)
+            anchor = NPC.Center - Main.screenPosition + new Vector2(NPC.height * 2.0f, 0).RotatedBy(NPC.rotation);
+        else
+            anchor = NPC.Center + new Vector2(NPC.height * 2.0f, 0).RotatedBy(-MathHelper.PiOver2);
         renderIsohedron(anchor, drawColor);
-       
+
         return false;
     }
 }

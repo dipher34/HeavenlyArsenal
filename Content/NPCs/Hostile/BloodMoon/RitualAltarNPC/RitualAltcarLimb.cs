@@ -8,6 +8,7 @@ using Terraria;
 
 namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
 {
+    //IM SORRY WAAAAAAH
     //credit: https://github.com/mayli4/AllBeginningsMod/blob/main/src/AllBeginningsMod/Content/Bosses/_Nightgaunt/NightgauntNPC.Limbs.cs
     // thanks bozo :3
     internal partial class RitualAltar
@@ -25,15 +26,18 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC
             public Point TargetTile;
             public int Cooldown;
             public bool IsTouchingGround;
+
+            public int RetryTimer { get; internal set; }
         }
 
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        void UpdateLimbState(ref RitualAltarLimb nightgauntLimb, Vector2 basePos, float lerpSpeed, float anchorThreshold)
+        void UpdateLimbState(ref RitualAltarLimb ritualAltarLimb, Vector2 basePos, float lerpSpeed, float anchorThreshold)
         {
-            nightgauntLimb.EndPosition = Vector2.Lerp(nightgauntLimb.EndPosition, nightgauntLimb.TargetPosition, lerpSpeed);
-            nightgauntLimb.Skeleton.Update(basePos, nightgauntLimb.EndPosition);
-            nightgauntLimb.IsAnchored = Vector2.Distance(nightgauntLimb.EndPosition, nightgauntLimb.TargetPosition) < anchorThreshold;
+            ritualAltarLimb.EndPosition = Vector2.Lerp(ritualAltarLimb.EndPosition, ritualAltarLimb.TargetPosition, lerpSpeed);
+            ritualAltarLimb.Skeleton.Update(basePos, ritualAltarLimb.EndPosition);
+            ritualAltarLimb.IsAnchored = Vector2.Distance(ritualAltarLimb.EndPosition, ritualAltarLimb.TargetPosition) < anchorThreshold;
+            ritualAltarLimb.Cooldown--;
         }
 
         void CreateLimbs()

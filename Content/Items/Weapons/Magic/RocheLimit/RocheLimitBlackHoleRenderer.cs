@@ -9,6 +9,7 @@ using NoxusBoss.Core.Graphics.RenderTargets;
 using System.Collections.Generic;
 using System.Linq;
 using Terraria;
+using Terraria.ID;
 using Terraria.ModLoader;
 
 namespace HeavenlyArsenal.Content.Items.Weapons.Magic.RocheLimit;
@@ -40,6 +41,8 @@ public class RocheLimitBlackHoleRenderer : ModSystem
 
     private static void PrepareShader()
     {
+        if (Main.netMode == NetmodeID.Server)
+            return;
         Matrix world = Matrix.CreateTranslation(-Main.screenPosition.X, -Main.screenPosition.Y, 0f);
         Matrix projection = Matrix.CreateOrthographicOffCenter(0f, Main.screenWidth, Main.screenHeight, 0f, -100f, 100f);
 
@@ -106,6 +109,8 @@ public class RocheLimitBlackHoleRenderer : ModSystem
 
     private static void RenderBlackHolesWrapper(On_Main.orig_DrawProjectiles orig, Main self)
     {
+        if (Main.netMode == NetmodeID.Server)
+            return;
         orig(self);
 
         blackHoleTarget.Request(Main.screenWidth, Main.screenHeight, 0, RenderIntoTarget);

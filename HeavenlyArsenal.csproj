@@ -9,8 +9,8 @@
 	</PropertyGroup>
 	<ItemGroup>
 	  <AdditionalFiles Remove="Content\Items\Accessories\ManaTransfusion\**" />
-	  <AdditionalFiles Remove="Content\Items\Weapons\Magic\RocheLimit\**" />
-	  <AdditionalFiles Remove="Content\Items\Weapons\Ranged\**" />
+	  <AdditionalFiles Remove="Content\Items\Weapons\Ranged\ColdFusion\**" />
+	  <AdditionalFiles Remove="Content\Items\Weapons\Ranged\ZealotsReward\**" />
 	  <AdditionalFiles Remove="Content\Items\Weapons\Rogue\AvatarRogue\**" />
 	  <AdditionalFiles Remove="Content\Items\Weapons\Summon\BadSun\**" />
 	  <AdditionalFiles Remove="Content\NPCs\Bosses\**" />
@@ -21,8 +21,8 @@
 	  <AdditionalFiles Remove="Content\Waters\**" />
 	  <AdditionalFiles Remove="Core\Fixes\**" />
 	  <Compile Remove="Content\Items\Accessories\ManaTransfusion\**" />
-	  <Compile Remove="Content\Items\Weapons\Magic\RocheLimit\**" />
-	  <Compile Remove="Content\Items\Weapons\Ranged\**" />
+	  <Compile Remove="Content\Items\Weapons\Ranged\ColdFusion\**" />
+	  <Compile Remove="Content\Items\Weapons\Ranged\ZealotsReward\**" />
 	  <Compile Remove="Content\Items\Weapons\Rogue\AvatarRogue\**" />
 	  <Compile Remove="Content\Items\Weapons\Summon\BadSun\**" />
 	  <Compile Remove="Content\NPCs\Bosses\**" />
@@ -33,8 +33,8 @@
 	  <Compile Remove="Content\Waters\**" />
 	  <Compile Remove="Core\Fixes\**" />
 	  <EmbeddedResource Remove="Content\Items\Accessories\ManaTransfusion\**" />
-	  <EmbeddedResource Remove="Content\Items\Weapons\Magic\RocheLimit\**" />
-	  <EmbeddedResource Remove="Content\Items\Weapons\Ranged\**" />
+	  <EmbeddedResource Remove="Content\Items\Weapons\Ranged\ColdFusion\**" />
+	  <EmbeddedResource Remove="Content\Items\Weapons\Ranged\ZealotsReward\**" />
 	  <EmbeddedResource Remove="Content\Items\Weapons\Rogue\AvatarRogue\**" />
 	  <EmbeddedResource Remove="Content\Items\Weapons\Summon\BadSun\**" />
 	  <EmbeddedResource Remove="Content\NPCs\Bosses\**" />
@@ -45,8 +45,8 @@
 	  <EmbeddedResource Remove="Content\Waters\**" />
 	  <EmbeddedResource Remove="Core\Fixes\**" />
 	  <None Remove="Content\Items\Accessories\ManaTransfusion\**" />
-	  <None Remove="Content\Items\Weapons\Magic\RocheLimit\**" />
-	  <None Remove="Content\Items\Weapons\Ranged\**" />
+	  <None Remove="Content\Items\Weapons\Ranged\ColdFusion\**" />
+	  <None Remove="Content\Items\Weapons\Ranged\ZealotsReward\**" />
 	  <None Remove="Content\Items\Weapons\Rogue\AvatarRogue\**" />
 	  <None Remove="Content\Items\Weapons\Summon\BadSun\**" />
 	  <None Remove="Content\NPCs\Bosses\**" />
@@ -118,7 +118,9 @@
 	</ItemGroup>
 	
 	<ItemGroup>
+	  <Folder Include="Content\Items\Armor\Vanity\ScavSona\" />
 	  <Folder Include="Content\Items\Weapons\Rogue\Boquet\" />
+	  <Folder Include="Content\NPCs\Hostile\BloodCult\FleshkinAcolyte\" />
 	</ItemGroup>
 
 	<!-- References -->

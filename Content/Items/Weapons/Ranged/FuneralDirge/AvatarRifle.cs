@@ -29,8 +29,9 @@ using NoxusBoss.Assets;
 
 namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.FuneralDirge
 {
-    class AvatarRifle : ModItem
+    class AvatarRifle2 : ModItem
     {
+        public override string Texture => "HeavenlyArsenal/Content/Items/Weapons/Ranged/FuneralDirge/AvatarRifle";
         public const int ShootDelay = 32;
 
         public const int BulletsPerShot = 1;

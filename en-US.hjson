@@ -372,12 +372,43 @@ Mods: {
 				DisplayName: Debug Leech Summon
 				Tooltip: ""
 			}
+
+			DebugJellySummon: {
+				DisplayName: Debug Jelly Summon
+				Tooltip: ""
+			}
+
+			DebugCryonophoreSummon: {
+				DisplayName: Debug Cryonophore Summon
+				Tooltip: ""
+			}
 		}
 
 		Biomes: {
 			ForgottenShrineBiome: {
 				DisplayName: Forgotten Shrine Biome
 				TownNPCDialogueName: the Forgotten Shrine Biome
+			}
+
+			RiftEclipseBloodMoon: {
+				DisplayName: Rift Eclipse Blood Moon
+				TownNPCDialogueName: the Rift Eclipse Blood Moon
+			}
+
+			Mods: {
+				HeavenlyArsenal: {
+					Bestiary: {
+						Biome: {
+							DisplayName: Mods. Heavenly Arsenal. Bestiary. Biome
+							TownNPCDialogueName: the Mods. Heavenly Arsenal. Bestiary. Biome
+						}
+					}
+				}
+			}
+
+			"Blood Rift Moon": {
+				DisplayName: Blood  Rift  Moon
+				TownNPCDialogueName: the Blood  Rift  Moon
 			}
 		}
 

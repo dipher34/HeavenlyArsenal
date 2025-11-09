@@ -10,11 +10,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.ShieldGuy
     partial class PerversionOfFaith : BloodMoonBaseNPC
     {
         public override string Texture => "HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/ShieldGuy/PerversionOfFaith";
-        public int Time
-        {
-            get => (int)NPC.ai[0];
-            set => NPC.ai[0] = value;
-        }
+        
         public override bool canBeSacrificed => false;
         public override int bloodBankMax => 100;
         public override void SetDefaults()
@@ -26,7 +22,10 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.ShieldGuy
             NPC.defense = 400;
             NPC.damage = 300;
             NPC.lifeMax = 400;
-
+            SpawnModBiomes =
+            [
+                ModContent.GetInstance<RiftEclipseBloodMoon>().Type
+            ];
         }
         public override void OnSpawn(IEntitySource source)
         {

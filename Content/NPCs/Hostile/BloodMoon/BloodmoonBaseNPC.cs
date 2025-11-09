@@ -2,6 +2,7 @@
 using CalamityMod.NPCs.NormalNPCs;
 using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.BigCrab;
 using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.FleshlingCultist;
+using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Jellyfish;
 using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech;
 using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC;
 using Luminance.Assets;
@@ -52,38 +53,96 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
 
     public class BloodmoonSpawnControl : GlobalNPC
     {
+        
         public override void EditSpawnRange(Player player, ref int spawnRangeX, ref int spawnRangeY, ref int safeRangeX, ref int safeRangeY)
         {
-            base.EditSpawnRange(player, ref spawnRangeX, ref spawnRangeY, ref safeRangeX, ref safeRangeY);
+            //spawnRangeY = (int)(Main.worldSurface * 0.2f);
         }
         public override void EditSpawnPool(IDictionary<int, float> pool, NPCSpawnInfo spawnInfo)
         {
-            if (Main.bloodMoon && !Main.dayTime && spawnInfo.Player.ZoneOverworldHeight && RiftEclipseBloodMoonRainSystem.EffectActive)
+            if (Main.bloodMoon && !Main.dayTime && RiftEclipseBloodMoonRainSystem.EffectActive)
             {
-               
-                pool.Clear();
+                if (spawnInfo.Player.ZoneOverworldHeight)
+                {
+                    pool.Clear();
 
-                // The float value is the spawn weight relative to others in the pool stupid
-                pool[ModContent.NPCType<ArtilleryCrab>()] = SpawnCondition.OverworldNightMonster.Chance * 0.17f;
-                //pool[ModContent.NPCType<UmbralLeech>()] = SpawnCondition.OverworldNightMonster.Chance * 0.074f;
-                pool[ModContent.NPCType<newLeech>()] = SpawnCondition.OverworldNightMonster.Chance * 0.074f;
-                
-                //pool[ModContent.NPCType<Umbralarva>()] = SpawnCondition.OverworldNightMonster.Chance * 0.14f;
+                    // The float value is the spawn weight relative to others in the pool stupid
+                    pool[ModContent.NPCType<ArtilleryCrab>()] = SpawnCondition.OverworldNightMonster.Chance * 0.17f;
+                    pool[ModContent.NPCType<newLeech>()] = SpawnCondition.OverworldNightMonster.Chance * 0.074f;
+                    
+                    pool[ModContent.NPCType<RitualAltar>()] = SpawnCondition.OverworldNightMonster.Chance * 0.01f;
+                    pool[ModContent.NPCType<FleshlingCultist.FleshlingCultist>()] = SpawnCondition.OverworldNightMonster.Chance * 0.42f;
 
-                pool[ModContent.NPCType<RitualAltar>()] = SpawnCondition.OverworldNightMonster.Chance * 0.008f;
-                pool[ModContent.NPCType<FleshlingCultist.FleshlingCultist>()] = SpawnCondition.OverworldNightMonster.Chance * 0.42f;
-               
+                }
+                else if (spawnInfo.Player.ZoneSkyHeight && !spawnInfo.PlayerInTown)
+                {
+                    //if (spawnInfo.SpawnTileY < Main.worldSurface * 0.5f)
+                    {
+                        pool.Clear();
+                        pool[ModContent.NPCType<BloodJelly>()] = SpawnCondition.Sky.Chance * 1.17f;
+                    }
+                }
+
             }
         }
             
         public override void EditSpawnRate(Player player, ref int spawnRate, ref int maxSpawns)
         {
-            if (Main.bloodMoon && !Main.dayTime && player.ZoneOverworldHeight)
+            if (Main.bloodMoon && !Main.dayTime && RiftEclipseBloodMoonRainSystem.EffectActive)
             {
-                // spawnRate is how often spawns happen (lower = more frequent)
-                // maxSpawns is how many can exist near the player at once
-                spawnRate = 80; // vanilla ~600; lowering makes spawns faster
-                maxSpawns = 60; 
+                /*
+                if (Main.LocalPlayer.name.ToLower() == "tester2")
+                {
+                    int totalActive = 0;
+                    var counts = new Dictionary<int, int>();
+
+                    for (int i = 0; i < Main.npc.Length; i++)
+                    {
+                        var n = Main.npc[i];
+                        if (n != null && n.active)
+                        {
+                            totalActive++;
+                            if (counts.ContainsKey(n.type))
+                                counts[n.type]++;
+                            else
+                                counts[n.type] = 1;
+                        }
+                    }
+
+                    int uniqueTypes = counts.Count;
+
+                    // Build a compact message showing totals and the top few types
+                    var top = counts.OrderByDescending(kv => kv.Value).Take(10).ToList();
+                    var sb = new StringBuilder();
+                    sb.Append($"Active NPCs: {totalActive}, Unique types: {uniqueTypes}. \nTop= ");
+
+                    for (int i = 0; i < top.Count; i++)
+                    {
+                        var kv = top[i];
+                        string name;
+                        try
+                        {
+                            name = Lang.GetNPCNameValue(kv.Key);
+                            if (string.IsNullOrEmpty(name)) name = $"NPC#{kv.Key}";
+                        }
+                        catch
+                        {
+                            name = $"NPC#{kv.Key}";
+                        }
+
+                        sb.Append($"{name}({kv.Key}) x{kv.Value}\n");
+                        if (i < top.Count - 1) sb.Append(", ");
+                    }
+
+                    Main.NewText(sb.ToString());
+                }
+                */
+                spawnRate = (int)(spawnRate * 0.5f);  // Half the delay -> roughly double the spawn frequency
+                maxSpawns = (int)(maxSpawns * 1.5f);  // Increase the cap by 50%
+
+                //clamps? hmm
+                spawnRate = Math.Max(spawnRate, 30);
+                maxSpawns = Math.Min(maxSpawns, 100);
             }
         }
     }
@@ -104,7 +163,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
 
         public virtual bool ResistantToTrueMelee => true;
 
-
+        public virtual bool canBebuffed => true;
         public override void SendExtraAI(BinaryWriter writer)
         {
             writer.Write(blood);
@@ -193,6 +252,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon
 
         public override bool PreDraw(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
         {
+            //Utils.DrawBorderString(spriteBatch, Time.ToString(), NPC.Center - screenPos, Color.AntiqueWhite, 1, anchory: 2);
             //Utils.DrawBorderString(spriteBatch, $"{blood}/{bloodBankMax}%, {blood}/{bloodBankMax}", NPC.Center - screenPos + new Vector2(0, -40), Color.Red);
 
             /*

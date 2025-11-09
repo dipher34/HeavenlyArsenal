@@ -455,6 +455,8 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
     /// </summary>
     private void RenderBlackHole()
     {
+        if (Main.netMode == NetmodeID.Server)
+            return;
         float blackRadius = 0.3f;
         float accretionDiskScale = MathF.Pow(BlackHoleDiameter / MaxBlackHoleDiameter, 0.65f);
         Vector2 drawPosition = Projectile.Center - Main.screenPosition;
@@ -481,6 +483,8 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
     /// </summary>
     private void RenderSun()
     {
+        if (Main.netMode == NetmodeID.Server)
+            return;
         Vector2 drawPosition = Projectile.Center - Main.screenPosition;
         Vector2 scale = Vector2.One * SunDiameter / GennedAssets.Textures.Noise.DendriticNoiseZoomedOut.Value.Size();
 
@@ -532,6 +536,8 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
     /// </summary>
     private void RenderShineGlow(Vector2 drawPosition, Color shineColor)
     {
+        if (Main.netMode == NetmodeID.Server)
+            return;
         Texture2D noise = GennedAssets.Textures.Noise.FireNoiseA;
         ManagedShader shineShader = ShaderManager.GetShader("NoxusBoss.RadialShineShader");
         shineShader.Apply();
@@ -559,6 +565,8 @@ public class RocheLimitBlackHole : ModProjectile, IDrawsOverRocheLimitDistortion
 
     public override bool PreDraw(ref Color lightColor)
     {
+        if (Main.netMode == NetmodeID.Server)
+            return false;
         Main.spriteBatch.End();
         Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearWrap, DepthStencilState.None, RasterizerState.CullNone, null, Main.GameViewMatrix.TransformationMatrix);
 

@@ -1,7 +1,11 @@
 ﻿using CalamityMod;
+using CalamityMod.Items.Materials;
+using HeavenlyArsenal.Content.Items.Materials.BloodMoon;
+using HeavenlyArsenal.Content.Items.Weapons.Summon.BloodMoonWhip;
 using HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.RitualAltarNPC;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using NoxusBoss.Content.Biomes;
 using NoxusBoss.Content.NPCs.Bosses.Avatar.SecondPhaseForm;
 using ReLogic.Content;
 using System;
@@ -10,6 +14,7 @@ using System.IO;
 using Terraria;
 using Terraria.DataStructures;
 using Terraria.GameContent.Bestiary;
+using Terraria.GameContent.ItemDropRules;
 using Terraria.ID;
 using Terraria.ModLoader;
 
@@ -108,6 +113,11 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
 
             NPC.DeathSound = AssetDirectory.Sounds.NPCs.Hostile.BloodMoon.UmbralLeech.DyingNoise;
             NPC.HitSound = SoundID.NPCHit1;
+
+            SpawnModBiomes =
+            [
+                ModContent.GetInstance<RiftEclipseBloodMoon>().Type
+            ];
         }
         public override void SendExtraAI(BinaryWriter writer)
         {
@@ -194,19 +204,26 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
         }
         public override void AI()
         {
+           
             if(CosmeticTime % 100 == 0)
             NPC.netUpdate = true;
-           // Main.NewText(_ExtraHitBoxes.Count);
             string debugPlayer = "tester2";
             if (Main.LocalPlayer.name.ToLower() == debugPlayer.ToLower() && NPC.ai[1] == 1)
                 NPC.Center = Main.MouseWorld;// + new Vector2(0, MathF.Sin(Time / 10.1f) * 60);// + new Vector2(Math.Clamp(MathF.Tan(Time / 10.1f) * 50, -200, 200), 0);
 
 
-            if (Debug != 1)
-                StateMachine();
+           // if (Debug != 1)
+            StateMachine();
             if (NPC.life < NPC.lifeMax / 3 && !hasUsedEmergency && !NPC.GetGlobalNPC<SacrificeNPC>().isSacrificed)
             {
-                CurrentState = Behavior.DisipateIntoBlood;
+                if (Main.rand.NextBool(3))
+                {
+
+                    CurrentState = Behavior.DisipateIntoBlood;
+                }
+                else
+                    hasUsedEmergency = true;
+
 
             }
 
@@ -330,6 +347,7 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
             
             return false;
         }
+       
         public override bool? DrawHealthBar(byte hbPosition, ref float scale, ref Vector2 position)
         {
 
@@ -350,12 +368,15 @@ namespace HeavenlyArsenal.Content.NPCs.Hostile.BloodMoon.Leech
                 }
         }
 
-        public override void OnKill()
+    
+        public override void ModifyNPCLoot(NPCLoot npcLoot)
         {
+            npcLoot.Add(ItemDropRule.NormalvsExpert(ModContent.ItemType<ViscousWhip_Item>(), 1, 5));
+            npcLoot.Add(ItemDropRule.NormalvsExpert(ModContent.ItemType<UmbralLeechDrop>(), 30, 25));
+            npcLoot.Add(ItemDropRule.CoinsBasedOnNPCValue(ModContent.NPCType<newLeech>()));
 
-            //NPC.NPCLoot();
+            npcLoot.Add(ModContent.ItemType<BloodOrb>(), 1, 40, 48);
         }
-
         void ManageTail()
         {
 
