@@ -370,3 +370,15 @@ FodyWeavers.xsd
 /Content/Items/YangSoul(2).cs
 /Content/Items/YangSoul.png
 /.idea/.idea.HeavenlyArsenal.dir/.idea
+/Content/NPCs/Hostile/BloodMoon/Jellyfish/FileName.cs
+/Content/NPCs/Hostile/BloodMoon/sipho/Cryonophore.cs
+/Content/NPCs/Hostile/BloodMoon/sipho/CryonophoreAttacks.cs
+/Content/NPCs/Hostile/BloodMoon/sipho/CryonophoreLimb.cs
+/Content/NPCs/Hostile/BloodMoon/sipho/CryonophoreRenderer.cs
+/Content/NPCs/Hostile/BloodMoon/sipho/Cryonophore_Core.png
+/Content/NPCs/Hostile/BloodMoon/sipho/DebugCryonophoreSummon.cs
+/Assets/AutoloadedEffects/Shaders/inversion.fx
+/Assets/AutoloadedEffects/Shaders/inversion.fxc
+/Assets/AutoloadedEffects/Shaders/SphericalNoise.fx
+/Assets/AutoloadedEffects/Shaders/SphericalNoise.fxc
+/Content/NPCs/Hostile/BloodMoon/Leech/UmbralLeech.cs
