@@ -382,3 +382,9 @@ FodyWeavers.xsd
 /Assets/AutoloadedEffects/Shaders/SphericalNoise.fx
 /Assets/AutoloadedEffects/Shaders/SphericalNoise.fxc
 /Content/NPCs/Hostile/BloodMoon/Leech/UmbralLeech.cs
+/Content/NPCs/Hostile/BloodMoon/Goreca/BloodSplash.png
+/Content/NPCs/Hostile/BloodMoon/Goreca/Chum.png
+/Content/NPCs/Hostile/BloodMoon/Goreca/Goreca.cs
+/Content/NPCs/Hostile/BloodMoon/Goreca/Goreca.png
+/Content/NPCs/Hostile/BloodMoon/Goreca/GorecaBody.png
+/Content/NPCs/Hostile/BloodMoon/Goreca/ShadowHand.png
