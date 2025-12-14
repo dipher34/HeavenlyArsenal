@@ -1,5 +1,6 @@
 global using LumUtils = Luminance.Common.Utilities.Utilities;
 global using WotGUtils = NoxusBoss.Core.Utilities.Utilities;
+
 using System.Runtime.CompilerServices;
 using CalamityMod.Projectiles.Enemy;
 using CalamityMod.UI.CalamitasEnchants;
@@ -7,14 +8,12 @@ using HeavenlyArsenal.Common;
 using HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath;
 using NoxusBoss.Content.Items;
 
-//using HeavenlyArsenal.Content.Items.Accessories.VoidCrestOath;
-
-//using HeavenlyArsenal.Content.Items.Misc;
-
 namespace HeavenlyArsenal;
 
-// Please read https://github.com/tModLoader/tModLoader/wiki/Basic-tModLoader-Modding-Guide#mod-skeleton-contents for more information about the various files in a mod.
-public class HeavenlyArsenal : Mod
+/// <summary>
+///     The <see cref="Mod"/> implementation of Heavenly Arsenal.
+/// </summary>
+public sealed class HeavenlyArsenal : Mod
 {
     public static class MultiSegmentNPCIterator
     {
@@ -255,15 +254,5 @@ public class HeavenlyArsenal : Mod
                 recipe.AddIngredient(item.Type);
             }
         }
-    }
-
-    private static bool CanEnterRift_Hook(Func<bool> orig)
-    {
-        if (forceOpenRift)
-        {
-            return true;
-        }
-
-        return true; //orig();  
     }
 }
