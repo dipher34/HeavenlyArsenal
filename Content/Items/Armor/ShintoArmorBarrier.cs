@@ -2,7 +2,6 @@
 using CalamityMod.Cooldowns;
 using HeavenlyArsenal.Common.Graphics;
 using HeavenlyArsenal.Common.Ui.Cooldowns;
-using HeavenlyArsenal.Content.Buffs.Stims;
 using HeavenlyArsenal.Content.Items.Armor.ShintoArmor;
 using HeavenlyArsenal.Content.Particles;
 using Luminance.Core.Graphics;
@@ -38,7 +37,77 @@ namespace HeavenlyArsenal.Content.Items.Armor
         public override void Load()
         {
             On_Main.DrawInfernoRings += On_Main_DrawInfernoRings;
+            On_Player.QuickHeal += On_Player_QuickHeal;
+            On_Player.Heal += On_Player_Heal;
+            On_Player.ConsumeItem += On_Player_ConsumeItem;
+            On_Player.GetHealLife += On_Player_GetHealLife;
         }
+
+        private int On_Player_GetHealLife(On_Player.orig_GetHealLife orig, Player self, Item item, bool quickHeal)
+        {
+            if (!self.GetModPlayer<ShintoArmorBarrier>().BarrierActive)
+            {
+                return orig(self, item, quickHeal);
+            }
+
+
+
+            return orig(self, item, quickHeal);
+        }
+
+        private bool On_Player_ConsumeItem(On_Player.orig_ConsumeItem orig, Player self, int type, bool reverseOrder, bool includeVoidBag)
+        {
+
+            if (!self.GetModPlayer<ShintoArmorBarrier>().BarrierActive)
+            {
+                
+                return orig(self, type, reverseOrder, includeVoidBag);
+            }
+
+
+
+            return orig(self, type, reverseOrder, includeVoidBag);
+        }
+
+        private void On_Player_Heal(On_Player.orig_Heal orig, Player self, int amount)
+        {
+            if (!self.GetModPlayer<ShintoArmorBarrier>().BarrierActive)
+            {
+                orig(self, amount);
+                return;
+            }
+
+
+
+        }
+
+        private void On_Player_QuickHeal(On_Player.orig_QuickHeal orig, Player self)
+        {
+            if (!self.GetModPlayer<ShintoArmorBarrier>().BarrierActive)
+            {
+                orig(self);
+                return;
+            }
+            if (self.HasBuff(BuffID.PotionSickness))
+                return;
+            Item ChosenPotion = self.QuickHeal_GetItemToUse();
+            int healAmount = ChosenPotion.healLife;
+            int missingLife = self.statLifeMax2 - self.statLife;
+            int healToLife = Math.Min(missingLife, healAmount);
+            int overflow = healAmount - healToLife;
+
+            Main.NewText($"healAmount: {healAmount}\n missing life: {missingLife}\n proper heal amount: {healToLife}\n overflow: {overflow}");
+            if (overflow > 0)
+            {
+                self.GetModPlayer<ShintoArmorBarrier>().barrier = Math.Min(self.GetModPlayer<ShintoArmorBarrier>().barrier + overflow, 300);
+            }
+            self.ConsumeItem(ChosenPotion.type);
+            //ChosenPotion.stack--;
+            //self.AddBuff(BuffID.PotionSickness, self.consumei);
+
+        }
+
+
         #region Antishield PowerCreep debuffs
         /*
         // Debuffs to allow through even if they're normally hostile
@@ -148,7 +217,7 @@ namespace HeavenlyArsenal.Content.Items.Armor
         {
             if (barrier > 0 && BarrierActive)
             {
-                
+
                 int incoming = info.SourceDamage;
                 if (Iframe <= 0)
                 {
@@ -157,7 +226,7 @@ namespace HeavenlyArsenal.Content.Items.Armor
                         timeSinceLastHit = 0;
                     Iframe = (int)(Player.ComputeHitIFrames(info) * 1.25f);
                     barrier -= taken;
-                    if(barrier <= 0)
+                    if (barrier <= 0)
                         SoundEngine.PlaySound(AssetDirectory.Sounds.Items.Armor.Antishield_Break, Player.Center);
                     BarrierTakeDamageVFX();
                     CombatText.NewText(Player.Hitbox, Color.Cyan, taken);
@@ -190,9 +259,9 @@ namespace HeavenlyArsenal.Content.Items.Armor
                 if (barrier > 0 && !cooldowns.ContainsKey(BarrierDurability.ID))
                 {
                     barrierSizeInterp = float.Lerp(barrierSizeInterp, 1, 0.1f);
-                   
+
                     var cd = Player.AddCooldown(BarrierDurability.ID, ShintoArmorBreastplate.ShieldDurabilityMax);
-                        cd.timeLeft = barrier;
+                    cd.timeLeft = barrier;
                 }
             }
             else
@@ -256,7 +325,7 @@ namespace HeavenlyArsenal.Content.Items.Armor
 
                 // Determine if the shield should be rendered
                 // Use modPlayer.active (or another appropriate flag) and check that the barrier value is positive.
-                
+
                 bool shieldExists = modPlayer.barrier > 0;
                 if (!shieldExists)
                     continue;
@@ -268,7 +337,7 @@ namespace HeavenlyArsenal.Content.Items.Armor
                 float maxExtraScale = 0.055f;
                 float extraScalePulseInterpolant = MathF.Pow(4f, MathF.Sin(Main.GlobalTimeWrappedHourly * 0.791f + i) - 1);
                 float scale = (baseScale + maxExtraScale * extraScalePulseInterpolant) * modPlayer.barrierSizeInterp;
-                float ShieldHealthInterpolant = (float)player.GetModPlayer<ShintoArmorBarrier>().barrier /ShintoArmorBreastplate.ShieldDurabilityMax;
+                float ShieldHealthInterpolant = (float)player.GetModPlayer<ShintoArmorBarrier>().barrier / ShintoArmorBreastplate.ShieldDurabilityMax;
 
                 if (!alreadyDrawnShieldForPlayer)
                 {
@@ -315,12 +384,12 @@ namespace HeavenlyArsenal.Content.Items.Armor
                     Texture2D ogg = GennedAssets.Textures.Extra.Ogscule;
                     Main.spriteBatch.End();
 
-                    
+
                     Main.spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.Additive, Main.DefaultSamplerState, DepthStencilState.None, Main.Rasterizer, shieldEffect, Main.GameViewMatrix.TransformationMatrix);
                     // Fetch shield noise overlay texture (this is the polygon texture fed to the shader)
                     Vector2 pos = player.MountedCenter + player.gfxOffY * Vector2.UnitY - Main.screenPosition;
                     Color color = Color.AntiqueWhite;
-                    
+
                     if (Main.remixWorld)
                     {
                         Main.EntitySpriteDraw(ogg, pos, null, Color.AntiqueWhite, rotation, ogg.Size() / 2f, 0.05f, 0, 0);
@@ -330,7 +399,7 @@ namespace HeavenlyArsenal.Content.Items.Armor
 
 
                     ManagedScreenFilter suctionShader = ShaderManager.GetFilter("HeavenlyArsenal.SuctionSpiralShader");
-                    suctionShader.TrySetParameter("globalTime", Main.GlobalTimeWrappedHourly/10.1f);
+                    suctionShader.TrySetParameter("globalTime", Main.GlobalTimeWrappedHourly / 10.1f);
 
                     suctionShader.TrySetParameter("suctionCenter", Vector2.Transform(player.Center - Main.screenPosition, Main.GameViewMatrix.TransformationMatrix));
                     suctionShader.TrySetParameter("zoomedScreenSize", Main.ScreenSize.ToVector2() / Main.GameViewMatrix.Zoom);
@@ -350,7 +419,7 @@ namespace HeavenlyArsenal.Content.Items.Armor
                     SpriteEffects direction = SpriteEffects.None;
                     Vector2 Gorigin = new Vector2(glow.Width / 2, glow.Height / 2);
 
-                
+
                     //Main.spriteBatch.Draw(glow, drawPosition, null, Color.Crimson, rotation, Gorigin, 0.05f, direction, 0f);
 
                 }

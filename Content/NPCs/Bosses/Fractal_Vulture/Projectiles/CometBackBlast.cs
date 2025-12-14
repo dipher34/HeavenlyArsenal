@@ -159,7 +159,7 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture.Projectiles
         }
         public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
         {
-            return targetHitbox.IntersectsConeSlowMoreAccurate(Projectile.Center, 800 * Projectile.scale, Projectile.rotation, MathHelper.ToRadians(70) * Projectile.scale);
+            return targetHitbox.IntersectsConeSlowMoreAccurate(Projectile.Center, 800 * Projectile.scale, Projectile.rotation, MathHelper.ToRadians(65) * Projectile.scale);
         }
     }
 }

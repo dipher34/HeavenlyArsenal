@@ -69,6 +69,7 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
 
             if (currentState == Behavior.reveal)
             {
+                if(Time == 1)
                 HeadPos = NPC.Center + new Vector2(0, 100);
                 //wings[0].Time = 4;
                 //voidVultureWing.UpdateWings(wings[0], NPC);
@@ -147,8 +148,8 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
 
             Vector2[] LegPos = new Vector2[]
             {
-                new Vector2(40, 60),
-                new Vector2(-40, 60)
+                new Vector2(40, 40),
+                new Vector2(-40, 40)
 
             };
             float offset = MathF.Sin(Time / 10.1f);
@@ -188,7 +189,7 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
 
             if (currentTarget == null)
                 currentTarget = Main.LocalPlayer;
-            if (currentState == Behavior.VomitCone || (currentState == Behavior.CollidingCommet && Time > 60))
+            if (currentState == Behavior.VomitCone || (currentState == Behavior.CollidingCommet && Time > 60) || currentState == Behavior.reveal)
             {
                 return;
             }

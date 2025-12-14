@@ -5,12 +5,14 @@ using HeavenlyArsenal.Content.Particles.Metaballs;
 using Luminance.Common.Easings;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using NoxusBoss.Assets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria;
+using Terraria.Audio;
 using Terraria.ID;
 using Terraria.ModLoader;
 using static HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture.voidVulture;
@@ -30,16 +32,47 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
         private PiecewiseCurve _flapCurve;
         private float _cachedStartRot = cachedStartRot;
 
+
+        public const int WingSubdivisions = 24;
+
+        public DynamicVertexBuffer WingVertexBuffer;
+        public IndexBuffer WingIndexBuffer;
+
+        public bool BuffersReady;
+
         public static void FlapWings(voidVultureWing wing, float flapCompletion, float startingRotation)
         {
+            wing._flapCurve = new PiecewiseCurve()
+                // Fast, powerful downstroke
+                .Add(
+                    EasingCurves.Cubic,
+                    EasingType.Out,
+                    startingRotation + MathHelper.ToRadians(100f),
+                    0.22f,
+                    startingRotation
+                )
+
+                // Brief compression / hold
+                .Add(
+                    EasingCurves.Linear,
+                    EasingType.InOut,
+                    startingRotation + MathHelper.ToRadians(55f),
+                    0.62f
+                )
+
+                // Slow recovery (upstroke)
+                .Add(
+                    EasingCurves.Cubic,
+                    EasingType.Out,
+                    startingRotation,
+                    1f
+                );
+
             if (wing._flapCurve == null || !startingRotation.Equals(wing._cachedStartRot))
             {
                 wing._cachedStartRot = startingRotation;
 
-                wing._flapCurve = new PiecewiseCurve()
-                .Add(EasingCurves.Exp, EasingType.In, startingRotation + 2.3f, 0.5f, startingRotation)
-                .Add(EasingCurves.Quadratic, EasingType.InOut, startingRotation + 1.86f, 0.6f)
-                .Add(EasingCurves.Circ, EasingType.Out, startingRotation, 1f);
+                
             }
             float previousWingRotation = wing.WingRotation;
             float t = flapCompletion % 1f;
@@ -53,9 +86,9 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
         public static void UpdateWings(voidVultureWing wing, NPC npc)
         {
 
-            WingCycleTime = 100;
+            WingCycleTime = 80;
             wing.WingActivationProgress = float.Lerp(wing.WingActivationProgress, 1, 0.5f);
-            float baseRotation = Math.Abs(npc.velocity.Y) * -0.02f;
+            float baseRotation = MathHelper.ToRadians(-50);//Math.Abs(npc.velocity.Y) * -0.02f;
 
             float flapCompletion = (float)wing.Time / WingCycleTime;
             FlapWings(wing, flapCompletion, baseRotation);
@@ -64,9 +97,123 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
             if (wing.Time > WingCycleTime + 1)
                 wing.Time = 0;
 
-
+            if (flapCompletion %1 == 0)
+            {
+                //SoundEngine.PlaySound(GennedAssets.Sounds.Common.Twinkle);
+            }
         }
-        
+
+        public void EnsureBuffers()
+        {
+            if (Main.netMode == NetmodeID.Server || BuffersReady)
+                return;
+
+            Main.QueueMainThreadAction(() =>
+            {
+                short[] indices = new short[(WingSubdivisions - 1) * 6];
+                int idx = 0;
+
+                for (short i = 0; i < WingSubdivisions - 1; i++)
+                {
+                    int v = i * 2;
+                    indices[idx++] = (short)(v + 0);
+                    indices[idx++] = (short)(v + 1);
+                    indices[idx++] = (short)(v + 2);
+
+                    indices[idx++] = (short)(v + 2);
+                    indices[idx++] = (short)(v + 1);
+                    indices[idx++] = (short)(v + 3);
+                }
+
+                WingIndexBuffer = new IndexBuffer(
+                    Main.instance.GraphicsDevice,
+                    IndexElementSize.SixteenBits,
+                    indices.Length,
+                    BufferUsage.WriteOnly
+                );
+                WingIndexBuffer.SetData(indices);
+
+                WingVertexBuffer = new DynamicVertexBuffer(
+                    Main.instance.GraphicsDevice,
+                    typeof(VertexPositionColorTexture),
+                    WingSubdivisions * 2,
+                    BufferUsage.WriteOnly
+                );
+
+                BuffersReady = true;
+            });
+        }
+        public void RegenerateVertices(Color DrawColor,
+        Vector2 worldCenter,
+        float wingRotation,
+        bool flipped,
+        float opacity)
+        {
+            if (!BuffersReady)
+                return;
+
+            VertexPositionColorTexture[] verts =
+                new VertexPositionColorTexture[WingSubdivisions * 2];
+
+            Vector2 size = new Vector2(210f, 120f);
+            int vi = 0;
+            float dir = flipped ? -1f : 1f;
+
+            for (int x = 0; x < WingSubdivisions; x++)
+            {
+                float t = x / (float)(WingSubdivisions - 1);
+
+                float z = t * -220f;
+                float sideCurlFactor = -MathHelper.SmoothStep(0f, 0f, MathF.Pow(t, 1));
+
+                Matrix flap = Matrix.CreateRotationZ(wingRotation * -dir);
+                Matrix curl =
+                    Matrix.CreateRotationY(
+                        -wingRotation * sideCurlFactor * dir
+                    ) *
+                    Matrix.CreateRotationX(
+                        -wingRotation * MathF.Pow(t, 0.9f) * 1.2f
+                    );
+
+                Matrix transform = curl * flap;
+
+                //todo: WHEN WING ROTATION IS GREATER than some number, multiply size.x by -1, to make the wing curve a bit 
+
+
+                float spanX = size.X * t  * dir;
+
+                Vector3 top = new Vector3(
+                    spanX,
+                    size.Y * 0.6f,
+                    z
+                );
+
+                Vector3 bottom = new Vector3(
+                    spanX,
+                    -size.Y * 0.5f,
+                    z
+                );
+
+
+                Vector3 origin = new Vector3(worldCenter, 0f);
+
+                top = Vector3.Transform(top,transform) *1.4f+ origin;
+                bottom = Vector3.Transform(bottom, transform)*1.4f + origin;
+
+
+                Vector2 uvTop = new Vector2(t, 1f);
+                Vector2 uvBot = new Vector2(t, 0f);
+
+                Color c = DrawColor * opacity;
+
+                verts[vi++] = new VertexPositionColorTexture(top, c, uvTop);
+                verts[vi++] = new VertexPositionColorTexture(bottom, c, uvBot);
+            }
+            //hate hate hate hate
+            WingVertexBuffer.SetData(verts, SetDataOptions.Discard);
+        }
+
+
         /*
         public NPC Owner;
         public List<Vector2[]> WingStrings;

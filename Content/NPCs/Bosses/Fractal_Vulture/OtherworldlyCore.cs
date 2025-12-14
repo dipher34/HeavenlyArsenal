@@ -19,6 +19,7 @@ using ReLogic.Content;
 using ReLogic.Graphics;
 using System;
 using System.Linq;
+using System.Runtime.Intrinsics;
 using Terraria;
 using Terraria.Audio;
 using Terraria.DataStructures;
@@ -34,16 +35,7 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
         public Rope Cord;
 
         public voidVulture Body;
-        public voidVulture.Behavior CurrentBehavior
-        {
-            get => Body != null ? Body.currentState : default;
-        }
-        public int Time
-        {
-            get => Body != null ? Body.Time : 0;
-        }
-
-        
+       
         public override void ModifyHoverBoundingBox(ref Rectangle boundingBox)
         {
             boundingBox = NPC.Hitbox;
@@ -89,95 +81,189 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
 
                
         }
-        
-        public override void AI()
+        Vector2 EndFiringPos;
+        float ReturnOffsetY = 30f;
+        float HoverDistance = 200f;
+        float MaxTrackSpeed = 18f;
+        int TelegraphTime = 20;
+        int ShootInterval = 60;
+
+        float RotationVelocity;
+        float RotationDamping = 0.92f;
+
+        enum CoreState
         {
-            if(Body == null) return;
-            if (Body != null)
-            {
-                Cord = new Rope(NPC.Center, Body.NPC.Center, 100, 4, Vector2.Zero);
-                NPC.realLife = Body.NPC.whoAmI;
-                NPC.active = Body.NPC.active;
-
-                Cord.segments[0].position = NPC.Center;
-                Cord.segments[^1].position = Body.NPC.Center;
-                Cord.Update();
-            }
-            if (CurrentBehavior != voidVulture.Behavior.EjectCoreAndStalk || Time > 500 && !PreparingToShoot)
-            {   
-                foreach(var projectile in Main.ActiveProjectiles)
-                {
-                    if(projectile.type == ModContent.ProjectileType<CoreBlast>())
-                    {
-                        return;
-                    }
-                }
-
-                NPC.knockBackResist = LumUtils.InverseLerp(0, 60, NPC.ai[0]);
-                float interpolant = LumUtils.InverseLerp(0, 60, NPC.ai[0]++);
-                NPC.velocity = Vector2.Lerp(NPC.velocity, Vector2.Zero, 0.4f);
-                NPC.Center = Vector2.Lerp(NPC.Center, Body.NPC.Center, interpolant*0.76f);
-                if (NPC.Center.Distance(Body.NPC.Center) < 10f)
-                {
-                    Body.CoreDeployed = false;
-                    NPC.active = false;
-                }
-                NPC.scale = LumUtils.InverseLerp(0, 100, NPC.Distance(Body.NPC.Center));
-            }
-            else
-            {
-                NPC.knockBackResist = 0.7f;
-                if (Time == 41)
-                {
-                    SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.Chirp with { Volume = 4f }).WithVolumeBoost(2);
-                }
-                float thing = LumUtils.InverseLerp(200, 600, NPC.Distance(Body.currentTarget.Center));
-                SuckNearbyPlayersGently(2000, 0.5f * thing);
-                float trackStrength = LumUtils.InverseLerp(0, 500, NPC.Distance(Body.currentTarget.Center)) * 18;
-                //Main.NewText(trackStrength);
-                if (NPC.Center.Distance(Body.currentTarget.Center) < 200)
-                    NPC.velocity = Vector2.Lerp(NPC.velocity, NPC.DirectionFrom(Body.currentTarget.Center) * 12, 0.1f);
-                else
-                    NPC.velocity = Vector2.Lerp(NPC.velocity, NPC.DirectionTo(Body.currentTarget.Center) * trackStrength, 0.1f);
-
-               
-                if (Time % 60 == 0)
-                {
-                    PreparingToShoot = true;
-                }
-                if (PreparingToShoot)
-                {
-                    TelegraphInterp = float.Lerp(TelegraphInterp, 1, 0.2f);
-                    NPC.ai[0]++;
-                    if (NPC.ai[0] == 20)
-                    {
-                        int coreblastCount = !Body.HasSecondPhaseTriggered ? 3 : 4;
-                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.DeadStarBurst with { Pitch = -0.5f, PitchRange = (-2, 0), PitchVariance = 0.8f}, NPC.Center).WithVolumeBoost(1.6f);
-                        for (int i = 0; i < coreblastCount; i++)
-                        {
-                            Vector2 Vel = findShootVels(i, coreblastCount, NPC)*4;
-                           Projectile a =  Projectile.NewProjectileDirect(NPC.GetSource_FromThis(), NPC.Center, Vel, ModContent.ProjectileType<CoreBlast>(), Body.NPC.defDamage / 3, 0);
-                            a.As<CoreBlast>().OwnerIndex = NPC.whoAmI;
-                            a.As<CoreBlast>().index = i;
-                        }
-                        NPC.ai[0] = 0;
-                        PreparingToShoot = false;
-
-                    }
-                  
-                }
-                if (!PreparingToShoot)
-                {
-                    NPC.rotation += MathHelper.ToRadians(1);
-                    TelegraphInterp = float.Lerp(TelegraphInterp, 0, 0.2f);
-            }
-            }
-
-
+            Inactive,
+            Deployed,
+            Attacking,
+            Returning
         }
 
+        CoreState State = CoreState.Inactive;
+        int StateTimer;
         bool PreparingToShoot;
-        float TelegraphInterp = 0;
+        float TelegraphInterp;
+        public voidVulture.Behavior CurrentBehavior =>
+              Body != null ? Body.currentState : default;
+
+        public int BodyTime =>
+            Body != null ? Body.Time : 0;
+        public override void AI()
+        {
+            if (Body == null || !Body.NPC.active)
+            {
+                NPC.active = false;
+                return;
+            }
+
+            UpdateCord();
+
+            switch (State)
+            {
+                case CoreState.Inactive:
+                    EnterDeployed();
+                    break;
+
+                case CoreState.Deployed:
+                    UpdateDeployed();
+                    break;
+
+                case CoreState.Attacking:
+                    UpdateAttacking();
+                    break;
+
+                case CoreState.Returning:
+                    UpdateReturning();
+                    break;
+            }
+
+            StateTimer++;
+        }
+
+        void EnterDeployed()
+        {
+            State = CoreState.Deployed;
+            StateTimer = 0;
+            NPC.velocity = Vector2.Zero;
+        }
+
+        void EnterAttacking()
+        {
+            State = CoreState.Attacking;
+            StateTimer = 0;
+            PreparingToShoot = false;
+            TelegraphInterp = 0f;
+        }
+
+        void EnterReturning()
+        {
+            EndFiringPos = NPC.Center;
+            State = CoreState.Returning;
+            StateTimer = 0;
+            PreparingToShoot = false;
+        }
+
+        void UpdateDeployed()
+        {
+            if (CurrentBehavior == voidVulture.Behavior.EjectCoreAndStalk)
+                EnterAttacking();
+        }
+
+        void UpdateAttacking()
+        {
+            Player target = Body.currentTarget as Player;
+            if (target == null || !target.active)
+                return;
+
+            NPC.knockBackResist = 0.7f;
+
+            // Gentle pull
+            float pullScale = LumUtils.InverseLerp(200, 600, NPC.Distance(target.Center));
+            SuckNearbyPlayersGently(2000f, 0.5f * pullScale);
+
+            // Tracking movement
+            Vector2 desiredVel;
+            float dist = NPC.Distance(target.Center);
+
+            if (dist < HoverDistance)
+                desiredVel = NPC.DirectionFrom(target.Center) * 12f;
+            else
+                desiredVel = NPC.DirectionTo(target.Center) * MaxTrackSpeed;
+
+            NPC.velocity = Vector2.Lerp(NPC.velocity, desiredVel, 0.1f);
+
+            // Telegraph / shoot cycle
+            if (StateTimer % ShootInterval == 0)
+                PreparingToShoot = true;
+
+            if (PreparingToShoot)
+                HandleShooting();
+
+            if (CurrentBehavior != voidVulture.Behavior.EjectCoreAndStalk && !PreparingToShoot)
+                EnterReturning();
+
+            NPC.rotation += RotationVelocity;
+            RotationVelocity *= RotationDamping;
+        }
+
+        void UpdateReturning()
+        {
+            Vector2 returnPos = Body.NPC.Center + new Vector2(0f, ReturnOffsetY);
+
+            NPC.velocity = Vector2.Lerp(NPC.velocity, Vector2.Zero, 0.4f);
+            float thing = 1 - LumUtils.InverseLerp(0, 2000, NPC.Distance(Body.NPC.Center));
+            
+            NPC.Center = Vector2.Lerp(EndFiringPos, returnPos,thing );
+            NPC.knockBackResist = 0;
+
+            if (NPC.Distance(returnPos) < 10f)
+            {
+                Body.CoreDeployed = false;
+                NPC.active = false;
+            }
+        }
+
+        void HandleShooting()
+        {
+            TelegraphInterp = float.Lerp(TelegraphInterp, 1f, 0.2f);
+
+            if (StateTimer % ShootInterval == TelegraphTime)
+            {
+                FireCoreBlasts();
+                PreparingToShoot = false;
+                TelegraphInterp = 0f;
+            }
+        }
+
+        void FireCoreBlasts()
+        {
+            int count = Body.HasSecondPhaseTriggered ? 4 : 3;
+
+            // ⬇ ROTATION IMPULSE
+            RotationVelocity += Main.rand.NextFloat(-0.12f, 0.12f);
+
+            SoundEngine.PlaySound(
+                GennedAssets.Sounds.Avatar.DeadStarBurst
+                with
+                { Pitch = -1.5f, PitchVariance = 0.8f },
+                NPC.Center).WithVolumeBoost(1.6f);
+
+            for (int i = 0; i < count; i++)
+            {
+                Vector2 vel = FindShootVelocity(i, count, NPC) * 4f;
+                Projectile p = Projectile.NewProjectileDirect(
+                    NPC.GetSource_FromThis(),
+                    NPC.Center,
+                    vel,
+                    ModContent.ProjectileType<CoreBlast>(),
+                    Body.NPC.defDamage / 3,
+                    0f);
+
+                p.As<CoreBlast>().OwnerIndex = NPC.whoAmI;
+                p.As<CoreBlast>().index = i;
+            }
+        }
+
         void SuckNearbyPlayersGently(float radius = 900f, float pullStrength = 0.35f)
         {
             Vector2 center = NPC.Center;
@@ -205,10 +291,21 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
                 p.mount?.Dismount(p);
             }
         }
-        public static Vector2 findShootVels(int i, int max, NPC npc)
+        public static Vector2 FindShootVelocity(int i, int max, NPC npc)
         {
+            return new Vector2(10f, 0f)
+                .RotatedBy(i / (float)max * MathHelper.TwoPi +npc.rotation)
+                * npc.scale;
+        }
+        void UpdateCord()
+        {
+            Cord ??= new Rope(NPC.Center, Body.NPC.Center, 100, 4, Vector2.Zero);
 
-            return new Vector2(10, 0).RotatedBy(i /(float)max * MathHelper.TwoPi + npc.rotation) * npc.scale;
+            Cord.segments[0].position = NPC.Center;
+            Cord.segments[^1].position = Body.NPC.Center;
+            Cord.Update();
+
+            NPC.realLife = Body.NPC.whoAmI;
         }
         void renderUmbilical()
         {
@@ -246,7 +343,7 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
                 int coreblastCount = !Body.HasSecondPhaseTriggered ? 3 : 4;
                 for (int i = 0; i < coreblastCount; i++)
                 {
-                    Vector2 Vel = findShootVels(i, coreblastCount, NPC) * 200 * TelegraphInterp;
+                    Vector2 Vel = FindShootVelocity(i, coreblastCount, NPC) * 200 * TelegraphInterp;
                     Utils.DrawLine(spriteBatch, NPC.Center, NPC.Center + Vel, Color.AntiqueWhite * TelegraphInterp, Color.Transparent, 4 * TelegraphInterp);
                 }
             }

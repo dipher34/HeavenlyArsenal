@@ -91,8 +91,8 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
         public List<voidVultureWing> wings = new List<voidVultureWing>(2);
         private static readonly Vector2[] wingPos = new Vector2[]
         {
-            new Vector2(40,0),
-            new Vector2(-40,0)
+            new Vector2(40,-40),
+            new Vector2(-40,40)
 
         };
         public override string HeadTexture => this.GetPath().ToString() + "_Head";

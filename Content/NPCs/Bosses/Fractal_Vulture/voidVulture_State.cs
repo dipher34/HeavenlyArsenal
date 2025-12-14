@@ -232,7 +232,7 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
             {
                 Time = 0;
 
-                currentState =  GetNextAttack();
+                currentState = GetNextAttack();
 
                 return;
             }
@@ -259,10 +259,14 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
             if (Time > 100 && Time < 380)
             {
                 ScreenShakeSystem.StartShakeAtPoint(HeadPos, 0.2f * 6f);
-                if (Time > 100)
+                if (Time > 100 && Time < 300)
+                {
                     NPC.Center = Vector2.Lerp(NPC.Center, NPC.Center - new Vector2(0, 80), 0.2f);
+                    HeadPos = NPC.Center + new Vector2(0, 100);
+                }
+                if (Time > 300)
+                    HeadPos = Vector2.Lerp(HeadPos, NPC.Center + new Vector2(0, -100), 0.2f);
             }
-
 
             if (Time > 380)
             {
@@ -338,7 +342,8 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
                 }
                 if (!HasSecondPhaseTriggered)
                     NPC.velocity += toTarget * 10;
-                SolynChosenShield = currentTarget.Center - NPC.Center;
+                else
+                    SolynChosenShield = currentTarget.Center - NPC.Center;
             }
 
             if (Time <= ShootStart)
@@ -729,123 +734,233 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
                 currentState = Behavior.Idle;
             }
         }
+
+
+        #region EjectCore And Stalk
         int MaxDashes
         {
             get => Main.masterMode ? 5 : Main.expertMode ? 4 : 3;
         }
         int DashesUsed;
-        bool ShouldDash = false;
-        int DashTimer = 0;
+        int DashTimer;
+
+        bool InDash;
         Vector2 DashDirection;
-        /// <summary>
-        /// TODO: OVERHAUL ME!!
-        /// </summary>
+        Vector2 DashStartPos;
+        bool WaitingToDash;
+        int PostDashFadeTimer;
+
+        int TotalAttackTime;
+        int TimePerDash;
+        int PostDashFadeTime = 20;
         void EjectCoreAndStalk()
         {
-            const int DashWindup = 40;
-            const int DashAccelTime = 60;
-            const int DashStopTime = 80;
+            const int CoreDeployTime = 20;
+
+            const int DashWindupTime = 40;
+            const int DashAccelTime = 12;
+            const int DashSustainTime = 16;
+            const int DashRecoverTime = 20;
+
+            const int PreDashDelay = 45;      // after core eject, before first dash
+
+
+            const float DashSpeed = 52f;
+
 
             Player target = currentTarget as Player;
-
+            if (target == null || !target.active)
+                return;
 
             if (Time == 1)
+            {
                 SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.Angry, NPC.Center);
 
+                DashesUsed = 0;
+                DashTimer = 0;
+                InDash = false;
+                WaitingToDash = true;
+                PostDashFadeTimer = 0;
 
-            if (Time == 40)
-            {
-                NPC core = NPC.NewNPCDirect(NPC.GetSource_FromThis(), HeadPos, ModContent.NPCType<OtherworldlyCore>());
-                core.As<OtherworldlyCore>().Body = this;
-                this.CoreDeployed = true;
+                TimePerDash =
+                    DashWindupTime +
+                    DashAccelTime +
+                    DashSustainTime +
+                    DashRecoverTime +
+                    PostDashFadeTime;
+
+                TotalAttackTime = CoreDeployTime + PreDashDelay + TimePerDash * MaxDashes + 60;
             }
 
-            if (Time > 40)
+
+            // Deploy Core
+            if (Time == CoreDeployTime && !CoreDeployed)
             {
-                NPC.Opacity = float.Lerp(NPC.Opacity, 0f, 0.2f);
-                if (NPC.Opacity < 0.2f)
-                    NPC.Opacity = 0;
-                // Fade out -> low damage; fade in -> restore damage
-                NPC.damage = NPC.Opacity < 0.4f ? 0 : (int)(NPC.defDamage);
+                NPC core = NPC.NewNPCDirect(
+                    NPC.GetSource_FromThis(),
+                    HeadPos,
+                    ModContent.NPCType<OtherworldlyCore>());
 
-                //reposition and dash
-                int Dashtime = !HasSecondPhaseTriggered ? 60 : 120;
-                if (!ShouldDash && Time % Dashtime == 0 && DashesUsed < MaxDashes)
+                if (core.active)
                 {
-                    if (DashesUsed >= MaxDashes)
-                    {
-                        Time = 540;
-                        return;
-                    }
+                    core.As<OtherworldlyCore>().Body = this;
+                    CoreDeployed = true;
+                }
+            }
 
-                    int side = Math.Sign((target.Center - NPC.Center).X);
-                    if (side == 0) side = Main.rand.NextBool() ? 1 : -1;
 
-                    //TODO: calculate a better flank pos for the npc so that it doesn't tp too close to a player, so that the player doesn't run into them while they're still mostly invisible.
-                    Vector2 flankPos = target.Center + target.velocity + new Vector2(side * 500f, 0f).RotatedByRandom(MathHelper.Pi);
-                    NPC.Center = flankPos;
+            // exit condition
+            if (Time >= TotalAttackTime || DashesUsed >= MaxDashes && !InDash)
+            {
+                NPC.velocity *= 0.8f;
+                NPC.Opacity = float.Lerp(NPC.Opacity, 1f, 0.15f);
+                NPC.damage = NPC.defDamage;
+
+                if (NPC.velocity.LengthSquared() < 1f)
+                {
+                    EndAttack();
+                }
+                return;
+            }
+            if (PostDashFadeTimer > 0)
+            {
+                PostDashFadeTimer--;
+
+                NPC.damage = 0;
+                NPC.velocity *= 0.7f;
+
+                NPC.Opacity = InverseLerp(PostDashFadeTime, 0, PostDashFadeTimer);
+                if (NPC.Opacity < 0.02f)
+                    NPC.Opacity = 0f;
+
+
+                if (PostDashFadeTimer == PostDashFadeTime - 1)
+                {
+                    NPC.velocity = Vector2.Zero;
                     ResetTail();
-                    // Prepare dash direction & engage dash mode
-                    DashDirection = NPC.DirectionTo(target.Center + target.velocity);
-                    DashesUsed++;
-                    SoundEngine.PlaySound(GennedAssets.Sounds.Common.Twinkle);
-                    ShouldDash = true;
-                    DashTimer = 0;
                 }
 
-                if (ShouldDash)
-                {
-                    HeadPos = NPC.Center + NPC.velocity.ToRotation().ToRotationVector2() * 90;
-                    NPC.Opacity = float.Lerp(NPC.Opacity, 1, 0.4f);
-                    DashTimer++;
-                    if (DashTimer < DashWindup - 4)
-                    {
-
-                        DashDirection = NPC.DirectionTo(target.Center);
-                    }
-                    if (DashTimer == DashWindup)
-                    {
-                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.DisgustingStarSever with { Pitch = 0.2f, PitchVariance = 0.2f, PitchRange = (-1.4f, 0f) }).WithVolumeBoost(1.3f);
-                    }
-
-                    // Acceleration phase
-                    if (DashTimer > DashWindup && DashTimer < DashAccelTime)
-                    {
-                        NPC.velocity = Vector2.Lerp(NPC.velocity, DashDirection * 50f, 0.35f);
-                    }
-                    // Deceleration phase
-                    else if (DashTimer >= DashAccelTime && DashTimer < DashStopTime)
-                    {
-                        NPC.velocity *= 0.9f;
-                    }
-                    else if (DashTimer > DashStopTime)
-                    {
-                        // End dash
-                        NPC.velocity *= 0.7f;
-                        ShouldDash = false;
-
-                    }
-                }
-
-
-                if (Time > 600 && !CoreDeployed)
-                {
-                    NPC.velocity *= 0;
-                    NPC.dontTakeDamage = false;
-                    previousState = currentState;
-                    TargetPosition = NPC.Center;
-                    currentState = Behavior.Idle;
-                    Time = 0;
-                    NPC.Opacity = 1;
-                    DashesUsed = 0;
-                }
-                if (DashesUsed >= MaxDashes)
-                {
-                    NPC.velocity *= 0.4f;
-                    NPC.Opacity = float.Lerp(NPC.Opacity, 1, 0.2f);
-                }
+                return;
             }
+
+            if (WaitingToDash)
+            {
+                NPC.damage = 0;
+                NPC.velocity *= 0.85f;
+
+                NPC.Opacity = float.Lerp(NPC.Opacity, 0f, 0.15f);
+                if (NPC.Opacity < 0.02f)
+                    NPC.Opacity = 0f;
+
+                if (Time >= CoreDeployTime + PreDashDelay)
+                    WaitingToDash = false;
+
+                return;
+            }
+            if (!InDash && DashesUsed < MaxDashes)
+            {
+                BeginDash(target);
+                return;
+            }
+
+
+            DashTimer++;
+
+            NPC.Opacity = InverseLerp(0, DashWindupTime - 5, DashTimer);
+
+            // Wind-up: track target
+            if (DashTimer <= DashWindupTime - 5)
+            {
+                HeadPos = NPC.Center + currentTarget.DirectionTo(NPC.Center) * -100;
+                NPC.Center += currentTarget.velocity * 0.7f;
+                DashDirection = NPC.DirectionTo(target.Center + target.velocity * 5f);
+                NPC.velocity *= 0.85f;
+                NPC.damage = 0;
+                return;
+            }
+
+            // Acceleration
+            if (DashTimer <= DashWindupTime + DashAccelTime)
+            {
+                HeadPos = NPC.Center + DashDirection * 120;
+                NPC.velocity = Vector2.Lerp(
+                    NPC.velocity,
+                    DashDirection * DashSpeed,
+                    0.45f);
+
+                NPC.damage = NPC.defDamage;
+                return;
+            }
+
+            // Sustain
+            if (DashTimer <= DashWindupTime + DashAccelTime + DashSustainTime)
+            {
+                HeadPos = NPC.Center + DashDirection * 160;
+                NPC.velocity = DashDirection * DashSpeed;
+                return;
+            }
+
+            // Recovery
+            if (DashTimer <= TimePerDash)
+            {
+                HeadPos = NPC.Center + DashDirection * 120;
+                NPC.velocity *= 0.88f;
+                NPC.damage = 0;
+                return;
+            }
+
+            // End dash cleanly
+            EndDash();
         }
+
+        void BeginDash(Player target)
+        {
+            InDash = true;
+            DashTimer = 0;
+
+            int side = Math.Sign(target.Center.X - NPC.Center.X);
+            if (side == 0)
+                side = Main.rand.NextBool() ? 1 : -1;
+
+            Vector2 flankPos =
+                target.Center +
+                new Vector2(side * 480f, -80f).RotatedByRandom(MathHelper.TwoPi);
+
+            NPC.Center = flankPos;
+            NPC.velocity = Vector2.Zero;
+
+            DashDirection = NPC.DirectionTo(target.Center);
+            DashesUsed++;
+
+            ResetTail();
+
+            SoundEngine.PlaySound(GennedAssets.Sounds.Common.Twinkle, NPC.Center);
+        }
+
+        void EndDash()
+        {
+
+            InDash = false;
+            DashTimer = 0;
+            PostDashFadeTimer = PostDashFadeTime;
+        }
+        void EndAttack()
+        {
+            NPC.velocity = Vector2.Zero;
+            NPC.Opacity = 1f;
+            NPC.damage = NPC.defDamage;
+            NPC.dontTakeDamage = false;
+
+            previousState = currentState;
+            currentState = Behavior.Idle;
+            TargetPosition = NPC.Center;
+
+            DashesUsed = 0;
+            DashTimer = 0;
+            Time = 0;
+        }
+
+        #endregion
 
         bool Returning;
         Vector2 FlyAwayOffset;
@@ -1115,7 +1230,7 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
                 a.As<SeekingEnergy>().Impaled = BattleSolynBird.GetOriginalSolyn().NPC;
 
             }
-            int thing = (int)((1-ReelSolynInterpolant) * 20)+1;
+            int thing = (int)((1 - ReelSolynInterpolant) * 20) + 1;
             if (Time % thing == 0)
             {
                 if (Main.rand.NextBool(4))
@@ -1125,19 +1240,19 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
                     b.ai[0] = 60;
                 }
             }
-            
-            if(ReelSolynInterpolant == 1)
+
+            if (ReelSolynInterpolant == 1)
             {
-                if(Time == 401)
+                if (Time == 401)
                 {
                     SoundEngine.PlaySound(GennedAssets.Sounds.Genesis.AntiseedPlant with { Volume = 4, MaxInstances = 1, Pitch = -1.3f }).WithVolumeBoost(5);
 
                 }
                 HeadPos += Main.rand.NextVector2Unit();
                 NPC.Center += Main.rand.NextVector2Unit() * 10;
-                if (Time % 3==0)
+                if (Time % 3 == 0)
                 {
-                    for(int i = 0; i< 5; i++)
+                    for (int i = 0; i < 5; i++)
                     {
                         Projectile c = Projectile.NewProjectileDirect(NPC.GetSource_FromThis(), NPC.Center, Main.rand.NextVector2Unit() * 10, ModContent.ProjectileType<NowhereGoop>(), NPC.defDamage, 0);
 

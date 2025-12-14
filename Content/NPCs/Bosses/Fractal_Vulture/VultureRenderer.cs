@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework.Graphics;
 using NoxusBoss.Assets;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Terraria;
 using Terraria.ID;
 using Terraria.ModLoader;
@@ -230,7 +231,7 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
 
             gd.BlendState = BlendState.AlphaBlend;
             gd.DepthStencilState = DepthStencilState.None;
-            gd.RasterizerState = RasterizerState.CullNone;
+            gd.RasterizerState = RasterizerState.CullClockwise;
             gd.SamplerStates[0] = SamplerState.PointClamp;
 
             foreach (var pass in VultureMask.CurrentTechnique.Passes)
@@ -320,11 +321,7 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
             currentYaw = MathHelper.Clamp(currentYaw, -yawMax, yawMax);
             currentPitch = MathHelper.Clamp(currentPitch, -pitchMax, pitchMax);
 
-            if (currentState == Behavior.reveal)
-            {
-                currentYaw = 0;
-                currentPitch = 0.75f;
-            }
+           
 
         }
 
@@ -335,7 +332,8 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
                    DepthStencilState.None, RasterizerState.CullNone, null, Main.GameViewMatrix.TransformationMatrix);
 
 
-            RebuildMaskMesh(drawColor * NPC.Opacity, 27, 22, -0.2f);
+            
+            RebuildMaskMesh(Lighting.GetColor(HeadPos.ToTileCoordinates()) * NPC.Opacity, 27, 22, -1.2f);
             //RebuildMaskMesh_ColorDebug(20, 12, -0.2f);
 
             if (currentTarget != null)
@@ -362,19 +360,87 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
             DrawMask(anchor, face, pixelSize: 50f);
         }
         #endregion
+        #region wing
+        BasicEffect WingEffect;
         void RenderWings(SpriteBatch spriteBatch, voidVultureWing wing, int offsetID)
         {
-            Texture2D wingtex = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/NPCs/Bosses/Fractal_Vulture/WingTexture").Value;
+            wing.EnsureBuffers();
+            if (!wing.BuffersReady)
+                return;
 
-            SpriteEffects flip = offsetID % 2 == 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally;
-            float offset = offsetID % 2 == 0 ? 0 : wingtex.Width;
-            Vector2 Origin = new Vector2(offset, wingtex.Height);
 
+            Main.spriteBatch.End();
+            Main.spriteBatch.Begin();
+            bool flipped = offsetID % 2 == 0;
+
+            Vector2 drawCenter =
+                 NPC.Center - Main.screenPosition - new Vector2(wingPos[offsetID].X,0) + new Vector2(0, -60);
+
+            wing.RegenerateVertices(Lighting.GetColor((NPC.Center + new Vector2(wingPos[offsetID].X, 0)).ToTileCoordinates()),
+                drawCenter,
+                -wing.WingRotation,
+                flipped,
+                NPC.Opacity
+            );
+
+            GraphicsDevice gd = Main.instance.GraphicsDevice;
+
+            gd.SetVertexBuffer(wing.WingVertexBuffer);
+            gd.Indices = wing.WingIndexBuffer;
+            
+            Texture2D wingTex = ModContent.Request<Texture2D>(
+                "HeavenlyArsenal/Content/NPCs/Bosses/Fractal_Vulture/WingTexture"
+            ).Value;
+
+            if(WingEffect == null)
+            WingEffect = new BasicEffect(gd)
+            {
+
+                TextureEnabled = true,
+                Texture = wingTex,
+                VertexColorEnabled = true
+            };
+
+            WingEffect.World = Matrix.Identity;
+            //gd.RasterizerState = new RasterizerState { CullMode = CullMode.None, FillMode = FillMode.WireFrame };
+
+            gd.SamplerStates[0] = SamplerState.PointClamp;
+            gd.RasterizerState = new RasterizerState { CullMode = CullMode.None};
+            WingEffect.View = Main.GameViewMatrix.ZoomMatrix;
+            WingEffect.Projection = Matrix.CreateOrthographicOffCenter(
+                0, Main.screenWidth,
+                Main.screenHeight, 0,
+                -1000, 1000
+            );
+
+            foreach (EffectPass pass in WingEffect.CurrentTechnique.Passes)
+            {
+                pass.Apply();
+
+                gd.DrawIndexedPrimitives(
+                    PrimitiveType.TriangleList,
+                    baseVertex: 0,
+                    minVertexIndex: 0,
+                    numVertices: voidVultureWing.WingSubdivisions * 2,
+                    startIndex: 0,
+                    primitiveCount: (voidVultureWing.WingSubdivisions - 1) * 2
+                );
+
+            }
+        }
+
+
+        void RenderWingsOld(SpriteBatch spriteBatch, voidVultureWing wing, int offsetID)
+        {
+            Texture2D wingtex = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/NPCs/Bosses/Fractal_Vulture/WingTexture").Value; 
+            SpriteEffects flip = offsetID % 2 == 0 ? SpriteEffects.None : SpriteEffects.FlipHorizontally; 
+            float offset = offsetID % 2 == 0 ? 0 : wingtex.Width; 
+            Vector2 Origin = new Vector2(offset, wingtex.Height); 
             float rot = wing.WingRotation * (offsetID % 2 == 0 ? 1 : -1);
             Vector2 Scale = new Vector2(1.75f, 1) * 1f;
-            Vector2 DrawPos = wingPos[offsetID] + NPC.Center - Main.screenPosition;
-            Main.EntitySpriteDraw(wingtex, DrawPos, null, Color.White * NPC.Opacity, rot, Origin, Scale, flip);
-            //Utils.DrawBorderString(spriteBatch, wing.Time.ToString() + $"\n" + Math.Round(wing.WingFlapProgress%1, 3).ToString(), DrawPos, Color.AliceBlue);
+            Vector2 DrawPos = new Vector2(wingPos[offsetID].X, 0) + NPC.Center - Main.screenPosition; 
+            Main.EntitySpriteDraw(wingtex, DrawPos, null, Color.White * NPC.Opacity, rot, Origin, Scale, flip); 
+            //Utils.DrawBorderString(spriteBatch, wing.Time.ToString() + $"\n" + Math.Round(wing.WingFlapProgress%1, 3).ToString(), DrawPos, Color.AliceBlue); }
         }
         void RenderBody(SpriteBatch spriteBatch, Vector2 screenPos, Color drawColor)
         {
@@ -390,7 +456,7 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
             //Main.EntitySpriteDraw(body, NPC.Center + new Vector2(0, 40) - screenPos, null, Color.AntiqueWhite, MathHelper.ToRadians(90), body.Size() / 2, 2, 0);
 
         }
-
+        #endregion
         void DrawCore(Vector2 screenPos)
         {
             if (CoreDeployed)
@@ -404,11 +470,11 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
             Rectangle frame = core.Frame(1, 4, 0, (int)(Main.GlobalTimeWrappedHourly * 10.1f) % 4);
             Vector2 DrawPos = NPC.Center - screenPos + Offset;
 
-            Color GlowFlip = Color.Lerp(Color.Blue, Color.WhiteSmoke, Math.Abs(MathF.Sin(Main.GlobalTimeWrappedHourly))) * 0.3f * NPC.Opacity;
+            Color GlowFlip = Color.Lerp(Color.Blue, Color.WhiteSmoke, Math.Abs(MathF.Sin(Main.GlobalTimeWrappedHourly))) * 0.3f;
             Main.EntitySpriteDraw(core, DrawPos, frame, Color.White * NPC.Opacity, 0, frame.Size() / 2, 1, 0);
             Main.EntitySpriteDraw(outline, DrawPos, null, Color.White with { A = 0 } * NPC.Opacity, 0, outline.Size() / 2, 0.1f, 0);
 
-            Main.EntitySpriteDraw(Glow, DrawPos, null, GlowFlip with { A = 0 }, 0, Glow.Size() / 2, 1, 0);
+            Main.EntitySpriteDraw(Glow, DrawPos, null, GlowFlip with { A = 0 } * NPC.Opacity, 0, Glow.Size() / 2, 1, 0);
 
             if (NPC.IsABestiaryIconDummy)
                 return;
@@ -435,14 +501,19 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
             });
             spriteBatch.ResetToDefault();
             drawTail();
+            DrawLegs(drawColor);
             if (!NPC.IsABestiaryIconDummy)
                 for (int i = 0; i < 2; i++)
                 {
                     RenderWings(spriteBatch, wings[i], i);
                 }
 
-
-            DrawLegs(drawColor);
+            spriteBatch.ResetToDefault();
+            if (!NPC.IsABestiaryIconDummy)
+                for (int i = 0; i < 2; i++)
+                {
+                    //RenderWingsOld(spriteBatch, wings[i], i);
+                }
             RenderBody(spriteBatch, screenPos, drawColor);
             RenderNeck(drawColor);
             if (currentState == Behavior.Medusa)
@@ -453,11 +524,11 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
             mask(spriteBatch, drawColor);
             string msg = "";
             msg += $"Time: {Time}\n Currenstate: {currentState.ToString()}\nprevious state: {previousState.ToString()}\n DashesUsed: {DashesUsed}\n Damage: {NPC.damage}\n dash timer: {DashTimer}\n second phase: {HasSecondPhaseTriggered}\n StaggerTimer: {StaggerTimer}\n Direction: {NPC.direction}";
-            //Utils.DrawBorderString(spriteBatch, msg, NPC.Center - screenPos, Color.AliceBlue, anchory: -1);
+            Utils.DrawBorderString(spriteBatch, msg, NPC.Center - screenPos, Color.AliceBlue, anchory: -1);
 
             //Utils.DrawLine(spriteBatch, FlyAwayOffset + NPC.Center, NPC.Center, Color.Red);
-            Main.EntitySpriteDraw(debug, StoredSolynPos - screenPos, null, Color.Red, 0, debug.Size() / 2, 10, 0);
-            Main.EntitySpriteDraw(debug, SolynChosenShield - screenPos, null, Color.Green, 0, debug.Size() / 2, 10, 0);
+            //Main.EntitySpriteDraw(debug, StoredSolynPos - screenPos, null, Color.Red, 0, debug.Size() / 2, 10, 0);
+            //Main.EntitySpriteDraw(debug, SolynChosenShield - screenPos, null, Color.Green, 0, debug.Size() / 2, 10, 0);
 
             return false;// base.PreDraw(spriteBatch, screenPos, drawColor);
         }
@@ -588,6 +659,8 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
 
         void DrawLegs(Color DrawColor)
         {
+            if (Main.netMode == NetmodeID.Server)
+                return;
             for (int i = 0; i < 2; i++)
             {
                 Main.spriteBatch.End();
