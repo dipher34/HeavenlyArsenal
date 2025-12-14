@@ -126,8 +126,7 @@
         <Compile Include="Content\NPCs\Bosses\Fractal_Vulture\voidVulture_Neck.cs"/>
         <Compile Include="Content\NPCs\Bosses\Fractal_Vulture\voidVulture_State.cs"/>
         <Compile Include="Content\NPCs\Bosses\Fractal_Vulture\VultureRenderer.cs"/>
-        <Compile Include="Content\Tiles\Banners\EnemyBanner.cs"/>
-        <Compile Include="Content\Tiles\Banners\UmbralLeechBanner.cs"/>
+        <Compile Include="Content\Tiles\Banners\EnemyBannerTile.cs" />
     </ItemGroup>
     <ItemGroup>
         <Content Include="Content\NPCs\Bosses\Fractal_Vulture\kneckAndFace.png"/>
@@ -144,9 +143,7 @@
         <Content Include="Content\NPCs\Bosses\Fractal_Vulture\voidVulture_Head.png"/>
         <Content Include="Content\NPCs\Bosses\Fractal_Vulture\voidVulture_Leg.png"/>
         <Content Include="Content\NPCs\Bosses\Fractal_Vulture\WingTexture.png"/>
-        <Content Include="Content\Tiles\Banners\EnemyBanner.png"/>
-        <Content Include="Content\Tiles\Banners\UmbralLeechBanner.png"/>
-        <Content Include="Content\Tiles\Banners\UmbralLeechBannerTile.png"/>
+        <Content Include="Content\Tiles\Banners\EnemyBannerTile.png" />
     </ItemGroup>
     <ItemGroup>
         <None Include="HeavenlyArsenal.sln"/>
