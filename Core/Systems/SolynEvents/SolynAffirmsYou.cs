@@ -11,7 +11,7 @@ namespace HeavenlyArsenal.Core.Systems.SolynEvents
         private static string Prefix => "SolynGenderChangePotionUsed";
         public override int TotalStages => 1;
 
-        public static bool CanStart => Main.LocalPlayer.GetModPlayer<GenderSwapPlayer>().IsTrans;
+        public static bool CanStart => Main.LocalPlayer.GetModPlayer<TransgenderPlayer>().IsTrans;
         public override void OnModLoad()
         {
             var conv5 = DialoguePatchFactory.BuildAndRegisterFromMod("SolynGenderChangePotionUsed", "Start");
