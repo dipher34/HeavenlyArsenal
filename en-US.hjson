@@ -392,6 +392,11 @@ Mods: {
 				DisplayName: Genesis Flower Seeder
 				Tooltip: ""
 			}
+
+			UmbralLeechBannerItem: {
+				DisplayName: Umbral Leech Banner Item
+				Tooltip: ""
+			}
 		}
 
 		Biomes: {

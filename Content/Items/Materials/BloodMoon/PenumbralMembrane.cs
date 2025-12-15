@@ -14,7 +14,6 @@ internal class PenumbralMembrane : ModItem
         Item.maxStack = Item.CommonMaxStack;
         Item.width = 38;
         Item.height = 32;
-        Item.BestiaryNotes = "Crab";
         Item.rare = ModContent.RarityType<BloodMoonRarity>();
         Item.sellPrice(0, 38, 20, 5);
     }

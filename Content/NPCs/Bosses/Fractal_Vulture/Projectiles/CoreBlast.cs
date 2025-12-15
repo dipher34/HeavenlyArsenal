@@ -27,6 +27,7 @@ internal class CoreBlast : ModProjectile
             }
             Projectile.Center = Main.npc[OwnerIndex].Center + OtherworldlyCore.FindShootVelocity(index, 3, Main.npc[OwnerIndex]);
         }
+    }
 
     public override void SetDefaults()
     {

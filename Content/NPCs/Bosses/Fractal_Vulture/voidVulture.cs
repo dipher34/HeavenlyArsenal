@@ -116,12 +116,6 @@ partial class voidVulture : ModNPC
 
     public override string HeadTexture => this.GetPath() + "_Head";
 
-        public List<voidVultureWing> wings = new List<voidVultureWing>(2);
-        private static readonly Vector2[] wingPos = new Vector2[]
-        {
-            new Vector2(40,-40),
-            new Vector2(-40,40)
-
     public override void BossHeadSlot(ref int index)
     {
         if (NPC.Opacity < 0.2f)

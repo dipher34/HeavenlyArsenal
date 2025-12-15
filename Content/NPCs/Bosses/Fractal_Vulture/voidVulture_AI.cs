@@ -75,28 +75,28 @@ partial class voidVulture //_AI
             NPC.dontTakeDamage = CoreDeployed;
         }
 
-            if (currentState == Behavior.reveal)
-            {
-                if(Time == 1)
-                HeadPos = NPC.Center + new Vector2(0, 100);
-                //wings[0].Time = 4;
-                //voidVultureWing.UpdateWings(wings[0], NPC);
-            }
-            else
-            {
-
-        NPC.noGravity = true;
-
-        StateMachine();
-
-        if (currentState != Behavior.EjectCoreAndStalk)
+        if (currentState == Behavior.reveal)
         {
-            NPC.Center = Vector2.Lerp(NPC.Center, TargetPosition, targetInterpolant);
+            if (Time == 1)
+                HeadPos = NPC.Center + new Vector2(0, 100);
+            //wings[0].Time = 4;
+            //voidVultureWing.UpdateWings(wings[0], NPC);
         }
+        { 
 
+            NPC.noGravity = true;
+
+            StateMachine();
+
+            if (currentState != Behavior.EjectCoreAndStalk)
+            {
+                NPC.Center = Vector2.Lerp(NPC.Center, TargetPosition, targetInterpolant);
+            }
+
+          
+        }
         Time++;
     }
-
     public override void PostAI()
     {
         //BattleSolynBird.SummonSolynForBattle(NPC.GetSource_FromThis(), currentTarget.Center, BattleSolynBird.SolynAIType.FightBird);
@@ -153,14 +153,15 @@ partial class voidVulture //_AI
         //NPC.velocity = Vector2.Zero;
     }
 
-        };
-        public void ManageIK()
-        {
 
-            Vector2[] LegPos = new Vector2[]
-            {
+    public void ManageIK()
+    {
+
+        Vector2[] LegPos = new Vector2[]
+        {
                 new Vector2(40, 40),
                 new Vector2(-40, 40)
+        };
 
         var offset = MathF.Sin(Time / 10.1f);
 
@@ -179,28 +180,28 @@ partial class voidVulture //_AI
             _rightLeg.TargetPosition = NPC.Center + new Vector2(0, 150);
         }
 
-            //Dust a = Dust.NewDustPerfect(_LeftLeg.EndPosition, DustID.Cloud, Vector2.Zero);
-            //a.velocity = Vector2.Zero;
-            //a.noGravity = true;
-            //CreateLegs();
-            UpdateLegState(ref _LeftLeg, NPC.Center + LegPos[0] + NPC.velocity, 0.12f, 0);
-            UpdateLegState(ref _rightLeg, NPC.Center + LegPos[1] + NPC.velocity, 0.12f, 0);
-            //Main.NewText(_LeftLeg.Skeleton.JointCount);
-            //TODO: set constraints based on the direction to the currentTarget (if that target exists).
-            //these constraints should be set up so that they roughly cause the bend between skeleton 0 and 1 to be pointing towards the player
-            if (NPC.direction != 0)
-            { 
-            }
-        }
-        void manageHead()
+        //Dust a = Dust.NewDustPerfect(_LeftLeg.EndPosition, DustID.Cloud, Vector2.Zero);
+        //a.velocity = Vector2.Zero;
+        //a.noGravity = true;
+        //CreateLegs();
+        UpdateLegState(ref _LeftLeg, NPC.Center + LegPos[0] + NPC.velocity, 0.12f, 0);
+        UpdateLegState(ref _rightLeg, NPC.Center + LegPos[1] + NPC.velocity, 0.12f, 0);
+        //Main.NewText(_LeftLeg.Skeleton.JointCount);
+        //TODO: set constraints based on the direction to the currentTarget (if that target exists).
+        //these constraints should be set up so that they roughly cause the bend between skeleton 0 and 1 to be pointing towards the player
+        if (NPC.direction != 0)
         {
+        }
+    }
+    void manageHead()
+    {
 
-            if (currentTarget == null)
-                currentTarget = Main.LocalPlayer;
-            if (currentState == Behavior.VomitCone || (currentState == Behavior.CollidingCommet && Time > 60) || currentState == Behavior.reveal)
-            {
-                return;
-            }
+        if (currentTarget == null)
+            currentTarget = Main.LocalPlayer;
+        if (currentState == Behavior.VomitCone || (currentState == Behavior.CollidingCommet && Time > 60) || currentState == Behavior.reveal)
+        {
+            return;
+        }
 
         var maxStretch = Neck2.Skeleton._maxDistance * 0.86f;
         var minDistance = 38f;

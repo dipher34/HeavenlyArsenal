@@ -11,7 +11,6 @@ internal class ShellFragment : ModItem
         Item.maxStack = Item.CommonMaxStack;
         Item.width = 38;
         Item.height = 32;
-        Item.BestiaryNotes = "Crab";
         Item.rare = ModContent.RarityType<BloodMoonRarity>();
         Item.sellPrice(0, 18, 20, 5);
     }
