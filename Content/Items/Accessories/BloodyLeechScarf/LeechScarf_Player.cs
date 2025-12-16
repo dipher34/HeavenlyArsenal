@@ -104,7 +104,7 @@ namespace HeavenlyArsenal.Content.Items.Accessories.BloodyLeechScarf
                 // Cooldown handling
                 if (t.Cooldown > 0)
                 {
-                    Main.NewText($"{t.Slot}, Cooldown: {t.Cooldown}");
+                    Main.NewText($"{t.Slot}, Cooldown: {t.Cooldown}, HitCooldown: {t.HitCooldown}");
                     t.Cooldown--;
                     
                     
@@ -183,6 +183,8 @@ namespace HeavenlyArsenal.Content.Items.Accessories.BloodyLeechScarf
 
         public override void OnHitNPCWithItem(Item item, NPC target, NPC.HitInfo hit, int damageDone)
         {
+            if (!Active)
+                return;
             if (Player.Distance(target.Center) < 50)
                 return;
 
@@ -201,6 +203,8 @@ namespace HeavenlyArsenal.Content.Items.Accessories.BloodyLeechScarf
         public override void OnHitNPCWithProj(Projectile proj, NPC target, NPC.HitInfo hit, int damageDone)
         {
 
+            if (!Active)
+                return;
             //If too far or is a leech scarf, don't reduce cooldown
             if (Player.Distance(target.Center) < 50 || proj.type == ModContent.ProjectileType<LeechScarf_TendrilProjectile>())
                 return;
@@ -211,6 +215,7 @@ namespace HeavenlyArsenal.Content.Items.Accessories.BloodyLeechScarf
                 if (!t.Active && t.HitCooldown <= 0)
                 {
                     t.Cooldown -= 50;
+                    t.HitCooldown = 30;
                 }
                 TendrilList[i] = t;
             }

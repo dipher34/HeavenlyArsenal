@@ -95,6 +95,7 @@ LeechScarf_Item: {
 	DisplayName: Bloody Leech Scarf
 	Tooltip:
 		'''
+		      Provides a 12% increase to all melee damage
 		Reduces incoming damage by 12%
 		Tendrils protect your back and siphon life
 		After several strikes, they solidify and break
