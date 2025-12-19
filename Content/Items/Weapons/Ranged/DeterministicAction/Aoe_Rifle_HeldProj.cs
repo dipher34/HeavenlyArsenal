@@ -167,7 +167,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
 
         private void On_Main_CheckMonoliths(On_Main.orig_CheckMonoliths orig)
         {
-            throw new NotImplementedException();
+
         }
 
         #region helper/state
