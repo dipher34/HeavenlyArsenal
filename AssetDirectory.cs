@@ -55,7 +55,8 @@ public static class AssetDirectory
                     public static readonly Asset<Texture2D> Finality_Norse = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/Items/Weapons/Aoe_Rifle/Harvest_Norse");
                     public static readonly Asset<Texture2D> Finality_Omega = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/Items/Weapons/Aoe_Rifle/Death_Omega");
                     public static readonly Asset<Texture2D> End_Turkish = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/Items/Weapons/Aoe_Rifle/End_OldTurkish");
-
+                    public static readonly Asset<Texture2D> Pearl = AssetUtilities.RequestImmediate<Texture2D>(AssetPath + "Textures/Items/Weapons/Aoe_Rifle/Pearl");
+                   
 
                 }
             }

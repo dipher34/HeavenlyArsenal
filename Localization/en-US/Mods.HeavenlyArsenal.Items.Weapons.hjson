@@ -46,7 +46,21 @@ Ranged: {
 
 	Aoe_Rifle_Item: {
 		DisplayName: Deterministic Causality
-		Tooltip: ""
+		Tooltip:
+			'''
+			An ancient rifle from a long dead civilization.
+			Despite the extreme passage of time, its still in relatively good condition.
+
+
+			'''
+		Lore:
+			'''
+			WHAT WAS, WILL BE.
+			GRAVITY IS DESIRE.
+			TIME IS SIGHT.
+			IT LOVES US
+			AND WE, IT.
+			'''
 	}
 }
 
