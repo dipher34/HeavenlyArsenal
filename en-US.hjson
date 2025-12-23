@@ -472,5 +472,6 @@ Mods: {
 		}
 
 		Prefixes.Aoe_Rifle_Reforge.DisplayName: Aoe_ Rifle_ Reforge
+		UI.ExampleResource: Mods.HeavenlyArsenal.UI.ExampleResource
 	}
 }

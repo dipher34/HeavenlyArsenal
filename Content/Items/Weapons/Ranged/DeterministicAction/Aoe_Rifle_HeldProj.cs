@@ -397,7 +397,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
             int EndReloadClip1 = StartReloadClip1 + 60 * Projectile.extraUpdates;
 
             int FinishReload = EndReloadClip1 + 60 * Projectile.extraUpdates;
-
+            
 
             if (Time == 0)
             {
@@ -458,7 +458,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
                 }
 
 
-                RiflePlayer.BulletCount = clips[0].BulletCount + clips[1].BulletCount;
+               
             }
 
             if(Time < StartReloadClip0)
@@ -472,6 +472,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
                 if (Time == EndReloadClip0)
                 {
                     SoundEngine.PlaySound(AssetDirectory.Sounds.Items.Weapons.AvatarRifle.MagEmptySound with { Pitch = -0.3f }, Owner.Center).WithVolumeBoost(1);
+                    RiflePlayer.BulletCount += clips[0].BulletCount;
                 }
             }
 
@@ -481,6 +482,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
                 if (Time == EndReloadClip1)
                 {
                     SoundEngine.PlaySound(AssetDirectory.Sounds.Items.Weapons.AvatarRifle.MagEmptySound with { Pitch = 0.3f }, Owner.Center).WithVolumeBoost(1);
+                    RiflePlayer.BulletCount += clips[1].BulletCount;
                 }
 
             }

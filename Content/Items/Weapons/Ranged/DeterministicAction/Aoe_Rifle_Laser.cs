@@ -124,7 +124,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
             {
                 damageMulti = 1.6f;
             }
-                Projectile.damage = (int)(Projectile.damage * damageMulti);
+            Projectile.damage = (int)(Projectile.damage * damageMulti);
             
             ParticleEngine.ShaderParticles.Add(particle);
         }
@@ -162,7 +162,10 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
             //todo: laser collision
             Vector2 offset = new Vector2(LASER_RANGE, 0).RotatedBy(Projectile.rotation);
             float _ = 0;
-            return Collision.CheckAABBvLineCollision(targetHitbox.Location.ToVector2(), targetHitbox.Size(), Projectile.Center, Projectile.Center + offset, 60f, ref _);
+            float sizeIncrease = 1;
+            if (PowerShot)
+                sizeIncrease = 2;
+            return Collision.CheckAABBvLineCollision(targetHitbox.Location.ToVector2(), targetHitbox.Size() * sizeIncrease, Projectile.Center, Projectile.Center + offset, 60f, ref _);
         }
 
         public override bool PreDraw(ref Color lightColor)
