@@ -186,7 +186,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
 
                     Main.EntitySpriteDraw(tex, DrawPos + new Vector2(3, 0).RotatedBy(Projectile.rotation + MathHelper.TwoPi * i / 6f + Main.GlobalTimeWrappedHourly), Frame, Color.Red with { A = 0 } * GlowOpacity, Projectile.rotation + RotationOffset, Origin, 1f, flip);
                 }
-            Main.EntitySpriteDraw(tex, DrawPos, Frame, lightColor, Projectile.rotation + RotationOffset, Origin, 1f, flip);
+           Main.EntitySpriteDraw(tex, DrawPos, Frame, lightColor, Projectile.rotation + RotationOffset, Origin, 1f, flip);
 
             string msg = "";
 
@@ -363,7 +363,8 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
 
             if(Projectile.frame == 6)
             {
-
+                Dust a = Dust.NewDustDirect(Projectile.Center, 40, 40, DustID.Torch, 0, 0);
+                a.velocity = Projectile.rotation.ToRotationVector2() * -10;
             }
             Projectile.frame = (int)(10 * LumUtils.InverseLerp(0, finishCycling - 5, Time));
             if (Time >= finishCycling)
@@ -468,6 +469,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
                 Projectile.frame = 7 + (int)(3 * LumUtils.InverseLerp(EndReloadClip1, FinishReload, Time));
             if (Time > StartReloadClip0 && Time <= EndReloadClip0)
             {
+                Owner.SetCompositeArmBack(true, Player.CompositeArmStretchAmount.Full, Owner.MountedCenter.AngleTo(clipPos[0] + Owner.MountedCenter) - MathHelper.PiOver2 + Projectile.rotation);
                 clipPos[0] = reloadMovement.Evaluate(LumUtils.InverseLerp(StartReloadClip0, EndReloadClip0, Time));
                 if (Time == EndReloadClip0)
                 {
@@ -478,6 +480,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
 
             if (Time > StartReloadClip1 && Time <= EndReloadClip1)
             {
+                Owner.SetCompositeArmBack(true, Player.CompositeArmStretchAmount.Full, Owner.MountedCenter.AngleTo(clipPos[1] + Owner.MountedCenter) - MathHelper.PiOver2 + Projectile.rotation);
                 clipPos[1] = reloadMovement.Evaluate(LumUtils.InverseLerp(StartReloadClip1, EndReloadClip1, Time));
                 if (Time == EndReloadClip1)
                 {

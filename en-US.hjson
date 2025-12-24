@@ -472,6 +472,10 @@ Mods: {
 		}
 
 		Prefixes.Aoe_Rifle_Reforge.DisplayName: Aoe_ Rifle_ Reforge
-		UI.ExampleResource: Mods.HeavenlyArsenal.UI.ExampleResource
+
+		UI: {
+			ExampleResource: Mods.HeavenlyArsenal.UI.ExampleResource
+			AmmoCount: Mods.HeavenlyArsenal.UI.AmmoCount
+		}
 	}
 }

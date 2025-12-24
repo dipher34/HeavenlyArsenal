@@ -109,9 +109,14 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
         {
             Projectile.Center = Main.player[Projectile.owner].Center;
         }
+
+        public override void CutTiles()
+        {
+            base.CutTiles();
+        }
         public override bool? CanCutTiles()
         {
-            
+            return true;
             return base.CanCutTiles();
         }
 
@@ -128,9 +133,10 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
             
             ParticleEngine.ShaderParticles.Add(particle);
         }
-
+       
         public override void ModifyHitNPC(NPC target, ref NPC.HitModifiers modifiers)
         {
+            modifiers.CritDamage.Base *= 2f;
             modifiers.ArmorPenetration += 30;
             if (PowerShot)
             {
@@ -154,8 +160,26 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
 
             modifiers = new Player.HurtModifiers
             {
-                DamageSource = PlayerDeathReason.ByCustomReason(text)
+                DamageSource = PlayerDeathReason.ByCustomReason(text),
+                Dodgeable = PowerShot? false: true
+
             };
+            modifiers.ArmorPenetration += 30f;
+           
+        }
+
+        public override void OnHitPlayer(Player target, Player.HurtInfo info)
+        {
+            Aoe_Rifle_HitParticle particle = new Aoe_Rifle_HitParticle();
+            particle.Prepare(target.Center, target.AngleTo(Projectile.Center), 60);
+            float damageMulti = 1.2f;
+            if (PowerShot)
+            {
+                damageMulti = 1.6f;
+            }
+            Projectile.damage = (int)(Projectile.damage * damageMulti);
+
+            ParticleEngine.ShaderParticles.Add(particle);
         }
         public override bool? Colliding(Rectangle projHitbox, Rectangle targetHitbox)
         {

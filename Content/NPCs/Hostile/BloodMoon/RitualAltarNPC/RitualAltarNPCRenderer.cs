@@ -521,6 +521,15 @@ internal partial class RitualAltar : BloodMoonBaseNPC
         }
 
         renderIsohedron(anchor, drawColor);
+        DateTime date = DateTime.Now;
+        if (date.Month == 12 || (date.Day == 24 || date.Day == 25))
+        {
+            Vector2 hatScale = new Vector2(0.2f, 0.4f);
+            Vector2 hatDrawPosition = anchor;
+            Texture2D santaHat = GennedAssets.Textures.NamelessDeity.SantaHat;
+
+            Main.EntitySpriteDraw(santaHat, hatDrawPosition, null, Color.White * NPC.Opacity, NPC.rotation+MathHelper.PiOver2, santaHat.Size() * 0.5f, hatScale, 0);
+        }
 
         var arrow = ModContent.Request<Texture2D>("HeavenlyArsenal/Content/NPCs/Hostile/BloodMoon/Jellyfish/Jellyfish_DebugArrow").Value;
 

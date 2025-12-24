@@ -88,7 +88,10 @@ public class FakeFlowerTile : ModTile, ICustomPlacementSound
             ModContent.GetInstance<FakeFlowerTileRender>().AddPoint(new Point(i, j));
         }
     }
+    public override void PlaceInWorld(int i, int j, Item item)
+    {
 
+    }
     public override bool PreDraw(int i, int j, SpriteBatch spriteBatch)
     {
         return false;

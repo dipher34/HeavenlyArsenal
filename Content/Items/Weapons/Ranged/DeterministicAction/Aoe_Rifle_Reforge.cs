@@ -16,6 +16,7 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
             return false;
             
         }
+        
         public override LocalizedText DisplayName => base.DisplayName;
 
         public override void SetStats(ref float damageMult, ref float knockbackMult, ref float useTimeMult, ref float scaleMult, ref float shootSpeedMult, ref float manaMult, ref int critBonus)
@@ -23,10 +24,8 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
             damageMult = 2;
             knockbackMult = 2;
             useTimeMult = 2;
-            scaleMult = 2; 
             shootSpeedMult = 2;
-
-            critBonus *= 4;
+            critBonus *= 10;
         }
     }
 }
