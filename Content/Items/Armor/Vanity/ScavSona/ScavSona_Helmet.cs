@@ -11,6 +11,7 @@ namespace HeavenlyArsenal.Content.Items.Armor.Vanity.ScavSona
     [AutoloadEquip(EquipType.Head)]
     public class ScavSona_Helmet : ModItem
     {
+        public override string LocalizationCategory => "Items.Armor.ScavSona";
         public override void SetDefaults()
         {
             Item.width = 18;

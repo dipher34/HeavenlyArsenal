@@ -34,11 +34,11 @@ namespace HeavenlyArsenal.Content.Items.Armor.Vanity.ScavSona
             {
                 DrawData b= new DrawData(ScavSona_IKArm.ScavSona_IKArm_Target, drawInfo.BodyPosition() + new Vector2(0.5f,0).RotatedBy(i/6f * MathHelper.TwoPi), null, Color.Red, 0, ScavSona_IKArm.ScavSona_IKArm_Target.Size() / 2, 2, 0);
 
-                drawInfo.DrawDataCache.Add(b);
+              //  drawInfo.DrawDataCache.Add(b);
             }
             DrawData a = new DrawData(ScavSona_IKArm.ScavSona_IKArm_Target, drawInfo.BodyPosition(), null, Color.Black, 0, ScavSona_IKArm.ScavSona_IKArm_Target.Size() / 2, 2, 0);
 
-            drawInfo.DrawDataCache.Add(a);
+            //drawInfo.DrawDataCache.Add(a);
         }
     }
 }

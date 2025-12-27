@@ -6,6 +6,8 @@ Mods: {
 			"Shadow Teleport.DisplayName": Shadow  Teleport
 			"SwirlCloak_Veil Cloak.DisplayName": Swirl Cloak_ Veil  Cloak
 			"Swap BloodArmor Form.DisplayName": Swap  Blood Armor  Form
+			"Swap Blood Armor Form.DisplayName": Swap  Blood  Armor  Form
+			"Swirl Cloak.DisplayName": Swirl  Cloak
 		}
 
 		Items: {

@@ -2,6 +2,7 @@
 using System.Linq;
 using CalamityMod;
 using HeavenlyArsenal.Common.utils;
+using HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor.Players;
 using HeavenlyArsenal.Core;
 using Luminance.Assets;
 using NoxusBoss.Assets;

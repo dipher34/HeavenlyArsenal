@@ -1,6 +1,9 @@
 ﻿using HeavenlyArsenal.Content.NPCs.Bosses.FractalVulture;
+using NoxusBoss.Assets;
 using NoxusBoss.Content.Tiles.GenesisComponents;
+using NoxusBoss.Core.Utilities;
 using System.Collections.Generic;
+using Terraria.Audio;
 using Terraria.DataStructures;
 
 namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
@@ -108,7 +111,7 @@ namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
 
             if (success)
             {
-                //Main.NewText("Fake Flower successfully placed!");
+                SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.Scream).WithVolumeBoost(10);
             }
             else
             {

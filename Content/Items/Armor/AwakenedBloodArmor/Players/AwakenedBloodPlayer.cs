@@ -4,7 +4,7 @@ using NoxusBoss.Assets;
 using Terraria.Audio;
 using Terraria.DataStructures;
 
-namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor;
+namespace HeavenlyArsenal.Content.Items.Armor.AwakenedBloodArmor.Players;
 
 public class AwakenedBloodPlayer : ModPlayer
 {
@@ -205,46 +205,7 @@ public class AwakenedBloodPlayer : ModPlayer
         }
 
         Player.statDefense -= 75;
-        /*
-        if (Player.ownedProjectileCounts[ModContent.ProjectileType<BloodNeedle>()] <= TendrilCount - 1
-            && Main.myPlayer == Player.whoAmI)
-        {
-            bool[] tentaclesPresent = new bool[TendrilCount];
-            foreach (Projectile proj in Main.projectile)
-            {
-                if (proj.active
-                    && proj.type == ModContent.ProjectileType<BloodNeedle>()
-                    && proj.owner == Main.myPlayer
-                    && proj.ai[1] >= 0f
-                    && proj.ai[1] < TendrilCount)
-                {
-                    tentaclesPresent[(int)proj.ai[1]] = true;
-                }
-            }
-
-            for (int i = 0; i < TendrilCount; i++)
-            {
-                if (!tentaclesPresent[i])
-                {
-                    Player.Calamity();
-                    int damage = (int)Player.GetBestClassDamage().ApplyTo(30);
-
-                    damage = Player.ApplyArmorAccDamageBonusesTo(damage);
-
-                    var source = Player.GetSource_FromThis(AwakenedBloodHelm.TentacleEntitySourceContext);
-                    Vector2 vel = new Vector2(Main.rand.Next(-13, 14), Main.rand.Next(-13, 14)) * 0.25f;
-                    Projectile.NewProjectile(source,
-                        Player.Center,
-                        vel,
-                        ModContent.ProjectileType<BloodNeedle>(),
-                        damage,
-                        8f,
-                        Main.myPlayer,
-                        Main.rand.Next(120),
-                        i);
-                }
-            }
-        }*/
+      
     }
 
     private void ManageDefense()

@@ -18,7 +18,9 @@ namespace HeavenlyArsenal.Content.Items.Armor.Vanity.ScavSona
         {
             var Owner = drawInfo.drawPlayer;
 
-            DrawData a = new DrawData(ScavSona_FloppyHair_Player.ScavSona_Hair_Target, drawInfo.HeadPosition(),Color.White);
+            DrawData a = new DrawData(ScavSona_FloppyHair_Player.ScavSona_Hair_Target, drawInfo.HeadPosition(), null, Color.White, 0, ScavSona_FloppyHair_Player.ScavSona_Hair_Target.Size() / 2, 1, 0, 0);
+            //a.color = drawInfo.colorHair;
+            //a.shader = drawInfo.hairDyePacked;
             drawInfo.DrawDataCache.Add(a);
         }
     }

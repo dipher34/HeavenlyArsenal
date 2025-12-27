@@ -7,24 +7,41 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria.Audio;
+using Terraria.ModLoader.IO;
 
 namespace HeavenlyArsenal.Content.NPCs.Bosses.Fractal_Vulture
 {
     internal class FractalBird_Event : ModSystem
     {
-        
+        public override void LoadWorldData(TagCompound tag)
+        {
+            hasBirdBeenDefeated = tag.GetBool("FractalBirdDefeated");
+        }
+        public override void SaveWorldData(TagCompound tag)
+        {
+            tag["FractalBirdDefeated"] = hasBirdBeenDefeated;
+        }
+        public bool hasBirdBeenDefeated;
+        public override void OnWorldLoad()
+        {
+            hasBirdBeenDefeated = false;
+        }
 
+        public override void OnWorldUnload()
+        {
+            hasBirdBeenDefeated = false;
+        }
         public override void PostUpdateEverything()
         {
 
             if (DownedBossSystem.downedYharon) 
             {
-                //Main.NewText(Main.GameUpdateCount);
-                if (Main.GameUpdateCount % 300 == 0 && Main.rand.NextBool(5) && voidVulture.Myself is null)
+                Main.NewText(hasBirdBeenDefeated);
+                if (Main.GameUpdateCount % 300 == 0 && Main.rand.NextBool(5) && voidVulture.Myself is null && !hasBirdBeenDefeated)
                 {
-                    if (FakeFlowerRender.renderSystems.Count < 1)
+                    if (FakeFlowerRender.Count < 1)
                     {
-                        SoundEngine.PlaySound(GennedAssets.Sounds.Avatar.Scream).WithVolumeBoost(10);
+                        
                         FakeFlowerPlacementSystem.TryPlaceFlowerAroundGenesis();
 
                     }
