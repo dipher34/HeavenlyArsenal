@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Terraria.DataStructures;
+using Terraria.Enums;
 using Terraria.Localization;
 
 namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
@@ -116,13 +117,21 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
 
         public override void CutTiles()
         {
-            base.CutTiles();
+            Vector2 start = Projectile.Center;
+            Vector2 end = start + Projectile.rotation.ToRotationVector2() * LASER_RANGE;
+
+            float cutWidth = PowerShot ? 36f : 16f;
+
+            DelegateMethods.tilecut_0 = TileCuttingContext.AttackProjectile;
+
+            Utils.PlotTileLine(
+                start,
+                end,
+                cutWidth,
+                DelegateMethods.CutTiles
+            );
         }
-        public override bool? CanCutTiles()
-        {
-            return true;
-            return base.CanCutTiles();
-        }
+        public override bool? CanCutTiles() => true;
 
         public override void OnHitNPC(NPC target, NPC.HitInfo hit, int damageDone)
         {

@@ -473,6 +473,10 @@ namespace HeavenlyArsenal.Content.Items.Weapons.Ranged.DeterministicAction
                 clipPos[0] = reloadMovement.Evaluate(LumUtils.InverseLerp(StartReloadClip0, EndReloadClip0, Time));
                 if (Time == EndReloadClip0)
                 {
+                    for(int i = 0; i< 2; i++)
+                    {
+                        Projectile.NewProjectileDirect(Owner.GetSource_FromThis(), Projectile.Center, new Vector2(i % 2 == 0 ? -1:1,0), ModContent.ProjectileType<Aoe_Rifle_RealityTear>(), 10_000, 0);
+                    }
                     SoundEngine.PlaySound(AssetDirectory.Sounds.Items.Weapons.AvatarRifle.MagEmptySound with { Pitch = -0.3f }, Owner.Center).WithVolumeBoost(1);
                     RiflePlayer.BulletCount += clips[0].BulletCount;
                 }
